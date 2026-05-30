@@ -25,13 +25,14 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: var(--dark); }
 
+/* Optimalisasi Cetak 1 Lembar dari Source 2 */
 @media print {
-  .no-print, .header, .intro, .identity, .sleep-grid, .note-box, .actions-top { 
+  .no-print, .header, .intro, .identity, .sleep-grid, .note-box, .actions-top, .soft-alert { 
     display: none !important; 
   }
   @page {
     size: A4;
-    margin: 8mm 12mm;
+    margin: 6mm 10mm;
   }
   body { 
     background: white !important; 
@@ -51,31 +52,31 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
     page-break-inside: avoid;
     break-inside: avoid;
   }
-  .card-header { padding: 16px 20px 12px !important; }
+  .card-header { padding: 14px 20px 10px !important; }
   .card-header::after { left: 20px !important; right: 20px !important; }
   .card-name { font-size: 18px !important; }
-  .chrono-hero { padding: 14px 20px !important; gap: 20px !important; }
-  .animal-svg { width: 80px !important; height: 80px !important; }
-  .chrono-name { font-size: 22px !important; }
-  .spectrum-wrap { padding: 0 20px 14px !important; }
-  .spectrum-bar { margin-bottom: 20px !important; }
+  .chrono-hero { padding: 12px 20px !important; gap: 20px !important; }
+  .animal-svg { width: 75px !important; height: 75px !important; }
+  .chrono-name { font-size: 20px !important; }
+  .spectrum-wrap { padding: 0 20px 12px !important; }
+  .spectrum-bar { margin-bottom: 18px !important; }
   .about-section, .reco-section, .sjl-section, .calc-section { 
-    padding: 12px 20px !important; 
+    padding: 10px 20px !important; 
     border-bottom: 1px solid #e7e2da !important;
   }
   .reco-grid { gap: 8px !important; margin-top: 6px !important; }
-  .reco-card { padding: 8px !important; }
+  .reco-card { padding: 6px !important; }
   .reco-time { font-size: 11px !important; }
-  .sjl-row { margin-top: 6px !important; gap: 12px !important; }
-  .sjl-badge { padding: 8px !important; min-width: 80px !important; }
-  .sjl-badge .sjl-hrs { font-size: 18px !important; }
-  .calc-grid { margin-top: 6px !important; gap: 6px !important; }
-  .calc-item { padding: 8px 10px !important; }
-  .calc-item-val { font-size: 14px !important; }
-  .disclaimer { padding: 10px 20px !important; }
-  .disclaimer p { font-size: 8.5px !important; line-height: 1.4 !important; }
-  .ref-section { padding: 10px 20px !important; }
-  .ref-text { font-size: 8px !important; line-height: 1.4 !important; }
+  .sjl-row { margin-top: 4px !important; gap: 12px !important; }
+  .sjl-badge { padding: 6px !important; min-width: 80px !important; }
+  .sjl-badge .sjl-hrs { font-size: 16px !important; }
+  .calc-grid { margin-top: 4px !important; gap: 6px !important; }
+  .calc-item { padding: 6px 8px !important; }
+  .calc-item-val { font-size: 13px !important; }
+  .disclaimer { padding: 8px 20px !important; }
+  .disclaimer p { font-size: 8px !important; line-height: 1.3 !important; }
+  .ref-section { padding: 8px 20px !important; }
+  .ref-text { font-size: 7.5px !important; line-height: 1.3 !important; }
 }
 
 .page-wrap { max-width: 860px; margin: 0 auto; padding: 0 0 60px; }
@@ -107,7 +108,7 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
 }
 .intro strong { color: var(--dark); }
 
-.identity { margin: 20px 40px 0; background: var(--white); border-radius: 10px; border: 1px solid var(--cream2); padding: 20px 24px; }
+.identity { margin: 20px 40px 0; background: var(--white); border-radius: 10px; border: 1px solid var(--cream2); padding: 20px 24px; position: relative; }
 .section-label { font-size: 9px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--teal); margin-bottom: 14px; }
 .id-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
 .field label { display: block; font-size: 9px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
@@ -116,6 +117,19 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
   font-family: 'Montserrat', sans-serif; font-size: 13px; color: var(--dark); background: var(--cream); outline: none; transition: border-color 0.2s;
 }
 .field input:focus, .field select:focus { border-color: var(--teal); background: white; }
+
+/* Soft Alert Style */
+.soft-alert {
+  display: none;
+  background: #fff3cd;
+  border: 1px solid #ffeeba;
+  color: #856404;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin: 12px 40px 0;
+  font-weight: 500;
+}
 
 .time-input-wrap { display: flex; gap: 6px; align-items: center; }
 .time-input-wrap input[type="number"] { width: 52px; text-align: center; padding: 8px 6px; -moz-appearance: textfield; }
@@ -134,11 +148,13 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
 .sleep-panel-body { padding: 18px 20px; }
 .time-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
 
+/* Perbaikan Note Box Warp dari Source 2 */
 .note-box {
   margin: 16px 40px 0; background: var(--dark); border-radius: 8px; padding: 14px 20px;
   font-size: 11px; color: rgba(255,255,255,0.6); line-height: 1.6; display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap;
 }
 .note-box span { color: var(--teal-light); font-size: 14px; flex-shrink: 0; }
+.note-box span:last-child { flex: 1; min-width: 200px; }
 
 .error-box { margin: 12px 40px 0; background: #fff0f0; border: 1.5px solid #e74c3c; border-radius: 8px; padding: 12px 18px; font-size: 12px; color: #c0392b; display: none; }
 
@@ -247,6 +263,7 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
       <p>Temukan jam biologis alami tubuhmu berdasarkan pola tidur di hari kerja dan hari bebas.</p>
     </div>
     <div class="header-logo">
+      <!-- Logo SVG MCTQ Asli Tetap Dipertahankan -->
       <svg viewBox="0 0 342 488" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
         <g transform="matrix(1,0,0,1,-214.223845,-2080.871108)">
           <g transform="matrix(0.997224,0,0,0.997224,-76.830008,-247.417603)">
@@ -264,24 +281,27 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
 </div>
 
 <div class="intro no-print">
-  <strong>Petunjuk:</strong> Isi berdasarkan kebiasaan tidur harian Anda. Gunakan format 24 jam.
+  <strong>Petunjuk:</strong> Isi berdasarkan kebiasaan tidur <em>mayoritas</em> hari kerja dan hari bebasmu. Gunakan format <strong>24 jam</strong> (00–23 untuk jam, 00–59 untuk menit). Untuk hari bebas, isi jam tidur <em>tanpa alarm</em>.
 </div>
 
 <div class="identity no-print">
   <div class="section-label">Data Klien</div>
   <div class="id-grid">
     <div class="field"><label>Nama</label><input type="text" id="nama" placeholder="Nama lengkap"></div>
-    <div class="field"><label>Usia</label><input type="number" id="usia" placeholder="Tahun"></div>
+    <div class="field"><label>Usia</label><input type="number" id="usia" placeholder="Tahun" min="10" max="100"></div>
     <div class="field"><label>Tanggal</label><input type="date" id="tgl"></div>
     <div class="field"><label>Coach</label><input type="text" id="coach" placeholder="Nama coach"></div>
   </div>
 </div>
 
+<!-- Soft Notification Bar -->
+<div class="soft-alert" id="softAlert"></div>
+
 <div class="sleep-grid no-print">
   <div class="sleep-panel">
     <div class="sleep-panel-head work">
       <span class="sp-icon">💼</span>
-      <div><div class="sp-title">Hari Kerja</div><div class="sp-sub">Mayoritas hari kerja</div></div>
+      <div><div class="sp-title">Hari Kerja</div><div class="sp-sub">Mayoritas hari kerja / sekolah</div></div>
     </div>
     <div class="sleep-panel-body">
       <div class="time-row">
@@ -315,7 +335,7 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
   <div class="sleep-panel">
     <div class="sleep-panel-head free">
       <span class="sp-icon">🏖️</span>
-      <div><div class="sp-title">Hari Bebas</div><div class="sp-sub">Tanpa alarm bawaan</div></div>
+      <div><div class="sp-title">Hari Bebas</div><div class="sp-sub">Tanpa alarm — biarkan tubuh bangun sendiri</div></div>
     </div>
     <div class="sleep-panel-body">
       <div class="time-row">
@@ -350,7 +370,7 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
 
 <div class="note-box no-print">
   <span>ℹ️</span>
-  <span>Tidur lewat tengah malam? Masukkan jam secara normal, sistem otomatis mendeteksi dini hari.</span>
+  <span>Tidur lewat tengah malam? Masukkan jam seperti biasa, misal tidur jam <strong>01:30</strong> → isi 01 dan 30. Sistem otomatis mendeteksi bahwa itu dini hari (bukan siang). Kalau tidak pakai alarm di hari kerja, sleep debt dianggap nol karena tidurmu sudah natural.</span>
 </div>
 
 <div class="error-box" id="errorBox">⚠️ <span id="errorMsg"></span></div>
@@ -360,14 +380,9 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
   <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
 </div>
 
-<!-- CONTAINER UTAMA HASIL -->
 <div id="resultSection">
   
-  <!-- TOMBOL AKSI SEKARANG DI ATAS HASIL -->
-  <div class="actions-result no-print">
-    <button class="btn btn-primary" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
-    <button class="btn btn-secondary" onclick="resetForm()">← Isi Ulang Form</button>
-  </div>
+  
 
   <div class="result-card" id="resultCard">
     <div class="card-header">
@@ -377,18 +392,19 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
         <div class="card-sub" id="rSub">—</div>
       </div>
       <div class="card-logo">
-        <svg viewBox="0 0 342 488" xmlns="http://www.w3.org/2000/svg">
-          <g transform="matrix(1,0,0,1,-214.223845,-2080.871108)">
-            <g transform="matrix(0.997224,0,0,0.997224,-76.830008,-247.417603)">
-              <g transform="matrix(-0.536959,-0.843609,0.843609,-0.536959,-585.980542,4447.151703)">
-                <path d="M1078.51,1876.296C1114.841,1863.327 1142.066,1873.902 1153.076,1899.331C1106.362,1907.407 977.637,1985.486 976.981,1985.773C920.97,2010.303 829.729,2007.475 787.378,1924.044C758.421,1866.998 769.796,1811.032 801.641,1764.288C831.292,1720.764 879.232,1685.611 925.921,1666.608L943.588,1710.014C904.897,1725.762 864.943,1754.605 840.371,1790.673C817.993,1823.523 808.817,1862.742 829.167,1902.832C857.62,1958.884 919.212,1959.456 957.245,1943.25L1078.51,1876.296Z" style="fill:rgb(47,151,148);"/>
-              </g>
-              <g transform="matrix(0.5373,0.843391,-0.843391,0.5373,1511.370449,710.822435)">
-                <path d="M1078.51,1876.296C1114.841,1863.327 1142.066,1873.902 1153.076,1899.331C1106.362,1907.407 977.637,1985.486 976.981,1985.773C920.97,2010.303 829.729,2007.475 787.378,1924.044C758.421,1866.998 769.796,1811.032 801.641,1764.288C831.292,1720.764 879.232,1685.611 925.921,1666.608L943.588,1710.014C904.897,1725.762 864.943,1754.605 840.371,1790.673C817.993,1823.523 808.817,1862.742 829.167,1902.832C857.62,1958.884 919.212,1959.456 957.245,1943.25L1078.51,1876.296Z" style="fill:rgb(47,151,148);"/>
-              </g>
+        <!-- Logo SVG MCTQ Asli Tetap Dipertahankan -->
+      <svg viewBox="0 0 342 488" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+        <g transform="matrix(1,0,0,1,-214.223845,-2080.871108)">
+          <g transform="matrix(0.997224,0,0,0.997224,-76.830008,-247.417603)">
+            <g transform="matrix(-0.536959,-0.843609,0.843609,-0.536959,-585.980542,4447.151703)">
+              <path d="M1078.51,1876.296C1114.841,1863.327 1142.066,1873.902 1153.076,1899.331C1106.362,1907.407 977.637,1985.486 976.981,1985.773C920.97,2010.303 829.729,2007.475 787.378,1924.044C758.421,1866.998 769.796,1811.032 801.641,1764.288C831.292,1720.764 879.232,1685.611 925.921,1666.608L943.588,1710.014C904.897,1725.762 864.943,1754.605 840.371,1790.673C817.993,1823.523 808.817,1862.742 829.167,1902.832C857.62,1958.884 919.212,1959.456 957.245,1943.25L1078.51,1876.296Z" style="fill:rgb(47,151,148);"/>
+            </g>
+            <g transform="matrix(0.5373,0.843391,-0.843391,0.5373,1511.370449,710.822435)">
+              <path d="M1078.51,1876.296C1114.841,1863.327 1142.066,1873.902 1153.076,1899.331C1106.362,1907.407 977.637,1985.486 976.981,1985.773C920.97,2010.303 829.729,2007.475 787.378,1924.044C758.421,1866.998 769.796,1811.032 801.641,1764.288C831.292,1720.764 879.232,1685.611 925.921,1666.608L943.588,1710.014C904.897,1725.762 864.943,1754.605 840.371,1790.673C817.993,1823.523 808.817,1862.742 829.167,1902.832C857.62,1958.884 919.212,1959.456 957.245,1943.25L1078.51,1876.296Z" style="fill:rgb(47,151,148);"/>
             </g>
           </g>
-        </svg>
+        </g>
+      </svg>
       </div>
     </div>
 
@@ -457,32 +473,95 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
     </div>
 
     <div class="disclaimer">
-      <p>⚠️ <strong>Disclaimer:</strong> Rekomendasi waktu bersifat umum berdasarkan pola populasi. Diskusikan dengan coach untuk penyesuaian tepat.</p>
+      <p>⚠️ <strong>Disclaimer:</strong> Rekomendasi waktu di atas bersifat umum berdasarkan pola populasi dengan chronotype serupa. Setiap individu bisa berbeda tergantung kondisi kesehatan, kebiasaan, faktor lingkungan, dan kebutuhan personal. Diskusikan dengan coach untuk penyesuaian yang lebih tepat.</p>
     </div>
 
     <div class="ref-section">
       <div class="ref-text">
-        <strong>Referensi:</strong> Roenneberg T, et al. (2003). Life between clocks: daily temporal patterns of human chronotypes. <em>J Biol Rhythms</em>, 18(1):80–90.
+        <strong>Referensi:</strong> Roenneberg T, et al. (2003). Life between clocks: daily temporal patterns of human chronotypes. <em>J Biol Rhythms</em>, 18(1):80–90 &nbsp;·&nbsp; Wittmann M, et al. (2006). Social jetlag: misalignment of biological and social time. <em>Chronobiol Int</em>, 23(1-2):497–509 &nbsp;·&nbsp; Roenneberg T, et al. (2012). Social jetlag and obesity. <em>Curr Biol</em>, 22(10):939–943
       </div>
     </div>
+  </div>
+
+<!-- Kontrol PDF/Print diposisikan di atas Card agar aman tidak terpotong -->
+  <div class="actions-result no-print">
+    <button class="btn btn-primary" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+    <button class="btn btn-secondary" onclick="resetForm()">← Isi Ulang Form</button>
   </div>
 </div>
 
 </div>
 
 <script>
+// ── ANIMALS ENGINE (Source 1) ────────────────────────────────────────────────
 const animals = {
-  lion: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="62" r="38" fill="#e8892a" opacity="0.25"/><circle cx="60" cy="62" r="30" fill="#e8892a" opacity="0.4"/><ellipse cx="60" cy="82" rx="22" ry="18" fill="#f5b84a"/><circle cx="60" cy="55" r="22" fill="#f5b84a"/><polygon points="40,38 34,22 50,32" fill="#f5b84a"/><polygon points="80,38 86,22 70,32" fill="#f5b84a"/><ellipse cx="52" cy="52" rx="4" ry="4.5" fill="white"/><ellipse cx="68" cy="52" rx="4" ry="4.5" fill="white"/><circle cx="53" cy="53" r="2.5" fill="#2a1a00"/><circle cx="69" cy="53" r="2.5" fill="#2a1a00"/><ellipse cx="60" cy="60" rx="6" ry="4" fill="#e8892a"/><path d="M54,64 Q60,70 66,64" stroke="#7a3a00" stroke-width="1.5" fill="none"/></svg>`,
-  bear: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><ellipse cx="60" cy="85" rx="26" ry="22" fill="#2F9794"/><circle cx="60" cy="56" r="26" fill="#2F9794"/><circle cx="38" cy="36" r="10" fill="#2F9794"/><circle cx="82" cy="36" r="10" fill="#2F9794"/><circle cx="60" cy="60" r="16" fill="#3db8b4" opacity="0.35"/><ellipse cx="52" cy="53" rx="4" ry="4.5" fill="white"/><ellipse cx="68" cy="53" rx="4" ry="4.5" fill="white"/><circle cx="53" cy="54" r="2.5" fill="#0e181d"/><circle cx="69" cy="54" r="2.5" fill="#0e181d"/><ellipse cx="60" cy="62" rx="5" ry="3.5" fill="#0e181d"/><path d="M55,66 Q60,72 65,66" stroke="#0e181d" stroke-width="1.5" fill="none"/></svg>`,
-  wolf: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><ellipse cx="60" cy="85" rx="24" ry="20" fill="#3a3a6e"/><ellipse cx="60" cy="56" rx="24" ry="26" fill="#3a3a6e"/><polygon points="38,38 32,12 52,32" fill="#3a3a6e"/><polygon points="82,38 88,12 68,32" fill="#3a3a6e"/><ellipse cx="50" cy="53" rx="4.5" ry="4" fill="#f0e060"/><ellipse cx="70" cy="53" rx="4.5" ry="4" fill="#f0e060"/><ellipse cx="51" cy="54" rx="2" ry="3" fill="#0e181d"/><ellipse cx="71" cy="54" rx="2" ry="3" fill="#0e181d"/><ellipse cx="60" cy="62" rx="5" ry="3.5" fill="#0e181d"/></svg>`
+  lion: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="60" cy="62" r="38" fill="#e8892a" opacity="0.25"/>
+    <circle cx="60" cy="62" r="30" fill="#e8892a" opacity="0.4"/>
+    <ellipse cx="60" cy="82" rx="22" ry="18" fill="#f5b84a"/>
+    <circle cx="60" cy="55" r="22" fill="#f5b84a"/>
+    <polygon points="40,38 34,22 50,32" fill="#f5b84a"/>
+    <polygon points="80,38 86,22 70,32" fill="#f5b84a"/>
+    <ellipse cx="52" cy="52" rx="4" ry="4.5" fill="white"/>
+    <ellipse cx="68" cy="52" rx="4" ry="4.5" fill="white"/>
+    <circle cx="53" cy="53" r="2.5" fill="#2a1a00"/>
+    <circle cx="69" cy="53" r="2.5" fill="#2a1a00"/>
+    <ellipse cx="60" cy="60" rx="6" ry="4" fill="#e8892a"/>
+    <path d="M54,64 Q60,70 66,64" stroke="#7a3a00" stroke-width="1.5" fill="none"/>
+  </svg>`,
+  bear: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="60" cy="85" rx="26" ry="22" fill="#2F9794"/>
+    <circle cx="60" cy="56" r="26" fill="#2F9794"/>
+    <circle cx="38" cy="36" r="10" fill="#2F9794"/>
+    <circle cx="82" cy="36" r="10" fill="#2F9794"/>
+    <circle cx="60" cy="60" r="16" fill="#3db8b4" opacity="0.35"/>
+    <ellipse cx="52" cy="53" rx="4" ry="4.5" fill="white"/>
+    <ellipse cx="68" cy="53" rx="4" ry="4.5" fill="white"/>
+    <circle cx="53" cy="54" r="2.5" fill="#0e181d"/>
+    <circle cx="69" cy="54" r="2.5" fill="#0e181d"/>
+    <ellipse cx="60" cy="62" rx="5" ry="3.5" fill="#0e181d"/>
+    <path d="M55,66 Q60,72 65,66" stroke="#0e181d" stroke-width="1.5" fill="none"/>
+  </svg>`,
+  wolf: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="60" cy="85" rx="24" ry="20" fill="#3a3a6e"/>
+    <ellipse cx="60" cy="56" rx="24" ry="26" fill="#3a3a6e"/>
+    <polygon points="38,38 32,12 52,32" fill="#3a3a6e"/>
+    <polygon points="82,38 88,12 68,32" fill="#3a3a6e"/>
+    <ellipse cx="50" cy="53" rx="4.5" ry="4" fill="#f0e060"/>
+    <ellipse cx="70" cy="53" rx="4.5" ry="4" fill="#f0e060"/>
+    <ellipse cx="51" cy="54" rx="2" ry="3" fill="#0e181d"/>
+    <ellipse cx="71" cy="54" rx="2" ry="3" fill="#0e181d"/>
+    <ellipse cx="60" cy="62" rx="5" ry="3.5" fill="#0e181d"/>
+  </svg>`
 };
 
+// ── TEXT TEXT DATA (Source 1) ────────────────────────────────────────────────
 const chronoData = {
-  lionEx: { animal:'lion', name:'🦁 SINGA', sub:'Extremely Early Chronotype', badge:'EXTREMELY EARLY', badgeClass:'lion', about:'Energi puncak Anda berada sangat pagi (07:00–11:00). Ini bawaan sirkadian genetis alami Anda.', tidur:'19:30–21:00', fokus:'07:00–11:00', olahraga:'06:00–08:00' },
-  lion: { animal:'lion', name:'🦁 SINGA', sub:'Early Chronotype', badge:'Early Bird', badgeClass:'lion', about:'Jam biologismu lebih awal dari populasi. Mudah bangun pagi dan produktif optimal di pagi hari.', tidur:'21:00–22:30', fokus:'08:00–13:00', olahraga:'07:00–10:00' },
-  bear: { animal:'bear', name:'🐻 BERUANG', sub:'Intermediate Chronotype', badge:'Intermediate', badgeClass:'bear', about:'Ritme biologis Anda selaras dengan matahari (~50% populasi). Energi terbaik berada di pertengahan hari.', tidur:'23:00–00:00', fokus:'10:00–14:00', olahraga:'10:00–12:00' },
-  wolf: { animal:'wolf', name:'🐺 SERIGALA', sub:'Late Chronotype', badge:'Night Owl', badgeClass:'wolf', about:'Jam biologis Anda bertipe malam. Otak dan kreativitas bekerja paling tajam selepas tengah hari.', tidur:'01:00–02:00', fokus:'13:00–18:00', olahraga:'17:00–20:00' },
-  wolfEx: { animal:'wolf', name:'🐺 SERIGALA', sub:'Extremely Late Chronotype', badge:'EXTREMELY LATE', badgeClass:'wolf', about:'Anda berada di spektrum sirkadian ujung malam. Memiliki pola pemulihan yang sangat mundur dari tatanan sosial.', tidur:'02:30–04:00', fokus:'15:00–20:00', olahraga:'18:00–21:00' }
+  lionEx: {
+    animal:'lion', name:'🦁 SINGA', sub:'Extremely Early Chronotype', badge:'EXTREMELY EARLY', badgeClass:'lion',
+    about:'Kamu berada di ujung paling awal spektrum chronotype — hanya sekitar 5% populasi. Energi puncak sangat pagi (07:00–11:00), dan kamu mungkin sulit bertahan hingga larut malam bahkan di hari bebas. Ini bawaan biologis, bukan pilihan gaya hidup.',
+    tidur:'19:30–21:00', fokus:'07:00–11:00', olahraga:'06:00–08:00'
+  },
+  lion: {
+    animal:'lion', name:'🦁 SINGA', sub:'Early Chronotype', badge:'Early Bird', badgeClass:'lion',
+    about:'Jam biologismu lebih awal dari mayoritas populasi. Kamu cenderung mudah bangun pagi, energi puncak di pagi–siang hari, dan ngantuk lebih awal di malam hari. Tubuhmu memang dirancang untuk "pagi hari".',
+    tidur:'21:00–22:30', fokus:'08:00–13:00', olahraga:'07:00–10:00'
+  },
+  bear: {
+    animal:'bear', name:'🐻 BERUANG', sub:'Intermediate Chronotype', badge:'Intermediate', badgeClass:'bear',
+    about:'Ritme biologismu selaras dengan siklus matahari — ini chronotype mayoritas populasi (~50%). Kamu butuh sedikit "pemanasan" di pagi hari sebelum performa puncak, dan energi terbaikmu ada di pertengahan hari.',
+    tidur:'23:00–00:00', fokus:'10:00–14:00', olahraga:'10:00–12:00'
+  },
+  wolf: {
+    animal:'wolf', name:'🐺 SERIGALA', sub:'Late Chronotype', badge:'Night Owl', badgeClass:'wolf',
+    about:'Jam biologismu lebih lambat dari mayoritas. Kamu cenderung sulit bangun pagi, energi puncak baru muncul di sore–malam hari, dan otak paling tajam setelah jam 12 siang. Ini bukan kemalasan — ini genetik dan hormonal.',
+    tidur:'01:00–02:00', fokus:'13:00–18:00', olahraga:'17:00–20:00'
+  },
+  wolfEx: {
+    animal:'wolf', name:'🐺 SERIGALA', sub:'Extremely Late Chronotype', badge:'EXTREMELY LATE', badgeClass:'wolf',
+    about:'Kamu berada di ujung paling malam spektrum chronotype — sekitar 5% populasi. Ritme sirkadianmu jauh tertinggal dari "standar sosial". Ini sering disalahartikan sebagai kemalasan, padahal ada dasar biologis yang kuat.',
+    tidur:'02:30–04:00', fokus:'15:00–20:00', olahraga:'18:00–21:00'
+  }
 };
 
 function getTime(hId, mId) {
@@ -500,6 +579,7 @@ function hoursToTime(h) {
 }
 
 function durFmt(h) {
+  if (h <= 0) return '0 jam';
   const totalMin = Math.round(h * 60);
   const hh = Math.floor(totalMin / 60);
   const mm = totalMin % 60;
@@ -511,14 +591,32 @@ function circularDiff(a, b) {
   return Math.min(raw, 24 - raw);
 }
 
+// ── CALCULATION ENGINE (Source 1) ───────────────────────────────────────────
 function hitungMCTQ() {
-  document.getElementById('errorBox').style.display = 'none';
-  let soW = getTime('soW_h','soW_m'); let seW = getTime('seW_h','seW_m');
-  let soF = getTime('soF_h','soF_m'); let seF = getTime('seF_h','seF_m');
+  const errBox = document.getElementById('errorBox');
+  const softAlert = document.getElementById('softAlert');
+  errBox.style.display = 'none';
+  softAlert.style.display = 'none';
+
+  const namaInput = document.getElementById('nama').value.trim();
+  const usiaInput = document.getElementById('usia').value.trim();
+
+  // Validasi Soft Notification Nama & Usia
+  if (!namaInput || !usiaInput) {
+    softAlert.innerHTML = `🔔 <strong>Pemberitahuan:</strong> Mohon isi <strong>Nama</strong> dan <strong>Usia</strong> terlebih dahulu agar hasil analisis cetak kartu dapat terisi dengan lengkap.`;
+    softAlert.style.display = 'block';
+    softAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  let soW = getTime('soW_h','soW_m');
+  let seW = getTime('seW_h','seW_m');
+  let soF = getTime('soF_h','soF_m');
+  let seF = getTime('seF_h','seF_m');
 
   if (soW === null || seW === null || soF === null || seF === null) {
-    document.getElementById('errorMsg').textContent = 'Mohon isi semua kolom jam dengan benar.';
-    document.getElementById('errorBox').style.display = 'block';
+    document.getElementById('errorMsg').textContent = 'Semua kolom jam wajib diisi dengan angka yang valid (jam 0–23, menit 0–59).';
+    errBox.style.display = 'block';
     return;
   }
 
@@ -526,39 +624,74 @@ function hitungMCTQ() {
   const wd = 7 - fd;
   const noAlarmWork = document.getElementById('alarmW').value === 'no';
 
-  if (seW <= soW) seW += 24; if (seF <= soF) seF += 24;
-  const sdW = seW - soW; const sdF = seF - soF;
+  if (seW <= soW) seW += 24;
+  if (seF <= soF) seF += 24;
+
+  const sdW = seW - soW;
+  const sdF = seF - soF;
   const sdWeek = (sdW * wd + sdF * fd) / 7;
+
+  // Logika Evaluasi Sleep Debt Singkat Engine Source 1
   const debt = noAlarmWork ? 0 : Math.max(0, sdWeek - sdW);
 
   const msfRaw = soF + sdF / 2;
   const msfSc = msfRaw - (debt / 2);
   const msw = soW + sdW / 2;
+
   const sjl = circularDiff(((msfSc % 24) + 24) % 24, ((msw % 24) + 24) % 24);
   const msfH = ((msfSc % 24) + 24) % 24;
 
-  let cType = 'bear';
-  if (msfH < 1.5) cType = 'lionEx'; else if (msfH < 4.0) cType = 'lion';
-  else if (msfH < 6.0) cType = 'bear'; else if (msfH < 7.5) cType = 'wolf'; else cType = 'wolfEx';
+  let cType;
+  if (msfH < 1.5)       cType = 'lionEx';
+  else if (msfH < 4.0)  cType = 'lion';
+  else if (msfH < 6.0)  cType = 'bear';
+  else if (msfH < 7.5)  cType = 'wolf';
+  else                  cType = 'wolfEx';
 
   const cd = chronoData[cType];
-  let sjlColor = 'var(--sjl-low)', sjlStatusTxt = 'RENDAH ✅', sjlAnalogy = 'Sinkronisasi stabil tanpa kelelahan aviasi biologis.';
-  if(sjl >= 1 && sjl < 2) { sjlColor = 'var(--sjl-mid)'; sjlStatusTxt = 'SEDANG ⚠️'; sjlAnalogy = 'Pergeseran sirkadian setara 1-2 zona waktu harian.'; }
-  else if(sjl >= 2) { sjlColor = 'var(--sjl-high)'; sjlStatusTxt = 'TINGGI ❌'; sjlAnalogy = 'Tubuh mengalami krisis desinkronisasi sosial akut.'; }
 
-  const nama = document.getElementById('nama').value || 'Klien';
-  const usia = document.getElementById('usia').value;
+  // Tingkat Keparahan Deskripsi SJL Engine Source 1
+  let sjlColor, sjlStatusTxt, sjlAnalogy, sjlDetail;
+  if (sjl < 1) {
+    sjlColor = 'var(--sjl-low)';
+    sjlStatusTxt = 'RENDAH ✅';
+    sjlAnalogy = 'Seperti tetap di kota yang sama setiap hari — tidak ada jet lag.';
+    sjlDetail = 'Jam biologis dan jadwal sosialmu selaras. Kondisi ideal — tubuhmu tidak perlu "menyesuaikan diri" setiap awal minggu.';
+  } else if (sjl < 2) {
+    sjlColor = 'var(--sjl-mid)';
+    sjlStatusTxt = 'SEDANG ⚠️';
+    sjlAnalogy = 'Ibarat pindah timezone WIB → WITA setiap Senin, balik lagi setiap Jumat.';
+    sjlDetail = 'Ada misalignment antara jam biologis dan jadwal sosial. Ini bisa mempengaruhi metabolisme, mood, dan energi awal minggu.';
+  } else if (sjl < 3) {
+    sjlColor = 'var(--sjl-high)';
+    sjlStatusTxt = 'TINGGI ❌';
+    sjlAnalogy = 'Ibarat pindah timezone WIB → WIT (Jakarta → Jayapura) setiap Senin pagi.';
+    sjlDetail = 'Social jet lag signifikan. Riset menunjukkan SJL >2 jam berkorelasi dengan peningkatan risiko metabolik, mood tidak stabil, dan penurunan performa kognitif.';
+  } else {
+    sjlColor = 'var(--sjl-high)';
+    sjlStatusTxt = 'SANGAT TINGGI ❌';
+    sjlAnalogy = 'Ibarat terbang Jakarta → Tokyo setiap Senin pagi, balik setiap Jumat.';
+    sjlDetail = 'Social jet lag ekstrem. Level misalignment yang sangat serius. Perlu strategi penyesuaian bertahap.';
+  }
+
+  const specPct = Math.min(Math.max((msfH / 8) * 100, 3), 97);
+
   const coach = document.getElementById('coach').value;
   const tgl = document.getElementById('tgl').value;
   const tglFmt = tgl ? new Date(tgl).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
 
-  document.getElementById('rNama').textContent = nama;
-  document.getElementById('rSub').textContent = `${usia ? 'Usia ' + usia + ' thn · ' : ''}${coach ? 'Coach: ' + coach + ' · ' : ''}${tglFmt}`;
+  // Tampilkan Nama & Usia pada Hasil Akhir Result Card
+  document.getElementById('rNama').textContent = namaInput;
+  let subParts = [];
+  subParts.push('Usia ' + usiaInput + ' tahun');
+  if (coach) subParts.push('Coach: ' + coach);
+  subParts.push(tglFmt);
+  document.getElementById('rSub').textContent = subParts.join(' · ');
 
   document.getElementById('rSdW').textContent = durFmt(sdW);
   document.getElementById('rSdF').textContent = durFmt(sdF);
   document.getElementById('rSdAvg').textContent = durFmt(sdWeek);
-  document.getElementById('rDebt').textContent = durFmt(debt);
+  document.getElementById('rDebt').textContent = noAlarmWork ? '0 jam (natural)' : durFmt(debt);
   document.getElementById('rMsf').textContent = hoursToTime(msfSc);
   document.getElementById('rMsw').textContent = hoursToTime(msw);
 
@@ -577,8 +710,9 @@ function hitungMCTQ() {
   document.getElementById('sjlHrs').textContent = durFmt(sjl);
   document.getElementById('sjlStatus').textContent = sjlStatusTxt;
   document.getElementById('sjlAnalogy').textContent = sjlAnalogy;
+  document.getElementById('sjlDetail').textContent = sjlDetail;
 
-  document.getElementById('specPtr').style.left = Math.min(Math.max((msfH / 8) * 100, 3), 97) + '%';
+  document.getElementById('specPtr').style.left = specPct + '%';
   document.getElementById('specLabel').textContent = hoursToTime(msfSc);
 
   document.getElementById('resultSection').style.display = 'block';
@@ -588,8 +722,11 @@ function hitungMCTQ() {
 function resetForm() {
   document.getElementById('resultSection').style.display = 'none';
   document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('softAlert').style.display = 'none';
   window.scrollTo({top:0, behavior:'smooth'});
 }
+
+document.getElementById('tgl').valueAsDate = new Date();
 </script>
 </body>
 </html>
