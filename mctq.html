@@ -160,9 +160,14 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  flex-wrap: wrap;
+}
+.note-box span:last-child {
+  flex: 1;
+  min-width: 200px; /* Memberikan batas minimum sebelum patah baris */
 }
 .note-box span { color: var(--teal-light); font-size: 14px; flex-shrink: 0; }
-
+  
 .error-box {
   margin: 12px 40px 0;
   background: #fff0f0;
