@@ -27,6 +27,76 @@
     padding: 0 0 60px 0;
   }
 
+  /* KONTROL EDIT PRINT OUT KHUSUS */
+  @media print {
+    /* Sembunyikan header, info box, identitas form, komponen soal, dan tombol utama saat dicetak */
+    .no-print, .header, .intro-box, .identity-section, .component, .actions {
+      display: none !important;
+    }
+    @page {
+      size: A4;
+      margin: 10mm 15mm;
+    }
+    body { background: white !important; color: #0e181d !important; padding: 0 !important; }
+    
+    /* Memaksa elemen hasil dan ringkasan jawaban untuk selalu muncul dan rapi di kertas */
+    .score-panel {
+      margin: 0 0 20px 0 !important;
+      box-shadow: none !important;
+      border: 1px solid var(--cream2) !important;
+      background: var(--dark) !important;
+      display: block !important;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .guide {
+      margin: 20px 0 0 0 !important;
+      display: block !important;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .footer {
+      margin: 20px 0 0 0 !important;
+      display: block !important;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .print-summary-card {
+      display: block !important;
+    }
+    .summary-item-print {
+      font-size: 11px !important;
+      line-height: 1.5 !important;
+      padding: 5px 0 !important;
+      border-bottom: 1px dashed var(--cream2) !important;
+    }
+  }
+
+  /* Gaya Default Ringkasan Hanya Cetak (Sembunyi di Layar Browser) */
+  .print-summary-card {
+    display: none;
+    background: var(--white);
+    border-radius: 12px;
+    border: 1px solid var(--cream2);
+    padding: 24px 28px;
+    margin-bottom: 24px;
+  }
+  .print-summary-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 14px;
+  }
+  .print-summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 20px;
+  }
+  .summary-item-print { font-size: 13px; color: var(--dark); }
+  .summary-item-print strong { color: var(--teal-dark); }
+
   /* HEADER */
   .header {
     background: var(--dark);
@@ -42,6 +112,22 @@
     height: 4px;
     background: linear-gradient(90deg, var(--teal), var(--teal-light), var(--teal));
   }
+  /* Pembungkus Header Internal untuk Penempatan Logo */
+  .header-inner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .header-content { flex: 1; }
+  .header-logo {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .header-logo svg { width: 100%; height: 100%; }
+
   .header-badge {
     display: inline-block;
     background: var(--teal);
@@ -277,7 +363,7 @@
 
   /* SKOR PANEL */
   .score-panel {
-    margin: 32px 40px 0;
+    margin: 24px 40px 0; /* Menyesuaikan margin setelah pemindahan posisi tombol */
     background: var(--dark);
     border-radius: 12px;
     padding: 28px 32px;
@@ -395,7 +481,7 @@
   .badge-poor { background: #fde8d8; color: #9b4820; }
   .badge-bad { background: #fdd; color: #8b1a1a; }
 
-  /* TOMBOL */
+  /* TOMBOL COCHING LAB */
   .actions {
     margin: 28px 40px 0;
     display: flex;
@@ -440,6 +526,7 @@
       margin-left: 16px; margin-right: 16px;
     }
     .header { padding: 28px 20px 24px; }
+    .header-inner { flex-direction: column-reverse; }
     .component-body, .guide-body { padding: 16px; }
     .q5-item { grid-template-columns: 1fr; }
   }
@@ -448,9 +535,27 @@
 <body>
 
 <div class="header">
-  <div class="header-badge">Synthesis Coaching Lab</div>
-  <h1>Pittsburgh Sleep Quality <span>Index</span></h1>
-  <p>Instrumen penilaian kualitas tidur selama 1 bulan terakhir. Isi dengan jujur sesuai kebiasaan tidur Anda yang sebenarnya.</p>
+  <div class="header-inner">
+    <div class="header-content">
+      <div class="header-badge">Synthesis Coaching Lab</div>
+      <h1>Pittsburgh Sleep Quality <span>Index</span></h1>
+      <p>Instrumen penilaian kualitas tidur selama 1 month terakhir. Isi dengan jujur sesuai kebiasaan tidur Anda yang sebenarnya.</p>
+    </div>
+    <div class="header-logo">
+      <svg viewBox="0 0 342 488" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+        <g transform="matrix(1,0,0,1,-214.223845,-2080.871108)">
+          <g transform="matrix(0.997224,0,0,0.997224,-76.830008,-247.417603)">
+            <g transform="matrix(-0.536959,-0.843609,0.843609,-0.536959,-585.980542,4447.151703)">
+              <path d="M1078.51,1876.296C1114.841,1863.327 1142.066,1873.902 1153.076,1899.331C1106.362,1907.407 977.637,1985.486 976.981,1985.773C920.97,2010.303 829.729,2007.475 787.378,1924.044C758.421,1866.998 769.796,1811.032 801.641,1764.288C831.292,1720.764 879.232,1685.611 925.921,1666.608L943.588,1710.014C904.897,1725.762 864.943,1754.605 840.371,1790.673C817.993,1823.523 808.817,1862.742 829.167,1902.832C857.62,1958.884 919.212,1959.456 957.245,1943.25L1078.51,1876.296Z" style="fill:rgb(47,151,148);"/>
+            </g>
+            <g transform="matrix(0.5373,0.843391,-0.843391,0.5373,1511.370449,710.822435)">
+              <path d="M1078.51,1876.296C1114.841,1863.327 1142.066,1873.902 1153.076,1899.331C1106.362,1907.407 977.637,1985.486 976.981,1985.773C920.97,2010.303 829.729,2007.475 787.378,1924.044C758.421,1866.998 769.796,1811.032 801.641,1764.288C831.292,1720.764 879.232,1685.611 925.921,1666.608L943.588,1710.014C904.897,1725.762 864.943,1754.605 840.371,1790.673C817.993,1823.523 808.817,1862.742 829.167,1902.832C857.62,1958.884 919.212,1959.456 957.245,1943.25L1078.51,1876.296Z" style="fill:rgb(47,151,148);"/>
+            </g>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </div>
 </div>
 
 <div class="intro-box">
@@ -463,11 +568,11 @@
   <div class="identity-grid">
     <div class="field-group">
       <label>Nama</label>
-      <input type="text" id="nama" placeholder="Nama lengkap">
+      <input type="text" id="nama" placeholder="Nama lengkap" required>
     </div>
     <div class="field-group">
       <label>Usia</label>
-      <input type="number" id="usia" placeholder="Tahun">
+      <input type="number" id="usia" placeholder="Tahun" required>
     </div>
     <div class="field-group">
       <label>Tanggal Pengisian</label>
@@ -488,7 +593,7 @@
   </div>
   <div class="component-body">
     <div class="question">
-      <div class="q-label">Selama sebulan terakhir, bagaimana Anda menilai <strong>kualitas tidur</strong> Anda secara keseluruhan?</div>
+      <div class="q-label" id="lbl_c1">Selama sebulan terakhir, bagaimana Anda menilai <strong>kualitas tidur</strong> Anda secara keseluruhan?</div>
       <div class="radio-group" id="c1">
         <label class="radio-option"><input type="radio" name="c1" value="0"><div class="radio-dot"></div><span class="radio-text">Sangat baik</span><span class="radio-score">0</span></label>
         <label class="radio-option"><input type="radio" name="c1" value="1"><div class="radio-dot"></div><span class="radio-text">Cukup baik</span><span class="radio-score">1</span></label>
@@ -507,11 +612,11 @@
   </div>
   <div class="component-body">
     <div class="question">
-      <div class="q-label">Selama sebulan terakhir, biasanya berapa menit yang Anda butuhkan untuk <strong>mulai tertidur</strong> setelah berbaring di malam hari?</div>
+      <div class="q-label" id="lbl_q2a">Selama sebulan terakhir, biasanya berapa menit yang Anda butuhkan untuk <strong>mulai tertidur</strong> setelah berbaring di malam hari?</div>
       <input type="number" class="q-input wide" id="q2a" placeholder="menit" min="0">
     </div>
     <div class="question">
-      <div class="q-label">Selama sebulan terakhir, seberapa sering Anda <strong>tidak bisa tidur dalam 30 menit</strong> setelah berbaring?</div>
+      <div class="q-label" id="lbl_q2b">Selama sebulan terakhir, seberapa sering Anda <strong>tidak bisa tidur dalam 30 menit</strong> setelah berbaring?</div>
       <div class="radio-group" id="q2b">
         <label class="radio-option"><input type="radio" name="q2b" value="0"><div class="radio-dot"></div><span class="radio-text">Tidak pernah selama sebulan terakhir</span><span class="radio-score">0</span></label>
         <label class="radio-option"><input type="radio" name="q2b" value="1"><div class="radio-dot"></div><span class="radio-text">Kurang dari 1x seminggu</span><span class="radio-score">1</span></label>
@@ -530,7 +635,7 @@
   </div>
   <div class="component-body">
     <div class="question">
-      <div class="q-label">Selama sebulan terakhir, biasanya berapa jam Anda <strong>benar-benar tidur</strong> per malam? (bisa berbeda dari jam yang Anda habiskan di tempat tidur)</div>
+      <div class="q-label" id="lbl_q3">Selama sebulan terakhir, biasanya berapa jam Anda <strong>benar-benar tidur</strong> per malam? (bisa berbeda dari jam yang Anda habiskan di tempat tidur)</div>
       <input type="number" class="q-input wide" id="q3" placeholder="jam" min="0" max="24" step="0.5">
     </div>
   </div>
@@ -544,11 +649,11 @@
   </div>
   <div class="component-body">
     <div class="question">
-      <div class="q-label">Biasanya jam berapa Anda <strong>naik ke tempat tidur</strong> di malam hari?</div>
+      <div class="q-label" id="lbl_q4a">Biasanya jam berapa Anda <strong>naik ke tempat tidur</strong> di malam hari?</div>
       <input type="time" class="q-input wide" id="q4a">
     </div>
     <div class="question">
-      <div class="q-label">Biasanya jam berapa Anda <strong>bangun dari tempat tidur</strong> di pagi hari?</div>
+      <div class="q-label" id="lbl_q4b">Biasanya jam berapa Anda <strong>bangun dari tempat tidur</strong> di pagi hari?</div>
       <input type="time" class="q-input wide" id="q4b">
     </div>
     <div class="q-sub">Efisiensi = (jam tidur ÷ jam di tempat tidur) × 100%. Dihitung otomatis.</div>
@@ -564,16 +669,16 @@
   <div class="component-body">
     <div class="q-label" style="margin-bottom:14px">Seberapa sering selama sebulan terakhir Anda mengalami masalah tidur karena hal-hal berikut?</div>
     <div class="q5-grid">
-      <div class="q5-item"><span class="q5-text">a. Tidak bisa tidur dalam 30 menit</span><select class="q5-select" id="q5a"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text">b. Terbangun di tengah malam atau dini hari</span><select class="q5-select" id="q5b"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text">c. Harus bangun untuk ke kamar mandi</span><select class="q5-select" id="q5c"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text">d. Tidak bisa bernapas dengan nyaman</span><select class="q5-select" id="q5d"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text">e. Batuk atau mendengkur keras</span><select class="q5-select" id="q5e"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text">f. Merasa kedinginan</span><select class="q5-select" id="q5f"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text">g. Merasa kepanasan</span><select class="q5-select" id="q5g"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text">h. Mengalami mimpi buruk</span><select class="q5-select" id="q5h"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text">i. Merasakan nyeri</span><select class="q5-select" id="q5i"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text">j. Alasan lain yang mengganggu tidur</span><select class="q5-select" id="q5j"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
+      <div class="q5-item"><span class="q5-text" id="lbl_q5a">a. Tidak bisa tidur dalam 30 menit</span><select class="q5-select" id="q5a"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
+      <div class="q5-item"><span class="q5-text" id="lbl_q5b">b. Terbangun di tengah malam atau dini hari</span><select class="q5-select" id="q5b"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
+      <div class="q5-item"><span class="q5-text" id="lbl_q5c">c. Harus bangun untuk ke kamar mandi</span><select class="q5-select" id="q5c"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
+      <div class="q5-item"><span class="q5-text" id="lbl_q5d">d. Tidak bisa bernapas dengan nyaman</span><select class="q5-select" id="q5d"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
+      <div class="q5-item"><span class="q5-text" id="lbl_q5e">e. Batuk atau mendengkur keras</span><select class="q5-select" id="q5e"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
+      <div class="q5-item"><span class="q5-text" id="lbl_q5f">f. Merasa kedinginan</span><select class="q5-select" id="q5f"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
+      <div class="q5-item"><span class="q5-text" id="lbl_q5g">g. Merasa kepanasan</span><select class="q5-select" id="q5g"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
+      <div class="q5-item"><span class="q5-text" id="lbl_q5h">h. Mengalami mimpi buruk</span><select class="q5-select" id="q5h"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
+      <div class="q5-item"><span class="q5-text" id="lbl_q5i">i. Merasakan nyeri</span><select class="q5-select" id="q5i"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
+      <div class="q5-item"><span class="q5-text" id="lbl_q5j">j. Alasan lain yang mengganggu tidur</span><select class="q5-select" id="q5j"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
     </div>
   </div>
 </div>
@@ -586,8 +691,8 @@
   </div>
   <div class="component-body">
     <div class="question">
-      <div class="q-label">Seberapa sering selama sebulan terakhir Anda mengonsumsi <strong>obat tidur</strong> (resep dokter maupun tanpa resep)?</div>
-      <div class="radio-group">
+      <div class="q-label" id="lbl_q6">Seberapa sering selama sebulan terakhir Anda mengonsumsi <strong>obat tidur</strong> (resep dokter maupun tanpa resep)?</div>
+      <div class="radio-group" id="c6_group">
         <label class="radio-option"><input type="radio" name="c6" value="0"><div class="radio-dot"></div><span class="radio-text">Tidak pernah selama sebulan terakhir</span><span class="radio-score">0</span></label>
         <label class="radio-option"><input type="radio" name="c6" value="1"><div class="radio-dot"></div><span class="radio-text">Kurang dari 1x seminggu</span><span class="radio-score">1</span></label>
         <label class="radio-option"><input type="radio" name="c6" value="2"><div class="radio-dot"></div><span class="radio-text">1–2x seminggu</span><span class="radio-score">2</span></label>
@@ -605,8 +710,8 @@
   </div>
   <div class="component-body">
     <div class="question">
-      <div class="q-label">Seberapa sering selama sebulan terakhir Anda mengalami <strong>kesulitan untuk tetap terjaga</strong> saat berkendara, makan, atau beraktivitas sosial?</div>
-      <div class="radio-group">
+      <div class="q-label" id="lbl_c7a">Seberapa sering selama sebulan terakhir Anda mengalami <strong>kesulitan untuk tetap terjaga</strong> saat berkendara, makan, atau beraktivitas sosial?</div>
+      <div class="radio-group" id="c7a_group">
         <label class="radio-option"><input type="radio" name="c7a" value="0"><div class="radio-dot"></div><span class="radio-text">Tidak pernah selama sebulan terakhir</span><span class="radio-score">0</span></label>
         <label class="radio-option"><input type="radio" name="c7a" value="1"><div class="radio-dot"></div><span class="radio-text">Kurang dari 1x seminggu</span><span class="radio-score">1</span></label>
         <label class="radio-option"><input type="radio" name="c7a" value="2"><div class="radio-dot"></div><span class="radio-text">1–2x seminggu</span><span class="radio-score">2</span></label>
@@ -614,14 +719,29 @@
       </div>
     </div>
     <div class="question" style="margin-top:20px">
-      <div class="q-label">Seberapa besar masalah tidur Anda memengaruhi <strong>semangat atau antusiasme</strong> dalam menyelesaikan pekerjaan?</div>
-      <div class="radio-group">
+      <div class="q-label" id="lbl_c7b">Seberapa besar masalah tidur Anda memengaruhi <strong>semangat atau antusiasme</strong> dalam menyelesaikan pekerjaan?</div>
+      <div class="radio-group" id="c7b_group">
         <label class="radio-option"><input type="radio" name="c7b" value="0"><div class="radio-dot"></div><span class="radio-text">Tidak ada masalah sama sekali</span><span class="radio-score">0</span></label>
         <label class="radio-option"><input type="radio" name="c7b" value="1"><div class="radio-dot"></div><span class="radio-text">Sedikit bermasalah</span><span class="radio-score">1</span></label>
         <label class="radio-option"><input type="radio" name="c7b" value="2"><div class="radio-dot"></div><span class="radio-text">Cukup bermasalah</span><span class="radio-score">2</span></label>
         <label class="radio-option"><input type="radio" name="c7b" value="3"><div class="radio-dot"></div><span class="radio-text">Sangat bermasalah</span><span class="radio-score">3</span></label>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ACTIONS — SEKARANG BERADA DI ATAS PANEL HASIL SESUAI PERMINTAAN -->
+<div class="actions no-print">
+  <button class="btn btn-primary" onclick="hitungSkor()">Hitung Skor</button>
+  <button class="btn btn-secondary" onclick="resetForm()">Reset Form</button>
+  <button class="btn btn-secondary" onclick="window.print()">Cetak / PDF</button>
+</div>
+
+<!-- RINGKASAN JAWABAN HARFIAH (KHUSUS UNTUK CETAK/PDF — TERSEMBUNYI DI SCREEN) -->
+<div class="print-summary-card" id="summaryPrintBlock">
+  <div class="print-summary-title">Ringkasan Berkas & Lembar Jawaban Klien</div>
+  <div class="print-summary-grid" id="summaryTargetGrid">
+    <!-- Konten jawaban literal akan diletakkan di sini secara otomatis oleh skrip -->
   </div>
 </div>
 
@@ -676,26 +796,43 @@
   </div>
 </div>
 
-<!-- ACTIONS -->
-<div class="actions">
-  <button class="btn btn-primary" onclick="hitungSkor()">Hitung Skor</button>
-  <button class="btn btn-secondary" onclick="resetForm()">Reset Form</button>
-  <button class="btn btn-secondary" onclick="window.print()">Cetak / PDF</button>
-</div>
-
 <div class="footer">
   <p>Pittsburgh Sleep Quality Index (PSQI) — Buysse et al., 1989 | Diadaptasi ke Bahasa Indonesia untuk penggunaan coaching</p>
   <p style="margin-top:4px">Synthesis Coaching Lab · Instrumen ini bukan pengganti diagnosis klinis</p>
 </div>
 
 <script>
+// Fungsi bantu interaktivitas styling radio button bawaan asli
+document.querySelectorAll('.radio-group').forEach(group => {
+  group.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      group.querySelectorAll('.radio-option').forEach(opt => {
+        opt.style.borderColor = 'var(--cream2)';
+        opt.style.background = 'var(--cream)';
+      });
+      if(radio.checked) {
+        radio.parentElement.style.borderColor = 'var(--teal)';
+        radio.parentElement.style.background = 'rgba(47,151,148,0.06)';
+      }
+    });
+  });
+});
+
 function getRadioVal(name) {
   const el = document.querySelector(`input[name="${name}"]:checked`);
   return el ? parseInt(el.value) : null;
 }
+function getRadioText(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.parentElement.querySelector('.radio-text').textContent : '—';
+}
 function getSelectVal(id) {
   const el = document.getElementById(id);
   return el && el.value !== '' ? parseInt(el.value) : null;
+}
+function getSelectText(id) {
+  const el = document.getElementById(id);
+  return el && el.value !== '' ? el.options[el.selectedIndex].text : '—';
 }
 function getInputVal(id) {
   const el = document.getElementById(id);
@@ -703,6 +840,23 @@ function getInputVal(id) {
 }
 
 function hitungSkor() {
+  const nama = document.getElementById('nama').value.trim();
+  const usia = document.getElementById('usia').value.trim();
+
+  // VALIDASI SOFT ALERT UNTUK NAMA DAN USIA
+  if (!nama) {
+    document.getElementById('interpretation').innerHTML = '⚠️ <span style="color: #e74c3c; font-weight: 600;">Nama belum diisi.</span> Periksa kembali data klien Anda.';
+    document.getElementById('scorePanel').style.display = 'block';
+    document.getElementById('scorePanel').scrollIntoView({behavior: 'smooth'});
+    return;
+  }
+  
+  if (!usia) {
+    document.getElementById('interpretation').innerHTML = '⚠️ <span style="color: #e74c3c; font-weight: 600;">Usia belum diisi.</span> Periksa kembali data klien Anda.';
+    document.getElementById('scorePanel').style.display = 'block';
+    document.getElementById('scorePanel').scrollIntoView({behavior: 'smooth'});
+    return;
+  }
   // C1
   const c1 = getRadioVal('c1');
 
@@ -728,6 +882,7 @@ function hitungSkor() {
   const jamMasuk = document.getElementById('q4a').value;
   const jamBangun = document.getElementById('q4b').value;
   let c4 = null;
+  let efisiensiPersen = 0;
   if (tidurJam !== null && jamMasuk && jamBangun) {
     const [h1, m1] = jamMasuk.split(':').map(Number);
     const [h2, m2] = jamBangun.split(':').map(Number);
@@ -736,6 +891,7 @@ function hitungSkor() {
     if (bangun <= masuk) bangun += 24 * 60;
     const diTempat = (bangun - masuk) / 60;
     const efisiensi = (tidurJam / diTempat) * 100;
+    efisiensiPersen = Math.round(efisiensi);
     c4 = efisiensi >= 85 ? 0 : efisiensi >= 75 ? 1 : efisiensi >= 65 ? 2 : 3;
   }
 
@@ -788,6 +944,39 @@ function hitungSkor() {
     interp = `<strong>Gangguan Tidur Serius</strong> — Skor ${total}/21. Sangat disarankan evaluasi lebih mendalam. Pertimbangkan rujukan ke dokter atau spesialis tidur.`;
   }
   document.getElementById('interpretation').innerHTML = interp;
+
+  // PROSES DATA JAWABAN LITERAL KHUSUS UNTUK PRINT OUT SUMMARY
+  const namaKlien = document.getElementById('nama').value || '—';
+  const usiaKlien = document.getElementById('usia').value || '—';
+  const tanggalIsi = document.getElementById('tanggal').value;
+  const tglFmt = tanggalIsi ? new Date(tanggalIsi).toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'}) : '—';
+  const namaCoach = document.getElementById('coach').value || '—';
+
+  let summaryHtml = `
+    <div class="summary-item-print" style="grid-column: 1 / -1; font-weight: 600; border-bottom: 2px solid var(--cream2); padding-bottom: 8px; margin-bottom: 6px;">
+      Nama Klien: <strong>${namaKlien}</strong> &nbsp;|&nbsp; Usia: <strong>${usiaKlien} thn</strong> &nbsp;|&nbsp; Coach: <strong>${namaCoach}</strong> &nbsp;|&nbsp; Tanggal: <strong>${tglFmt}</strong>
+    </div>
+    <div class="summary-item-print">1. Jam bersiap tidur: <strong>${jamMasuk || '—'}</strong></div>
+    <div class="summary-item-print">2. Jeda waktu terlelap: <strong>${menit || '0'} menit</strong></div>
+    <div class="summary-item-print">3. Jam terbangun pagi: <strong>${jamBangun || '—'}</strong></div>
+    <div class="summary-item-print">4. Durasi tidur efektif: <strong>${durasi || '0'} jam</strong> (Efisiensi: ${efisiensiPersen}%)</div>
+    <div class="summary-item-print">5. Kualitas tidur subjektif: <strong>${getRadioText('c1')}</strong></div>
+    <div class="summary-item-print">2b. Masalah tidur dalam 30 menit: <strong>${getRadioText('q2b')}</strong></div>
+    <div class="summary-item-print">5a. Tidak bisa lelap dlm 30 menit: <strong>${getSelectText('q5a')}</strong></div>
+    <div class="summary-item-print">5b. Terbangun tengah malam/dini hari: <strong>${getSelectText('q5b')}</strong></div>
+    <div class="summary-item-print">5c. Terbangun untuk ke kamar mandi: <strong>${getSelectText('q5c')}</strong></div>
+    <div class="summary-item-print">5d. Tidak bisa bernapas nyaman: <strong>${getSelectText('q5d')}</strong></div>
+    <div class="summary-item-print">5e. Batuk / mendengkur keras: <strong>${getSelectText('q5e')}</strong></div>
+    <div class="summary-item-print">5f. Merasa kedinginan: <strong>${getSelectText('q5f')}</strong></div>
+    <div class="summary-item-print">5g. Merasa kepanasan: <strong>${getSelectText('q5g')}</strong></div>
+    <div class="summary-item-print">5h. Mengalami mimpi buruk: <strong>${getSelectText('q5h')}</strong></div>
+    <div class="summary-item-print">5i. Merasakan nyeri fisik: <strong>${getSelectText('q5i')}</strong></div>
+    <div class="summary-item-print">5j. Alasan gangguan fisik/lingkungan lain: <strong>${getSelectText('q5j')}</strong></div>
+    <div class="summary-item-print">6. Penggunaan obat tidur: <strong>${getRadioText('c6')}</strong></div>
+    <div class="summary-item-print">7. Kesulitan terjaga / mengantuk siang: <strong>${getRadioText('c7a')}</strong></div>
+    <div class="summary-item-print">8. Gangguan antusiasme kerja: <strong>${getRadioText('c7b')}</strong></div>
+  `;
+  document.getElementById('summaryTargetGrid').innerHTML = summaryHtml;
 }
 
 function resetForm() {
@@ -795,12 +984,16 @@ function resetForm() {
   document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
   document.querySelectorAll('input[type="number"], input[type="text"], input[type="date"], input[type="time"]').forEach(i => i.value = '');
   document.querySelectorAll('select').forEach(s => s.value = '');
+  document.querySelectorAll('.radio-option').forEach(opt => {
+    opt.style.borderColor = 'var(--cream2)';
+    opt.style.background = 'var(--cream)';
+  });
   ['sc1','sc2','sc3','sc4','sc5','sc6','sc7'].forEach(id => document.getElementById(id).textContent = '—');
   document.getElementById('totalScore').textContent = '—';
   document.getElementById('interpretation').innerHTML = 'Isi seluruh pertanyaan lalu klik <strong>Hitung Skor</strong> untuk melihat interpretasi.';
+  document.getElementById('summaryTargetGrid').innerHTML = '';
 }
 
-// Set today's date
 document.getElementById('tanggal').valueAsDate = new Date();
 </script>
 </body>
