@@ -6,7 +6,7 @@
 <title>PSQI — Pittsburgh Sleep Quality Index</title>
 <link rel="icon" type="image/png" href="Logo.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
+<script type="text/javascript" src="http://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=ByUc8wOoXkObzTbCN_TS9T2lMMFw8rdCkXPYO467HBUU0kerM9hl5z5DlrSGqNCczcSCUl3Hl65RBbY0_4vvXw" charset="UTF-8"></script><style>
   :root {
     --teal: #2F9794;
     --teal-light: #3db8b4;
@@ -101,19 +101,18 @@
   /* HEADER */
   .header {
     background: var(--dark);
-    padding: 36px 40px 32px;
+    padding: 32px 40px 28px;
     position: relative;
     overflow: hidden;
   }
   .header::after {
     content: '';
     position: absolute;
-    bottom: -1px;
+    bottom: 0;
     left: 0; right: 0;
-    height: 4px;
+    height: 3px;
     background: linear-gradient(90deg, var(--teal), var(--teal-light), var(--teal));
   }
-  /* Pembungkus Header Internal untuk Penempatan Logo */
   .header-inner {
     display: flex;
     align-items: flex-start;
@@ -133,27 +132,29 @@
     display: inline-block;
     background: var(--teal);
     color: white;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 2px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
     text-transform: uppercase;
-    padding: 4px 12px;
+    padding: 3px 10px;
     border-radius: 2px;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
   }
   .header h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(24px, 5vw, 38px);
+    font-family: 'DM Sans', sans-serif;
+    font-size: clamp(20px, 4vw, 30px);
+    font-weight: 800;
     color: var(--cream);
-    line-height: 1.15;
-    margin-bottom: 8px;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
   }
-  .header h1 span { color: var(--teal-light); font-style: italic; }
+  .header h1 span { color: var(--teal-light); font-style: normal; }
   .header p {
     color: var(--muted);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 300;
-    max-width: 520px;
+    max-width: 480px;
     line-height: 1.6;
   }
 
@@ -265,6 +266,20 @@
     margin-bottom: 10px;
     font-style: italic;
   }
+  .inline-alert {
+    display: none;
+    margin-top: 10px;
+    max-width: 620px;
+    border: 1px solid #f1c4bf;
+    border-left: 4px solid #e74c3c;
+    border-radius: 6px;
+    background: #fff5f4;
+    color: #9f2f25;
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 10px 12px;
+  }
+  .inline-alert.is-visible { display: block; }
   .q-input {
     width: 100%;
     border: 1.5px solid var(--cream2);
@@ -540,7 +555,7 @@
     <div class="header-content">
       <div class="header-badge">Synthesis Coaching Lab</div>
       <h1>Pittsburgh Sleep Quality <span>Index</span></h1>
-      <p>Instrumen penilaian kualitas tidur selama 1 month terakhir. Isi dengan jujur sesuai kebiasaan tidur Anda yang sebenarnya.</p>
+      <p>Instrumen penilaian kualitas tidur selama 1 bulan terakhir. Isi dengan jujur sesuai kebiasaan tidur Anda yang sebenarnya.</p>
     </div>
     <div class="header-logo">
       <svg viewBox="0 0 342 488" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
@@ -658,6 +673,7 @@
       <input type="time" class="q-input wide" id="q4b">
     </div>
     <div class="q-sub">Efisiensi = (jam tidur ÷ jam di tempat tidur) × 100%. Dihitung otomatis.</div>
+    <div class="inline-alert" id="efficiencyAlert" aria-live="polite"></div>
   </div>
 </div>
 
@@ -803,7 +819,7 @@
 </div>
 
 <script>
-// Fungsi bantu interaktivitas styling radio button bawaan asli
+// 1. Interaktivitas UI Radio Button (Tetap dipertahankan)
 document.querySelectorAll('.radio-group').forEach(group => {
   group.querySelectorAll('input[type="radio"]').forEach(radio => {
     radio.addEventListener('change', () => {
@@ -819,6 +835,7 @@ document.querySelectorAll('.radio-group').forEach(group => {
   });
 });
 
+// Helper Functions
 function getRadioVal(name) {
   const el = document.querySelector(`input[name="${name}"]:checked`);
   return el ? parseInt(el.value) : null;
@@ -840,28 +857,77 @@ function getInputVal(id) {
   return el && el.value !== '' ? parseFloat(el.value) : null;
 }
 
+// 2. Optimasi Validasi Efisiensi & Durasi Logis
+function getSleepEfficiencyValidation() {
+  const tidurJam = getInputVal('q3');
+  const jamMasuk = document.getElementById('q4a').value;
+  const jamBangun = document.getElementById('q4b').value;
+
+  if (tidurJam === null || !jamMasuk || !jamBangun) {
+    return { valid: true, message: '', efficiencyPercent: 0 };
+  }
+
+  const [h1, m1] = jamMasuk.split(':').map(Number);
+  const [h2, m2] = jamBangun.split(':').map(Number);
+  let masuk = h1 * 60 + m1;
+  let bangun = h2 * 60 + m2;
+  
+  // Penanganan Lintas Tengah Malam (E.g., tidur jam 23:00, bangun jam 06:00)
+  if (bangun <= masuk) bangun += 24 * 60;
+
+  const diTempat = (bangun - masuk) / 60;
+
+  // Toleransi rounding mengambang JavaScript (0.01 jam) untuk mencegah bug presisi angka desimal
+  if (tidurJam > (diTempat + 0.01)) {
+    return {
+      valid: false,
+      message: `Durasi tidur nyata (${tidurJam} jam) tidak logis karena melebihi total waktu berbaring di kasur (${diTempat.toFixed(1)} jam). Silakan koreksi kembali Jam Tidur atau Jam Bangun Anda.`,
+      efficiencyPercent: 0
+    };
+  }
+
+  // Batasi persentase maksimal di angka 100%
+  const pct = Math.min(Math.round((tidurJam / diTempat) * 100), 100);
+
+  return { valid: true, message: '', efficiencyPercent: pct };
+}
+
+function updateEfficiencyAlert() {
+  const alert = document.getElementById('efficiencyAlert');
+  const validation = getSleepEfficiencyValidation();
+  alert.textContent = validation.valid ? '' : validation.message;
+  alert.classList.toggle('is-visible', !validation.valid);
+  return validation;
+}
+
+// 3. Fungsi Utama Utama Hitung Skor Final
 function hitungSkor() {
   const nama = document.getElementById('nama').value.trim();
   const usia = document.getElementById('usia').value.trim();
+  const targetInterpretation = document.getElementById('interpretation');
+  const targetScorePanel = document.getElementById('scorePanel');
 
-  // VALIDASI SOFT ALERT UNTUK NAMA DAN USIA
-  if (!nama) {
-    document.getElementById('interpretation').innerHTML = '⚠️ <span style="color: #e74c3c; font-weight: 600;">Nama belum diisi.</span> Periksa kembali data klien Anda.';
-    document.getElementById('scorePanel').style.display = 'block';
-    document.getElementById('scorePanel').scrollIntoView({behavior: 'smooth'});
+  // Validasi Soft Alert Data Klien
+  if (!nama || !usia) {
+    targetInterpretation.innerHTML = `⚠️ <span style="color: #e74c3c; font-weight: 600;">Data Klien Belum Lengkap.</span> Pastikan kolom Nama dan Usia sudah terisi sebelum melihat analisis kalkulasi skor.`;
+    targetScorePanel.scrollIntoView({behavior: 'smooth'});
     return;
   }
+
+  // Validasi Logika Waktu Tidur
+  const efficiencyValidation = updateEfficiencyAlert();
+  if (!efficiencyValidation.valid) {
+    document.getElementById('totalScore').textContent = '—';
+    targetInterpretation.innerHTML = `⚠️ ${efficiencyValidation.message}`;
+    return;
+  }
+
+  // --- KALKULASI SKOR PER KOMPONEN ---
   
-  if (!usia) {
-    document.getElementById('interpretation').innerHTML = '⚠️ <span style="color: #e74c3c; font-weight: 600;">Usia belum diisi.</span> Periksa kembali data klien Anda.';
-    document.getElementById('scorePanel').style.display = 'block';
-    document.getElementById('scorePanel').scrollIntoView({behavior: 'smooth'});
-    return;
-  }
-  // C1
+  // C1: Kualitas Tidur Subjektif
   const c1 = getRadioVal('c1');
 
-  // C2 — latensi
+  // C2: Latensi Tidur
   const menit = getInputVal('q2a');
   const q2b = getRadioVal('q2b');
   let c2score = null;
@@ -871,32 +937,21 @@ function hitungSkor() {
     c2score = sum === 0 ? 0 : sum <= 2 ? 1 : sum <= 4 ? 2 : 3;
   }
 
-  // C3 — durasi
+  // C3: Durasi Tidur
   const durasi = getInputVal('q3');
   let c3 = null;
   if (durasi !== null) {
-    c3 = durasi > 7 ? 0 : durasi >= 6 ? 1 : durasi >= 5 ? 2 : 3;
+    c3 = durasi >= 7 ? 0 : durasi >= 6 ? 1 : durasi >= 5 ? 2 : 3; // FIXED LOGIC: Sebelumnya ada typo tanda '>' pada kode baru
   }
 
-  // C4 — efisiensi
-  const tidurJam = getInputVal('q3');
-  const jamMasuk = document.getElementById('q4a').value;
-  const jamBangun = document.getElementById('q4b').value;
+  // C4: Efisiensi Tidur
   let c4 = null;
-  let efisiensiPersen = 0;
-  if (tidurJam !== null && jamMasuk && jamBangun) {
-    const [h1, m1] = jamMasuk.split(':').map(Number);
-    const [h2, m2] = jamBangun.split(':').map(Number);
-    let masuk = h1 * 60 + m1;
-    let bangun = h2 * 60 + m2;
-    if (bangun <= masuk) bangun += 24 * 60;
-    const diTempat = (bangun - masuk) / 60;
-    const efisiensi = (tidurJam / diTempat) * 100;
-    efisiensiPersen = Math.round(efisiensi);
-    c4 = efisiensi >= 85 ? 0 : efisiensi >= 75 ? 1 : efisiensi >= 65 ? 2 : 3;
+  let efisiensiPersen = efficiencyValidation.efficiencyPercent;
+  if (durasi !== null && document.getElementById('q4a').value && document.getElementById('q4b').value) {
+    c4 = efisiensiPersen >= 85 ? 0 : efisiensiPersen >= 75 ? 1 : efisiensiPersen >= 65 ? 2 : 3;
   }
 
-  // C5 — gangguan tidur
+  // C5: Gangguan Tidur
   const q5ids = ['q5a','q5b','q5c','q5d','q5e','q5f','q5g','q5h','q5i','q5j'];
   let q5vals = q5ids.map(id => getSelectVal(id));
   let c5 = null;
@@ -905,10 +960,10 @@ function hitungSkor() {
     c5 = sum === 0 ? 0 : sum <= 9 ? 1 : sum <= 18 ? 2 : 3;
   }
 
-  // C6
+  // C6: Penggunaan Obat Tidur
   const c6 = getRadioVal('c6');
 
-  // C7
+  // C7: Disfungsi di Siang Hari
   const c7a = getRadioVal('c7a');
   const c7b = getRadioVal('c7b');
   let c7 = null;
@@ -917,49 +972,49 @@ function hitungSkor() {
     c7 = sum === 0 ? 0 : sum <= 2 ? 1 : sum <= 4 ? 2 : 3;
   }
 
+  // Mapping Output Nilai ke UI Dashboard
   const scores = {c1, c2: c2score, c3, c4, c5, c6, c7};
   const labels = ['sc1','sc2','sc3','sc4','sc5','sc6','sc7'];
   const keys = ['c1','c2','c3','c4','c5','c6','c7'];
 
   keys.forEach((k, i) => {
-    const el = document.getElementById(labels[i]);
-    el.textContent = scores[k] !== null ? scores[k] : '?';
+    document.getElementById(labels[i]).textContent = scores[k] !== null ? scores[k] : '?';
   });
 
-  const allScores = Object.values(scores);
-  if (allScores.some(v => v === null)) {
+  // Cek Kelengkapan Isian Form Kuesioner
+  if (Object.values(scores).some(v => v === null)) {
     document.getElementById('totalScore').textContent = '—';
-    document.getElementById('interpretation').innerHTML = '⚠️ Ada komponen yang belum terisi lengkap. Periksa kembali semua pertanyaan.';
+    targetInterpretation.innerHTML = '⚠️ <strong>Komponen Kuesioner Belum Lengkap.</strong> Selesaikan seluruh pertanyaan dari nomor 1 sampai 7 untuk melihat akumulasi skor global.';
     return;
   }
 
-  const total = allScores.reduce((a,b) => a+b, 0);
+  // Menghitung Total Skor Akhir Global PSQI
+  const total = Object.values(scores).reduce((a,b) => a+b, 0);
   document.getElementById('totalScore').textContent = total;
 
+  // Output Interpretasi Klinis
   let interp = '';
   if (total <= 5) {
-    interp = `<strong>Kualitas Tidur Baik</strong> — Skor ${total}/21. Pola tidur dalam rentang sehat. Pertahankan konsistensi waktu tidur dan bangun.`;
+    interp = `<strong>Kualitas Tidur Baik (Good Sleeper)</strong> — Skor ${total}/21. Pola tidur Anda berada dalam batas rentang adaptif yang sehat. Pertahankan jadwal jam sirkadian ini secara konsisten.`;
   } else if (total <= 10) {
-    interp = `<strong>Kualitas Tidur Buruk</strong> — Skor ${total}/21. Ada gangguan signifikan yang perlu ditangani. Identifikasi komponen dengan skor tertinggi sebagai prioritas intervensi.`;
+    interp = `<strong>Kualitas Tidur Buruk (Poor Sleeper)</strong> — Skor ${total}/21. Terindikasi adanya kendala istirahat yang signifikan. Evaluasi nilai komponen skor tertinggi (skor 2 atau 3) sebagai fokus utama intervensi <em>sleep hygiene</em> Anda.`;
   } else {
-    interp = `<strong>Gangguan Tidur Serius</strong> — Skor ${total}/21. Sangat disarankan evaluasi lebih mendalam. Pertimbangkan rujukan ke dokter atau spesialis tidur.`;
+    interp = `<strong>Gangguan Tidur Serius</strong> — Skor ${total}/21. Skor global menunjukkan hambatan tidur yang berat mendalam. Sangat direkomendasikan untuk melakukan konsultasi klinis lanjutan bersama profesional kesehatan medis atau spesialis somnologi.`;
   }
-  document.getElementById('interpretation').innerHTML = interp;
+  targetInterpretation.innerHTML = interp;
 
-  // PROSES DATA JAWABAN LITERAL KHUSUS UNTUK PRINT OUT SUMMARY
-  const namaKlien = document.getElementById('nama').value || '—';
-  const usiaKlien = document.getElementById('usia').value || '—';
+  // --- GENERATE DATA SUMMARY PRINT OUT ---
   const tanggalIsi = document.getElementById('tanggal').value;
   const tglFmt = tanggalIsi ? new Date(tanggalIsi).toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'}) : '—';
   const namaCoach = document.getElementById('coach').value || '—';
 
   let summaryHtml = `
     <div class="summary-item-print" style="grid-column: 1 / -1; font-weight: 600; border-bottom: 2px solid var(--cream2); padding-bottom: 8px; margin-bottom: 6px;">
-      Nama Klien: <strong>${namaKlien}</strong> &nbsp;|&nbsp; Usia: <strong>${usiaKlien} thn</strong> &nbsp;|&nbsp; Coach: <strong>${namaCoach}</strong> &nbsp;|&nbsp; Tanggal: <strong>${tglFmt}</strong>
+      Nama Klien: <strong>${nama}</strong> &nbsp;|&nbsp; Usia: <strong>${usia} thn</strong> &nbsp;|&nbsp; Coach: <strong>${namaCoach}</strong> &nbsp;|&nbsp; Tanggal: <strong>${tglFmt}</strong>
     </div>
-    <div class="summary-item-print">1. Jam bersiap tidur: <strong>${jamMasuk || '—'}</strong></div>
+    <div class="summary-item-print">1. Jam bersiap tidur: <strong>${document.getElementById('q4a').value || '—'}</strong></div>
     <div class="summary-item-print">2. Jeda waktu terlelap: <strong>${menit || '0'} menit</strong></div>
-    <div class="summary-item-print">3. Jam terbangun pagi: <strong>${jamBangun || '—'}</strong></div>
+    <div class="summary-item-print">3. Jam terbangun pagi: <strong>${document.getElementById('q4b').value || '—'}</strong></div>
     <div class="summary-item-print">4. Durasi tidur efektif: <strong>${durasi || '0'} jam</strong> (Efisiensi: ${efisiensiPersen}%)</div>
     <div class="summary-item-print">5. Kualitas tidur subjektif: <strong>${getRadioText('c1')}</strong></div>
     <div class="summary-item-print">2b. Masalah tidur dalam 30 menit: <strong>${getRadioText('q2b')}</strong></div>
@@ -980,8 +1035,9 @@ function hitungSkor() {
   document.getElementById('summaryTargetGrid').innerHTML = summaryHtml;
 }
 
+// 4. Reset form & event handler initialisasi
 function resetForm() {
-  if (!confirm('Reset semua jawaban?')) return;
+  if (!confirm('Apakah Anda yakin ingin menghapus semua lembar jawaban ini?')) return;
   document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
   document.querySelectorAll('input[type="number"], input[type="text"], input[type="date"], input[type="time"]').forEach(i => i.value = '');
   document.querySelectorAll('select').forEach(s => s.value = '');
@@ -993,9 +1049,15 @@ function resetForm() {
   document.getElementById('totalScore').textContent = '—';
   document.getElementById('interpretation').innerHTML = 'Isi seluruh pertanyaan lalu klik <strong>Hitung Skor</strong> untuk melihat interpretasi.';
   document.getElementById('summaryTargetGrid').innerHTML = '';
+  updateEfficiencyAlert();
 }
 
+// Event hooks setup untuk reactive validation
 document.getElementById('tanggal').valueAsDate = new Date();
+['q3','q4a','q4b'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updateEfficiencyAlert);
+  document.getElementById(id).addEventListener('change', updateEfficiencyAlert);
+});
 </script>
 </body>
 </html>
