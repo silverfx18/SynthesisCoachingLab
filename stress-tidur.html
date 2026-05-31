@@ -3,559 +3,209 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PSQI — Pittsburgh Sleep Quality Index</title>
+<title>Assessment Stress & Tidur — Synthesis Coaching Lab</title>
 <link rel="icon" type="image/png" href="Logo.png">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --teal: #2F9794;
-    --teal-light: #3db8b4;
-    --teal-dark: #1e6b69;
-    --cream: #faf3ea;
-    --cream2: #e7e2da;
-    --dark: #0e181d;
-    --muted: #6b7d7c;
-    --white: #ffffff;
-  }
+:root {
+  --teal:       #2F9794;
+  --teal-light: #3db8b4;
+  --teal-dark:  #1e6b69;
+  --cream:      #faf3ea;
+  --cream2:     #e7e2da;
+  --dark:       #0e181d;
+  --muted:      #6b7d7c;
+  --white:      #ffffff;
+  --green:      #27ae60;
+  --green-bg:   #eafaf1;
+  --yellow:     #f39c12;
+  --yellow-bg:  #fef9e7;
+  --orange:     #e67e22;
+  --orange-bg:  #fdf2e9;
+  --red:        #c0392b;
+  --red-bg:     #fdedec;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dark);min-height:100vh;}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* PRINT */
+@media print{
+  .no-print{display:none!important;}
+  body{background:white;font-size:10px;}
+  .page-wrap{max-width:190mm;margin:0 auto;padding:4mm;}
+  .result-card{box-shadow:none;border:1px solid #ddd;break-inside:avoid;page-break-inside:avoid;}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}
+  .rc-header{padding:12px 18px!important;}
+  .skor-box{padding:8px 14px!important;}
+  .skor-val{font-size:22px!important;}
+  .plot-section{padding:10px 18px!important;}
+  .plot-grid{grid-template-rows:repeat(3,40px)!important;}
+  .plot-cell{height:40px!important;}
+  .plot-y-labels{display:grid;grid-template-rows:repeat(3,40px)!important;}
+  .plot-y-label{height:40px!important;}
+  .hasil-box{margin:8px 18px!important;padding:10px 14px!important;}
+  .hasil-title{font-size:13px!important;}
+  .hasil-narasi{font-size:10px!important;line-height:1.5!important;}
+  .disclaimer{padding:8px 18px!important;}
+  .ref{padding:6px 18px!important;}
+  .skor-row{page-break-inside:avoid;}
+  .plot-outer{page-break-inside:avoid;}
+}
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--cream);
-    color: var(--dark);
-    min-height: 100vh;
-    padding: 0 0 60px 0;
-  }
+.page-wrap{max-width:820px;margin:0 auto;padding:0 0 60px;}
 
-  /* KONTROL EDIT PRINT OUT KHUSUS */
-  @media print {
-    /* Sembunyikan header, info box, identitas form, komponen soal, dan tombol utama saat dicetak */
-    .no-print, .header, .intro-box, .identity-section, .component, .actions {
-      display: none !important;
-    }
-    @page {
-      size: A4;
-      margin: 10mm 15mm;
-    }
-    body { background: white !important; color: #0e181d !important; padding: 0 !important; }
-    
-    /* Memaksa elemen hasil dan ringkasan jawaban untuk selalu muncul dan rapi di kertas */
-    .score-panel {
-      margin: 0 0 20px 0 !important;
-      box-shadow: none !important;
-      border: 1px solid var(--cream2) !important;
-      background: var(--dark) !important;
-      display: block !important;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    .guide {
-      margin: 20px 0 0 0 !important;
-      display: block !important;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    .footer {
-      margin: 20px 0 0 0 !important;
-      display: block !important;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    .print-summary-card {
-      display: block !important;
-    }
-    .summary-item-print {
-      font-size: 11px !important;
-      line-height: 1.5 !important;
-      padding: 5px 0 !important;
-      border-bottom: 1px dashed var(--cream2) !important;
-    }
-  }
+/* HEADER */
+.header{background:var(--dark);padding:32px 40px 28px;position:relative;overflow:hidden;}
+.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--teal-light),var(--teal));}
+.header-inner{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;}
+.header-logo{width:48px;height:48px;flex-shrink:0;margin-top:4px;}
+.header-logo svg{width:100%;height:100%;}
+.header-badge{display:inline-block;background:var(--teal);color:white;font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;padding:3px 10px;border-radius:2px;margin-bottom:10px;}
+.header h1{font-size:clamp(20px,4vw,30px);font-weight:800;color:var(--cream);line-height:1.1;letter-spacing:-0.5px;margin-bottom:6px;}
+.header h1 span{color:var(--teal-light);}
+.header p{color:var(--muted);font-size:12px;font-weight:300;max-width:480px;line-height:1.6;}
 
-  /* Gaya Default Ringkasan Hanya Cetak (Sembunyi di Layar Browser) */
-  .print-summary-card {
-    display: none;
-    background: var(--white);
-    border-radius: 12px;
-    border: 1px solid var(--cream2);
-    padding: 24px 28px;
-    margin-bottom: 24px;
-  }
-  .print-summary-title {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--teal);
-    margin-bottom: 14px;
-  }
-  .print-summary-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 20px;
-  }
-  .summary-item-print { font-size: 13px; color: var(--dark); }
-  .summary-item-print strong { color: var(--teal-dark); }
+/* INSTRUKSI */
+.instruksi{margin:24px 36px 0;background:var(--white);border-left:4px solid var(--teal);border-radius:0 8px 8px 0;padding:16px 20px;}
+.instruksi p{font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:6px;}
+.instruksi p:last-child{margin-bottom:0;}
+.instruksi strong{color:var(--dark);}
+.scale-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.scale-chip{background:var(--cream);border:1px solid var(--cream2);border-radius:20px;padding:4px 10px;font-size:10px;font-weight:600;color:var(--dark);}
 
-  /* HEADER */
-  .header {
-    background: var(--dark);
-    padding: 32px 40px 28px;
-    position: relative;
-    overflow: hidden;
-  }
-  .header::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--teal), var(--teal-light), var(--teal));
-  }
-  .header-inner {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 20px;
-  }
-  .header-content { flex: 1; }
-  .header-logo {
-    width: 48px;
-    height: 48px;
-    flex-shrink: 0;
-    margin-top: 4px;
-  }
-  .header-logo svg { width: 100%; height: 100%; }
+/* IDENTITAS */
+.card{margin:16px 36px 0;background:var(--white);border-radius:10px;border:1px solid var(--cream2);padding:20px 24px;}
+.card-title{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--teal);margin-bottom:14px;}
+.id-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;}
+.field label{display:block;font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.field input{width:100%;border:1.5px solid var(--cream2);border-radius:6px;padding:8px 11px;font-family:'Montserrat',sans-serif;font-size:13px;color:var(--dark);background:var(--cream);outline:none;transition:border-color .2s;}
+.field input:focus{border-color:var(--teal);background:white;}
 
-  .header-badge {
-    display: inline-block;
-    background: var(--teal);
-    color: white;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    padding: 3px 10px;
-    border-radius: 2px;
-    margin-bottom: 10px;
-  }
-  .header h1 {
-    font-family: 'DM Sans', sans-serif;
-    font-size: clamp(20px, 4vw, 30px);
-    font-weight: 800;
-    color: var(--cream);
-    line-height: 1.1;
-    letter-spacing: -0.5px;
-    margin-bottom: 6px;
-  }
-  .header h1 span { color: var(--teal-light); font-style: normal; }
-  .header p {
-    color: var(--muted);
-    font-size: 12px;
-    font-weight: 300;
-    max-width: 480px;
-    line-height: 1.6;
-  }
+/* SECTION HEADER */
+.section-head{margin:20px 36px 0;display:flex;align-items:center;gap:12px;}
+.section-num{width:32px;height:32px;border-radius:50%;background:var(--teal);color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.section-title{font-size:15px;font-weight:800;color:var(--dark);}
+.section-sub{font-size:11px;color:var(--muted);font-weight:400;margin-top:1px;}
 
-  /* INTRO BOX */
-  .intro-box {
-    background: var(--white);
-    border-left: 4px solid var(--teal);
-    margin: 32px 40px 0;
-    padding: 20px 24px;
-    border-radius: 0 8px 8px 0;
-  }
-  .intro-box p {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.7;
-  }
-  .intro-box strong { color: var(--dark); }
+/* PERTANYAAN */
+.questions{margin:10px 36px 0;background:var(--white);border-radius:10px;border:1px solid var(--cream2);overflow:hidden;}
+.q-item{padding:14px 20px;border-bottom:1px solid var(--cream2);transition:background .15s;}
+.q-item:last-child{border-bottom:none;}
+.q-item:hover{background:#fdfaf6;}
+.q-text{font-size:12px;font-weight:500;color:var(--dark);margin-bottom:10px;line-height:1.5;}
+.q-num{color:var(--teal);font-weight:700;margin-right:4px;}
+.scale-options{display:flex;gap:6px;}
+.scale-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;}
+.scale-btn input{display:none;}
+.scale-circle{width:36px;height:36px;border-radius:50%;border:2px solid var(--cream2);background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);transition:all .15s;cursor:pointer;}
+.scale-btn input:checked~.scale-circle{background:var(--teal);border-color:var(--teal);color:white;}
+.scale-btn:hover .scale-circle{border-color:var(--teal);color:var(--teal);}
+.scale-lbl{font-size:8px;font-weight:500;color:var(--muted);text-align:center;line-height:1.2;}
 
-  /* IDENTITY */
-  .identity-section {
-    margin: 28px 40px 0;
-    background: var(--white);
-    border-radius: 12px;
-    padding: 24px 28px;
-    border: 1px solid var(--cream2);
-  }
-  .section-label {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--teal);
-    margin-bottom: 16px;
-  }
-  .identity-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-  }
-  .field-group label {
-    display: block;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
-  }
-  .field-group input {
-    width: 100%;
-    border: 1.5px solid var(--cream2);
-    border-radius: 6px;
-    padding: 9px 12px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    color: var(--dark);
-    background: var(--cream);
-    transition: border-color 0.2s;
-    outline: none;
-  }
-  .field-group input:focus { border-color: var(--teal); background: white; }
+/* DURASI SPECIAL */
+.dur-options{display:flex;gap:8px;flex-wrap:wrap;}
+.dur-btn{flex:1;min-width:80px;cursor:pointer;}
+.dur-btn input{display:none;}
+.dur-box{border:2px solid var(--cream2);border-radius:8px;padding:10px 8px;text-align:center;background:var(--cream);transition:all .15s;cursor:pointer;}
+.dur-btn input:checked~.dur-box{background:var(--teal);border-color:var(--teal);color:white;}
+.dur-btn:hover .dur-box{border-color:var(--teal);}
+.dur-jam{font-size:13px;font-weight:800;color:inherit;}
+.dur-skor{font-size:9px;font-weight:600;color:var(--muted);margin-top:2px;}
+.dur-btn input:checked~.dur-box .dur-skor{color:rgba(255,255,255,0.8);}
 
-  /* COMPONENT SECTIONS */
-  .component {
-    margin: 24px 40px 0;
-    background: var(--white);
-    border-radius: 12px;
-    border: 1px solid var(--cream2);
-    overflow: hidden;
-  }
-  .component-header {
-    background: var(--dark);
-    padding: 14px 24px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .comp-number {
-    background: var(--teal);
-    color: white;
-    font-size: 11px;
-    font-weight: 700;
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .component-header h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 15px;
-    color: var(--cream);
-    font-weight: 400;
-  }
-  .component-body { padding: 20px 24px; }
+/* ERROR */
+.error-box{margin:12px 36px 0;background:#fff0f0;border:1.5px solid var(--red);border-radius:8px;padding:12px 18px;font-size:12px;color:var(--red);display:none;}
 
-  /* QUESTIONS */
-  .question { margin-bottom: 20px; }
-  .question:last-child { margin-bottom: 0; }
-  .q-label {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--dark);
-    margin-bottom: 10px;
-    line-height: 1.5;
-  }
-  .q-sub {
-    font-size: 11px;
-    color: var(--muted);
-    margin-bottom: 10px;
-    font-style: italic;
-  }
-  .inline-alert {
-    display: none;
-    margin-top: 10px;
-    max-width: 620px;
-    border: 1px solid #f1c4bf;
-    border-left: 4px solid #e74c3c;
-    border-radius: 6px;
-    background: #fff5f4;
-    color: #9f2f25;
-    font-size: 12px;
-    line-height: 1.5;
-    padding: 10px 12px;
-  }
-  .inline-alert.is-visible { display: block; }
-  .q-input {
-    width: 100%;
-    border: 1.5px solid var(--cream2);
-    border-radius: 6px;
-    padding: 9px 12px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    color: var(--dark);
-    background: var(--cream);
-    transition: border-color 0.2s;
-    outline: none;
-  }
-  .q-input:focus { border-color: var(--teal); background: white; }
-  .q-input.wide { max-width: 160px; }
+/* TOMBOL */
+.actions{margin:20px 36px 0;display:flex;gap:12px;flex-wrap:wrap;}
+.btn{padding:12px 24px;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;border:none;text-transform:uppercase;transition:all .2s;}
+.btn-primary{background:var(--teal);color:white;}
+.btn-primary:hover{background:var(--teal-dark);transform:translateY(-1px);}
+.btn-secondary{background:transparent;color:var(--teal);border:2px solid var(--teal);}
+.btn-secondary:hover{background:var(--teal);color:white;}
 
-  /* RADIO OPTIONS */
-  .radio-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .radio-option {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 6px;
-    border: 1.5px solid var(--cream2);
-    transition: all 0.15s;
-    background: var(--cream);
-  }
-  .radio-option:hover { border-color: var(--teal); background: #f0faf9; }
-  .radio-option input[type="radio"] { display: none; }
-  .radio-dot {
-    width: 16px; height: 16px;
-    border-radius: 50%;
-    border: 2px solid var(--cream2);
-    flex-shrink: 0;
-    transition: all 0.15s;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .radio-option input[type="radio"]:checked ~ .radio-dot {
-    border-color: var(--teal);
-    background: var(--teal);
-  }
-  .radio-option input[type="radio"]:checked ~ .radio-dot::after {
-    content: '';
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: white;
-  }
-  .radio-option input[type="radio"]:checked ~ .radio-text {
-    color: var(--teal-dark);
-    font-weight: 500;
-  }
-  .radio-text { font-size: 13px; color: var(--dark); }
-  .radio-score {
-    margin-left: auto;
-    font-size: 11px;
-    color: var(--muted);
-    font-weight: 600;
-    background: var(--cream2);
-    padding: 2px 8px;
-    border-radius: 20px;
-  }
+/* RESULT */
+#resultSection{display:none;}
+.result-card{margin:28px 36px 0;background:var(--white);border-radius:14px;overflow:hidden;border:1px solid var(--cream2);box-shadow:0 6px 32px rgba(14,24,29,.09);}
 
-  /* GRID UNTUK PERTANYAAN 5 */
-  .q5-grid {
-    display: grid;
-    gap: 10px;
-  }
-  .q5-item {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    background: var(--cream);
-    border-radius: 8px;
-    border: 1.5px solid var(--cream2);
-  }
-  .q5-text { font-size: 13px; color: var(--dark); }
-  .q5-select {
-    border: 1.5px solid var(--cream2);
-    border-radius: 6px;
-    padding: 6px 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    color: var(--dark);
-    background: white;
-    outline: none;
-    cursor: pointer;
-    min-width: 130px;
-  }
-  .q5-select:focus { border-color: var(--teal); }
+/* RESULT HEADER */
+.rc-header{background:var(--dark);padding:24px 28px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;position:relative;}
+.rc-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--teal-light),var(--teal));}
+.rc-logo{width:32px;height:44px;flex-shrink:0;}
+.rc-logo svg{width:100%;height:100%;}
+.rc-meta{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.rc-name{font-size:20px;font-weight:800;color:var(--cream);margin-bottom:3px;}
+.rc-sub{font-size:10px;color:var(--muted);font-weight:400;}
 
-  /* SKOR PANEL */
-  .score-panel {
-    margin: 24px 40px 0; /* Menyesuaikan margin setelah pemindahan posisi tombol */
-    background: var(--dark);
-    border-radius: 12px;
-    padding: 28px 32px;
-    position: relative;
-    overflow: hidden;
-  }
-  .score-panel::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--teal), var(--teal-light));
-  }
-  .score-panel h3 {
-    font-family: 'DM Serif Display', serif;
-    color: var(--cream);
-    font-size: 18px;
-    margin-bottom: 20px;
-  }
-  .score-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .score-card {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px;
-    padding: 12px 14px;
-  }
-  .score-card-label {
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
-  }
-  .score-card-value {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--teal-light);
-    font-family: 'DM Serif Display', serif;
-  }
-  .score-card-max { font-size: 12px; color: var(--muted); }
+/* SKOR ROW */
+.skor-row{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--cream2);}
+.skor-box{padding:18px 24px;text-align:center;}
+.skor-box:first-child{border-right:1px solid var(--cream2);}
+.skor-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:6px;}
+.skor-val{font-size:32px;font-weight:900;color:var(--teal);line-height:1;}
+.skor-max{font-size:11px;color:var(--muted);margin-top:2px;}
+.skor-cat{font-size:10px;font-weight:700;margin-top:6px;padding:3px 10px;border-radius:20px;display:inline-block;}
 
-  .total-score-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(47,151,148,0.15);
-    border: 1px solid var(--teal);
-    border-radius: 8px;
-    padding: 16px 20px;
-    margin-bottom: 16px;
-  }
-  .total-label { color: var(--cream); font-weight: 600; font-size: 15px; }
-  .total-number { font-size: 32px; font-weight: 700; color: var(--teal-light); font-family: 'DM Serif Display', serif; }
+/* PLOT */
+.plot-section{padding:20px 28px;border-bottom:1px solid var(--cream2);}
+.plot-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:16px;}
+.plot-outer{display:flex;gap:0;align-items:flex-start;}
+.plot-y-axis{display:flex;flex-direction:row;align-items:stretch;margin-right:8px;}
+.plot-y-title{writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;white-space:nowrap;margin-right:6px;align-self:center;}
+.plot-y-labels{display:grid;grid-template-rows:repeat(3,60px);gap:4px;}
+.plot-y-label{font-size:8px;font-weight:600;color:var(--muted);text-align:right;line-height:1.2;display:flex;align-items:center;justify-content:flex-end;white-space:nowrap;box-sizing:border-box;}
+.plot-main{flex:1;}
+.plot-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,60px);gap:4px;}
+.plot-cell{border-radius:6px;position:relative;display:flex;align-items:center;justify-content:center;height:60px;transition:all .2s;}
+.star{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:26px;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.35));}
+.plot-x-labels{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px;}
+.plot-x-label{font-size:9px;font-weight:600;color:var(--muted);text-align:center;}
+.plot-x-title{text-align:center;font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
 
-  .interpretation {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.7;
-    padding: 14px 18px;
-    background: rgba(255,255,255,0.04);
-    border-radius: 8px;
-    border-left: 3px solid var(--teal);
-  }
-  .interpretation strong { color: var(--cream); }
+/* Warna sel plot */
+.cell-green   {background:#d5f5e3;}
+.cell-yellow  {background:#fef9c3;}
+.cell-orange  {background:#fde8c8;}
+.cell-red     {background:#fad7d3;}
+.cell-green.active   {background:#27ae60;}
+.cell-yellow.active  {background:#f1c40f;}
+.cell-orange.active  {background:#e67e22;}
+.cell-red.active     {background:#c0392b;}
 
-  /* PANDUAN SKOR */
-  .guide {
-    margin: 24px 40px 0;
-    background: var(--white);
-    border-radius: 12px;
-    border: 1px solid var(--cream2);
-    overflow: hidden;
-  }
-  .guide-header {
-    background: var(--teal);
-    padding: 14px 24px;
-  }
-  .guide-header h3 {
-    font-family: 'DM Serif Display', serif;
-    color: white;
-    font-size: 16px;
-    font-weight: 400;
-  }
-  .guide-body { padding: 20px 24px; }
-  .guide-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .guide-table th {
-    text-align: left;
-    padding: 8px 12px;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--muted);
-    border-bottom: 2px solid var(--cream2);
-  }
-  .guide-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--cream2);
-    color: var(--dark);
-    line-height: 1.5;
-  }
-  .guide-table tr:last-child td { border-bottom: none; }
-  .badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-  }
-  .badge-good { background: #dcf5f4; color: #1e6b69; }
-  .badge-poor { background: #fde8d8; color: #9b4820; }
-  .badge-bad { background: #fdd; color: #8b1a1a; }
+/* HASIL BOX */
+.hasil-box{margin:16px 28px;border-radius:10px;padding:16px 20px;border:2px solid;}
+.hasil-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.hasil-title{font-size:18px;font-weight:900;margin-bottom:8px;}
+.hasil-narasi{font-size:12px;line-height:1.7;font-weight:400;}
 
-  /* TOMBOL COCHING LAB */
-  .actions {
-    margin: 28px 40px 0;
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .btn {
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s;
-    letter-spacing: 0.5px;
-  }
-  .btn-primary {
-    background: var(--teal);
-    color: white;
-  }
-  .btn-primary:hover { background: var(--teal-dark); transform: translateY(-1px); }
-  .btn-secondary {
-    background: transparent;
-    color: var(--teal);
-    border: 1.5px solid var(--teal);
-  }
-  .btn-secondary:hover { background: var(--teal); color: white; }
+/* DISCLAIMER */
+.disclaimer{padding:14px 28px;border-top:1px solid var(--cream2);background:#fffbf5;}
+.disclaimer p{font-size:10px;color:var(--muted);line-height:1.6;}
+.disclaimer strong{color:var(--dark);}
 
-  /* FOOTER */
-  .footer {
-    margin: 40px 40px 0;
-    padding-top: 20px;
-    border-top: 1px solid var(--cream2);
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.6;
-  }
+/* REF */
+.ref{padding:12px 28px;}
+.ref p{font-size:9px;color:var(--muted);line-height:1.7;}
 
-  @media (max-width: 600px) {
-    .header, .intro-box, .identity-section, .component, .score-panel, .guide, .actions, .footer {
-      margin-left: 16px; margin-right: 16px;
-    }
-    .header { padding: 28px 20px 24px; }
-    .header-inner { flex-direction: column-reverse; }
-    .component-body, .guide-body { padding: 16px; }
-    .q5-item { grid-template-columns: 1fr; }
-  }
+/* RESPONSIVE */
+@media(max-width:600px){
+  .header,.instruksi,.card,.section-head,.questions,.actions,.error-box{margin-left:14px;margin-right:14px;}
+  .result-card{margin-left:14px;margin-right:14px;}
+  .scale-circle{width:30px;height:30px;font-size:11px;}
+  .rc-header,.skor-box,.plot-section,.hasil-box,.disclaimer,.ref{padding-left:18px;padding-right:18px;}
+}
 </style>
 </head>
 <body>
+<div class="page-wrap">
 
-<div class="header">
+<!-- HEADER -->
+<div class="header no-print">
   <div class="header-inner">
-    <div class="header-content">
+    <div>
       <div class="header-badge">Synthesis Coaching Lab</div>
-      <h1>Pittsburgh Sleep Quality <span>Index</span></h1>
-      <p>Instrumen penilaian kualitas tidur selama 1 bulan terakhir. Isi dengan jujur sesuai kebiasaan tidur Anda yang sebenarnya.</p>
+      <h1>Assessment <span>Stress & Tidur</span></h1>
+      <p>Isi untuk mendapatkan gambaran kondisi stress dan kualitas tidurmu saat ini. Bukan diagnosis klinis.</p>
     </div>
     <div class="header-logo">
       <svg viewBox="0 0 342 488" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
@@ -574,490 +224,385 @@
   </div>
 </div>
 
-<div class="intro-box">
-  <p><strong>Petunjuk pengisian:</strong> Pertanyaan berikut berkaitan dengan kebiasaan tidur Anda selama <strong>1 bulan terakhir</strong>. Jawaban yang paling akurat adalah yang paling mendekati pengalaman Anda mayoritas malam. Tidak ada jawaban benar atau salah.</p>
+<!-- INSTRUKSI -->
+<div class="instruksi no-print">
+  <p><strong>Timeframe:</strong> Isi berdasarkan kondisi <strong>1 bulan terakhir</strong>.</p>
+  <p><strong>Cara mengisi:</strong> Pilih angka yang paling menggambarkan kondisimu. Tidak ada jawaban benar atau salah.</p>
+  <div class="scale-row">
+    <span class="scale-chip">1 = Tidak pernah</span>
+    <span class="scale-chip">2 = Jarang</span>
+    <span class="scale-chip">3 = Kadang-kadang</span>
+    <span class="scale-chip">4 = Sering</span>
+    <span class="scale-chip">5 = Sangat sering</span>
+  </div>
 </div>
 
 <!-- IDENTITAS -->
-<div class="identity-section">
-  <div class="section-label">Data Klien</div>
-  <div class="identity-grid">
-    <div class="field-group">
-      <label>Nama</label>
-      <input type="text" id="nama" placeholder="Nama lengkap" required>
-    </div>
-    <div class="field-group">
-      <label>Usia</label>
-      <input type="number" id="usia" placeholder="Tahun" required>
-    </div>
-    <div class="field-group">
-      <label>Tanggal Pengisian</label>
-      <input type="date" id="tanggal">
-    </div>
-    <div class="field-group">
-      <label>Coach</label>
-      <input type="text" id="coach" placeholder="Nama coach">
-    </div>
+<div class="card no-print">
+  <div class="card-title">Data Klien</div>
+  <div class="id-grid">
+    <div class="field"><label>Nama</label><input type="text" id="nama" placeholder="Nama lengkap"></div>
+    <div class="field"><label>Usia</label><input type="number" id="usia" placeholder="Tahun" min="10" max="100"></div>
+    <div class="field"><label>Tanggal</label><input type="date" id="tgl"></div>
+    <div class="field"><label>Coach</label><input type="text" id="coach" placeholder="Nama coach"></div>
   </div>
 </div>
 
-<!-- KOMPONEN 1: KUALITAS TIDUR SUBJEKTIF -->
-<div class="component">
-  <div class="component-header">
-    <div class="comp-number">1</div>
-    <h2>Kualitas Tidur Subjektif</h2>
-  </div>
-  <div class="component-body">
-    <div class="question">
-      <div class="q-label" id="lbl_c1">Selama sebulan terakhir, bagaimana Anda menilai <strong>kualitas tidur</strong> Anda secara keseluruhan?</div>
-      <div class="radio-group" id="c1">
-        <label class="radio-option"><input type="radio" name="c1" value="0"><div class="radio-dot"></div><span class="radio-text">Sangat baik</span><span class="radio-score">0</span></label>
-        <label class="radio-option"><input type="radio" name="c1" value="1"><div class="radio-dot"></div><span class="radio-text">Cukup baik</span><span class="radio-score">1</span></label>
-        <label class="radio-option"><input type="radio" name="c1" value="2"><div class="radio-dot"></div><span class="radio-text">Cukup buruk</span><span class="radio-score">2</span></label>
-        <label class="radio-option"><input type="radio" name="c1" value="3"><div class="radio-dot"></div><span class="radio-text">Sangat buruk</span><span class="radio-score">3</span></label>
-      </div>
-    </div>
+<!-- BAGIAN A: STRESS -->
+<div class="section-head no-print">
+  <div class="section-num">A</div>
+  <div>
+    <div class="section-title">Tingkat Stress</div>
+    <div class="section-sub">10 pertanyaan · Skala 1–5</div>
   </div>
 </div>
 
-<!-- KOMPONEN 2: LATENSI TIDUR -->
-<div class="component">
-  <div class="component-header">
-    <div class="comp-number">2</div>
-    <h2>Latensi Tidur</h2>
-  </div>
-  <div class="component-body">
-    <div class="question">
-      <div class="q-label" id="lbl_q2a">Selama sebulan terakhir, biasanya berapa menit yang Anda butuhkan untuk <strong>mulai tertidur</strong> setelah berbaring di malam hari?</div>
-      <input type="number" class="q-input wide" id="q2a" placeholder="menit" min="0">
-    </div>
-    <div class="question">
-      <div class="q-label" id="lbl_q2b">Selama sebulan terakhir, seberapa sering Anda <strong>tidak bisa tidur dalam 30 menit</strong> setelah berbaring?</div>
-      <div class="radio-group" id="q2b">
-        <label class="radio-option"><input type="radio" name="q2b" value="0"><div class="radio-dot"></div><span class="radio-text">Tidak pernah selama sebulan terakhir</span><span class="radio-score">0</span></label>
-        <label class="radio-option"><input type="radio" name="q2b" value="1"><div class="radio-dot"></div><span class="radio-text">Kurang dari 1x seminggu</span><span class="radio-score">1</span></label>
-        <label class="radio-option"><input type="radio" name="q2b" value="2"><div class="radio-dot"></div><span class="radio-text">1–2x seminggu</span><span class="radio-score">2</span></label>
-        <label class="radio-option"><input type="radio" name="q2b" value="3"><div class="radio-dot"></div><span class="radio-text">3x seminggu atau lebih</span><span class="radio-score">3</span></label>
-      </div>
-    </div>
+<div class="questions no-print" id="stressQ">
+  <!-- Item A1–A10 dibuat JS -->
+</div>
+
+<!-- BAGIAN B: TIDUR -->
+<div class="section-head no-print">
+  <div class="section-num">B</div>
+  <div>
+    <div class="section-title">Kualitas Tidur</div>
+    <div class="section-sub">7 pertanyaan · Skala 1–5 (B1 berbeda)</div>
   </div>
 </div>
 
-<!-- KOMPONEN 3: DURASI TIDUR -->
-<div class="component">
-  <div class="component-header">
-    <div class="comp-number">3</div>
-    <h2>Durasi Tidur</h2>
-  </div>
-  <div class="component-body">
-    <div class="question">
-      <div class="q-label" id="lbl_q3">Selama sebulan terakhir, biasanya berapa jam Anda <strong>benar-benar tidur</strong> per malam? (bisa berbeda dari jam yang Anda habiskan di tempat tidur)</div>
-      <input type="number" class="q-input wide" id="q3" placeholder="jam" min="0" max="24" step="0.5">
-    </div>
-  </div>
+<div class="questions no-print" id="tidurQ">
+  <!-- Item B1–B7 dibuat JS -->
 </div>
 
-<!-- KOMPONEN 4: EFISIENSI TIDUR -->
-<div class="component">
-  <div class="component-header">
-    <div class="comp-number">4</div>
-    <h2>Efisiensi Tidur</h2>
-  </div>
-  <div class="component-body">
-    <div class="question">
-      <div class="q-label" id="lbl_q4a">Biasanya jam berapa Anda <strong>naik ke tempat tidur</strong> di malam hari?</div>
-      <input type="time" class="q-input wide" id="q4a">
-    </div>
-    <div class="question">
-      <div class="q-label" id="lbl_q4b">Biasanya jam berapa Anda <strong>bangun dari tempat tidur</strong> di pagi hari?</div>
-      <input type="time" class="q-input wide" id="q4b">
-    </div>
-    <div class="q-sub">Efisiensi = (jam tidur ÷ jam di tempat tidur) × 100%. Dihitung otomatis.</div>
-    <div class="inline-alert" id="efficiencyAlert" aria-live="polite"></div>
-  </div>
-</div>
+<div class="error-box" id="errorBox">⚠️ <span id="errorMsg"></span></div>
 
-<!-- KOMPONEN 5: GANGGUAN TIDUR -->
-<div class="component">
-  <div class="component-header">
-    <div class="comp-number">5</div>
-    <h2>Gangguan Tidur</h2>
-  </div>
-  <div class="component-body">
-    <div class="q-label" style="margin-bottom:14px">Seberapa sering selama sebulan terakhir Anda mengalami masalah tidur karena hal-hal berikut?</div>
-    <div class="q5-grid">
-      <div class="q5-item"><span class="q5-text" id="lbl_q5a">a. Tidak bisa tidur dalam 30 menit</span><select class="q5-select" id="q5a"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text" id="lbl_q5b">b. Terbangun di tengah malam atau dini hari</span><select class="q5-select" id="q5b"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text" id="lbl_q5c">c. Harus bangun untuk ke kamar mandi</span><select class="q5-select" id="q5c"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text" id="lbl_q5d">d. Tidak bisa bernapas dengan nyaman</span><select class="q5-select" id="q5d"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text" id="lbl_q5e">e. Batuk atau mendengkur keras</span><select class="q5-select" id="q5e"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text" id="lbl_q5f">f. Merasa kedinginan</span><select class="q5-select" id="q5f"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text" id="lbl_q5g">g. Merasa kepanasan</span><select class="q5-select" id="q5g"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text" id="lbl_q5h">h. Mengalami mimpi buruk</span><select class="q5-select" id="q5h"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text" id="lbl_q5i">i. Merasakan nyeri</span><select class="q5-select" id="q5i"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-      <div class="q5-item"><span class="q5-text" id="lbl_q5j">j. Alasan lain yang mengganggu tidur</span><select class="q5-select" id="q5j"><option value="">Pilih...</option><option value="0">Tidak pernah</option><option value="1">&lt; 1x/minggu</option><option value="2">1–2x/minggu</option><option value="3">≥ 3x/minggu</option></select></div>
-    </div>
-  </div>
-</div>
-
-<!-- KOMPONEN 6: PENGGUNAAN OBAT TIDUR -->
-<div class="component">
-  <div class="component-header">
-    <div class="comp-number">6</div>
-    <h2>Penggunaan Obat Tidur</h2>
-  </div>
-  <div class="component-body">
-    <div class="question">
-      <div class="q-label" id="lbl_q6">Seberapa sering selama sebulan terakhir Anda mengonsumsi <strong>obat tidur</strong> (resep dokter maupun tanpa resep)?</div>
-      <div class="radio-group" id="c6_group">
-        <label class="radio-option"><input type="radio" name="c6" value="0"><div class="radio-dot"></div><span class="radio-text">Tidak pernah selama sebulan terakhir</span><span class="radio-score">0</span></label>
-        <label class="radio-option"><input type="radio" name="c6" value="1"><div class="radio-dot"></div><span class="radio-text">Kurang dari 1x seminggu</span><span class="radio-score">1</span></label>
-        <label class="radio-option"><input type="radio" name="c6" value="2"><div class="radio-dot"></div><span class="radio-text">1–2x seminggu</span><span class="radio-score">2</span></label>
-        <label class="radio-option"><input type="radio" name="c6" value="3"><div class="radio-dot"></div><span class="radio-text">3x seminggu atau lebih</span><span class="radio-score">3</span></label>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- KOMPONEN 7: DISFUNGSI DI SIANG HARI -->
-<div class="component">
-  <div class="component-header">
-    <div class="comp-number">7</div>
-    <h2>Disfungsi di Siang Hari</h2>
-  </div>
-  <div class="component-body">
-    <div class="question">
-      <div class="q-label" id="lbl_c7a">Seberapa sering selama sebulan terakhir Anda mengalami <strong>kesulitan untuk tetap terjaga</strong> saat berkendara, makan, atau beraktivitas sosial?</div>
-      <div class="radio-group" id="c7a_group">
-        <label class="radio-option"><input type="radio" name="c7a" value="0"><div class="radio-dot"></div><span class="radio-text">Tidak pernah selama sebulan terakhir</span><span class="radio-score">0</span></label>
-        <label class="radio-option"><input type="radio" name="c7a" value="1"><div class="radio-dot"></div><span class="radio-text">Kurang dari 1x seminggu</span><span class="radio-score">1</span></label>
-        <label class="radio-option"><input type="radio" name="c7a" value="2"><div class="radio-dot"></div><span class="radio-text">1–2x seminggu</span><span class="radio-score">2</span></label>
-        <label class="radio-option"><input type="radio" name="c7a" value="3"><div class="radio-dot"></div><span class="radio-text">3x seminggu atau lebih</span><span class="radio-score">3</span></label>
-      </div>
-    </div>
-    <div class="question" style="margin-top:20px">
-      <div class="q-label" id="lbl_c7b">Seberapa besar masalah tidur Anda memengaruhi <strong>semangat atau antusiasme</strong> dalam menyelesaikan pekerjaan?</div>
-      <div class="radio-group" id="c7b_group">
-        <label class="radio-option"><input type="radio" name="c7b" value="0"><div class="radio-dot"></div><span class="radio-text">Tidak ada masalah sama sekali</span><span class="radio-score">0</span></label>
-        <label class="radio-option"><input type="radio" name="c7b" value="1"><div class="radio-dot"></div><span class="radio-text">Sedikit bermasalah</span><span class="radio-score">1</span></label>
-        <label class="radio-option"><input type="radio" name="c7b" value="2"><div class="radio-dot"></div><span class="radio-text">Cukup bermasalah</span><span class="radio-score">2</span></label>
-        <label class="radio-option"><input type="radio" name="c7b" value="3"><div class="radio-dot"></div><span class="radio-text">Sangat bermasalah</span><span class="radio-score">3</span></label>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ACTIONS — SEKARANG BERADA DI ATAS PANEL HASIL SESUAI PERMINTAAN -->
 <div class="actions no-print">
-  <button class="btn btn-primary" onclick="hitungSkor()">Hitung Skor</button>
-  <button class="btn btn-secondary" onclick="resetForm()">Reset Form</button>
-  <button class="btn btn-secondary" onclick="window.print()">Cetak / PDF</button>
+  <button class="btn btn-primary" onclick="hitung()">Lihat Hasil</button>
+  <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
 </div>
 
-<!-- RINGKASAN JAWABAN HARFIAH (KHUSUS UNTUK CETAK/PDF — TERSEMBUNYI DI SCREEN) -->
-<div class="print-summary-card" id="summaryPrintBlock">
-  <div class="print-summary-title">Ringkasan Berkas & Lembar Jawaban Klien</div>
-  <div class="print-summary-grid" id="summaryTargetGrid">
-    <!-- Konten jawaban literal akan diletakkan di sini secara otomatis oleh skrip -->
+<!-- HASIL -->
+<div id="resultSection">
+  <div class="result-card" id="resultCard">
+
+    <!-- RC HEADER -->
+    <div class="rc-header">
+      <div>
+        <div class="rc-meta">Synthesis Coaching Lab · Hasil Self Assessment Stress &amp; Tidur</div>
+        <div class="rc-name" id="rNama">—</div>
+        <div class="rc-sub" id="rSub">—</div>
+      </div>
+      <div class="rc-logo">
+        <svg viewBox="0 0 342 488" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;">
+          <g transform="matrix(1,0,0,1,-214.223845,-2080.871108)">
+            <g transform="matrix(0.997224,0,0,0.997224,-76.830008,-247.417603)">
+              <g transform="matrix(-0.536959,-0.843609,0.843609,-0.536959,-585.980542,4447.151703)">
+                <path d="M1078.51,1876.296C1114.841,1863.327 1142.066,1873.902 1153.076,1899.331C1106.362,1907.407 977.637,1985.486 976.981,1985.773C920.97,2010.303 829.729,2007.475 787.378,1924.044C758.421,1866.998 769.796,1811.032 801.641,1764.288C831.292,1720.764 879.232,1685.611 925.921,1666.608L943.588,1710.014C904.897,1725.762 864.943,1754.605 840.371,1790.673C817.993,1823.523 808.817,1862.742 829.167,1902.832C857.62,1958.884 919.212,1959.456 957.245,1943.25L1078.51,1876.296Z" style="fill:rgb(47,151,148);"/>
+              </g>
+              <g transform="matrix(0.5373,0.843391,-0.843391,0.5373,1511.370449,710.822435)">
+                <path d="M1078.51,1876.296C1114.841,1863.327 1142.066,1873.902 1153.076,1899.331C1106.362,1907.407 977.637,1985.486 976.981,1985.773C920.97,2010.303 829.729,2007.475 787.378,1924.044C758.421,1866.998 769.796,1811.032 801.641,1764.288C831.292,1720.764 879.232,1685.611 925.921,1666.608L943.588,1710.014C904.897,1725.762 864.943,1754.605 840.371,1790.673C817.993,1823.523 808.817,1862.742 829.167,1902.832C857.62,1958.884 919.212,1959.456 957.245,1943.25L1078.51,1876.296Z" style="fill:rgb(47,151,148);"/>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- SKOR ROW -->
+    <div class="skor-row">
+      <div class="skor-box">
+        <div class="skor-label">Stress</div>
+        <div class="skor-val" id="rStressVal">—</div>
+        <div class="skor-max">dari 50</div>
+        <div class="skor-cat" id="rStressCat">—</div>
+      </div>
+      <div class="skor-box">
+        <div class="skor-label">Kualitas Tidur</div>
+        <div class="skor-val" id="rTidurVal">—</div>
+        <div class="skor-max">dari 35</div>
+        <div class="skor-cat" id="rTidurCat">—</div>
+      </div>
+    </div>
+
+    <!-- PLOT -->
+    <div class="plot-section">
+      <div class="plot-title">Peta Kondisi</div>
+      <div class="plot-outer">
+        <!-- Y AXIS -->
+        <div class="plot-y-axis">
+          <div class="plot-y-title">Kualitas Tidur ↑</div>
+          <div class="plot-y-labels">
+            <div class="plot-y-label">Perlu<br>Perhatian</div>
+            <div class="plot-y-label">Bisa Lebih<br>Optimal</div>
+            <div class="plot-y-label">Restoratif</div>
+          </div>
+        </div>
+        <!-- GRID -->
+        <div class="plot-main">
+          <div class="plot-grid" id="plotGrid">
+            <!-- row 0: tidur=perlu perhatian (atas) -->
+            <div class="plot-cell cell-yellow"  data-row="0" data-col="0"></div>
+            <div class="plot-cell cell-orange"  data-row="0" data-col="1"></div>
+            <div class="plot-cell cell-red"     data-row="0" data-col="2"></div>
+            <!-- row 1: tidur=bisa lebih optimal -->
+            <div class="plot-cell cell-green"   data-row="1" data-col="0"></div>
+            <div class="plot-cell cell-yellow"  data-row="1" data-col="1"></div>
+            <div class="plot-cell cell-orange"  data-row="1" data-col="2"></div>
+            <!-- row 2: tidur=restoratif (bawah) -->
+            <div class="plot-cell cell-green"   data-row="2" data-col="0"></div>
+            <div class="plot-cell cell-green"   data-row="2" data-col="1"></div>
+            <div class="plot-cell cell-yellow"  data-row="2" data-col="2"></div>
+          </div>
+          <div class="plot-x-labels">
+            <div class="plot-x-label">Rendah</div>
+            <div class="plot-x-label">Sedang</div>
+            <div class="plot-x-label">Tinggi</div>
+          </div>
+          <div class="plot-x-title">Tingkat Stress →</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HASIL BOX -->
+    <div class="hasil-box" id="hasilBox" style="border-color:var(--teal);">
+      <div class="hasil-label" id="hasilLabel">—</div>
+      <div class="hasil-title" id="hasilTitle">—</div>
+      <div class="hasil-narasi" id="hasilNarasi">—</div>
+    </div>
+
+    <!-- DISCLAIMER -->
+    <div class="disclaimer">
+      <p>⚠️ <strong>Disclaimer:</strong> Hasil assessment ini hanya untuk gambaran umum dan bukan merupakan diagnosis klinis. Gunakan sebagai titik awal diskusi bersama coach. Untuk kondisi yang memerlukan penanganan lebih lanjut, konsultasikan dengan profesional kesehatan.</p>
+    </div>
+
+    <!-- REF -->
+    <div class="ref">
+      <p><strong>Referensi:</strong> Cohen S, Kamarck T, Mermelstein R. (1983). Perceived Stress Scale. <em>Health Psychology</em>, 2(4):385–396 &nbsp;·&nbsp; Buysse DJ, et al. (1989). Pittsburgh Sleep Quality Index. <em>Psychiatry Research</em>, 28(2):193–213 &nbsp;·&nbsp; Materi Pelatihan AIFO</p>
+    </div>
+
+  </div><!-- end result-card -->
+
+  <div class="actions">
+    <button class="btn btn-primary no-print" onclick="window.print()">🖨️ Export PDF</button>
+    <button class="btn btn-secondary no-print" onclick="resetForm()">← Isi Ulang</button>
   </div>
 </div>
 
-<!-- SCORE PANEL -->
-<div class="score-panel" id="scorePanel">
-  <h3>Hasil Penilaian PSQI</h3>
-  <div class="score-grid">
-    <div class="score-card"><div class="score-card-label">C1 Kualitas Subjektif</div><div class="score-card-value" id="sc1">—</div></div>
-    <div class="score-card"><div class="score-card-label">C2 Latensi Tidur</div><div class="score-card-value" id="sc2">—</div></div>
-    <div class="score-card"><div class="score-card-label">C3 Durasi Tidur</div><div class="score-card-value" id="sc3">—</div></div>
-    <div class="score-card"><div class="score-card-label">C4 Efisiensi Tidur</div><div class="score-card-value" id="sc4">—</div></div>
-    <div class="score-card"><div class="score-card-label">C5 Gangguan Tidur</div><div class="score-card-value" id="sc5">—</div></div>
-    <div class="score-card"><div class="score-card-label">C6 Obat Tidur</div><div class="score-card-value" id="sc6">—</div></div>
-    <div class="score-card"><div class="score-card-label">C7 Disfungsi Siang</div><div class="score-card-value" id="sc7">—</div></div>
-  </div>
-  <div class="total-score-row">
-    <span class="total-label">Total Skor PSQI</span>
-    <span class="total-number" id="totalScore">—</span>
-  </div>
-  <div class="interpretation" id="interpretation">
-    Isi seluruh pertanyaan lalu klik <strong>Hitung Skor</strong> untuk melihat interpretasi.
-  </div>
-</div>
-
-<!-- PANDUAN -->
-<div class="guide">
-  <div class="guide-header"><h3>Panduan Interpretasi Skor</h3></div>
-  <div class="guide-body">
-    <table class="guide-table">
-      <tr><th>Skor Total</th><th>Interpretasi</th><th>Rekomendasi</th></tr>
-      <tr>
-        <td><strong>0 – 5</strong></td>
-        <td><span class="badge badge-good">Kualitas Baik</span></td>
-        <td>Pola tidur sehat. Pertahankan konsistensi.</td>
-      </tr>
-      <tr>
-        <td><strong>6 – 10</strong></td>
-        <td><span class="badge badge-poor">Kualitas Buruk</span></td>
-        <td>Ada masalah signifikan. Identifikasi komponen tertinggi, lakukan intervensi sleep hygiene.</td>
-      </tr>
-      <tr>
-        <td><strong>> 10</strong></td>
-        <td><span class="badge badge-bad">Gangguan Tidur Serius</span></td>
-        <td>Perlu evaluasi lebih lanjut. Pertimbangkan rujukan ke profesional kesehatan.</td>
-      </tr>
-    </table>
-    <p style="font-size:12px; color:var(--muted); margin-top:14px; line-height:1.6">
-      <strong>Catatan:</strong> Setiap komponen (C1–C7) diberi skor 0–3. Skor total = jumlah semua komponen (0–21). 
-      Cut-off >5 memiliki sensitivitas 89,6% dan spesifisitas 86,5% untuk membedakan tidur baik vs buruk 
-      <em>(Buysse et al., 1989)</em>.
-    </p>
-  </div>
-</div>
-
-<div class="footer">
-  <p>Pittsburgh Sleep Quality Index (PSQI) — Buysse et al., 1989 | Diadaptasi ke Bahasa Indonesia untuk penggunaan coaching</p>
-  <p style="margin-top:4px">Synthesis Coaching Lab · Instrumen ini bukan pengganti diagnosis klinis</p>
-</div>
+</div><!-- end page-wrap -->
 
 <script>
-// 1. Interaktivitas UI Radio Button (Tetap dipertahankan)
-document.querySelectorAll('.radio-group').forEach(group => {
-  group.querySelectorAll('input[type="radio"]').forEach(radio => {
-    radio.addEventListener('change', () => {
-      group.querySelectorAll('.radio-option').forEach(opt => {
-        opt.style.borderColor = 'var(--cream2)';
-        opt.style.background = 'var(--cream)';
-      });
-      if(radio.checked) {
-        radio.parentElement.style.borderColor = 'var(--teal)';
-        radio.parentElement.style.background = 'rgba(47,151,148,0.06)';
-      }
-    });
+// ── DATA PERTANYAAN ──────────────────────────────────────────────────────────
+const stressItems = [
+  "Saya merasa gugup, tegang, atau cemas dalam keseharian saya.",
+  "Saya merasa tidak mampu mengontrol hal-hal penting dalam hidup saya.",
+  "Saya sulit berkonsentrasi karena pikiran terasa terlalu penuh.",
+  "Saya merasa kelelahan secara emosional setelah beraktivitas sehari-hari.",
+  "Saya merasa kewalahan menghadapi masalah yang terus datang.",
+  "Saya mengalami perubahan mood yang sulit dikendalikan (mudah marah, tiba-tiba sedih, atau sangat sensitif).",
+  "Saya merasa segala sesuatu terjadi di luar kendali saya.",
+  "Masalah yang sama terus berputar di pikiran saya tanpa ada penyelesaian.",
+  "Saya merasa beban yang ada melebihi kemampuan saya untuk mengatasinya.",
+  "Saya mengalami keluhan fisik seperti sakit kepala, tegang di leher/bahu, atau perubahan nafsu makan yang berkaitan dengan tekanan yang saya rasakan."
+];
+
+const tidurItems = [
+  { text: "Rata-rata berapa jam kamu tidur per malam?", special: true },
+  { text: "Saya terbangun di tengah malam dan sulit menyambung tidur kembali.", special: false },
+  { text: "Saya merasa lelah atau tidak segar saat bangun di pagi hari.", special: false },
+  { text: "Saya merasa mengantuk atau sulit fokus di siang hari.", special: false },
+  { text: "Saya sulit untuk mulai tertidur saat sudah berbaring di malam hari.", special: false },
+  { text: "Jam tidur dan bangun saya tidak konsisten dari hari ke hari (termasuk akhir pekan).", special: false },
+  { text: "Suasana hati saya di pagi hari setelah bangun cenderung murung, mudah marah, atau tidak bersemangat.", special: false }
+];
+
+const scaleLabels = ['','Tidak\npernah','Jarang','Kadang-\nkadang','Sering','Sangat\nsering'];
+
+// ── BUILD FORM ───────────────────────────────────────────────────────────────
+function buildStress() {
+  const c = document.getElementById('stressQ');
+  stressItems.forEach((txt, i) => {
+    const div = document.createElement('div');
+    div.className = 'q-item';
+    div.innerHTML = `<div class="q-text"><span class="q-num">A${i+1}.</span>${txt}</div>
+    <div class="scale-options">${[1,2,3,4,5].map(v=>`
+      <label class="scale-btn">
+        <input type="radio" name="s${i}" value="${v}">
+        <div class="scale-circle">${v}</div>
+        <div class="scale-lbl">${scaleLabels[v].replace('\n','<br>')}</div>
+      </label>`).join('')}</div>`;
+    c.appendChild(div);
   });
-});
-
-// Helper Functions
-function getRadioVal(name) {
-  const el = document.querySelector(`input[name="${name}"]:checked`);
-  return el ? parseInt(el.value) : null;
-}
-function getRadioText(name) {
-  const el = document.querySelector(`input[name="${name}"]:checked`);
-  return el ? el.parentElement.querySelector('.radio-text').textContent : '—';
-}
-function getSelectVal(id) {
-  const el = document.getElementById(id);
-  return el && el.value !== '' ? parseInt(el.value) : null;
-}
-function getSelectText(id) {
-  const el = document.getElementById(id);
-  return el && el.value !== '' ? el.options[el.selectedIndex].text : '—';
-}
-function getInputVal(id) {
-  const el = document.getElementById(id);
-  return el && el.value !== '' ? parseFloat(el.value) : null;
 }
 
-// 2. Optimasi Validasi Efisiensi & Durasi Logis
-function getSleepEfficiencyValidation() {
-  const tidurJam = getInputVal('q3');
-  const jamMasuk = document.getElementById('q4a').value;
-  const jamBangun = document.getElementById('q4b').value;
-
-  if (tidurJam === null || !jamMasuk || !jamBangun) {
-    return { valid: true, message: '', efficiencyPercent: 0 };
-  }
-
-  const [h1, m1] = jamMasuk.split(':').map(Number);
-  const [h2, m2] = jamBangun.split(':').map(Number);
-  let masuk = h1 * 60 + m1;
-  let bangun = h2 * 60 + m2;
-  
-  // Penanganan Lintas Tengah Malam (E.g., tidur jam 23:00, bangun jam 06:00)
-  if (bangun <= masuk) bangun += 24 * 60;
-
-  const diTempat = (bangun - masuk) / 60;
-
-  // Toleransi rounding mengambang JavaScript (0.01 jam) untuk mencegah bug presisi angka desimal
-  if (tidurJam > (diTempat + 0.01)) {
-    return {
-      valid: false,
-      message: `Durasi tidur nyata (${tidurJam} jam) tidak logis karena melebihi total waktu berbaring di kasur (${diTempat.toFixed(1)} jam). Silakan koreksi kembali Jam Tidur atau Jam Bangun Anda.`,
-      efficiencyPercent: 0
-    };
-  }
-
-  // Batasi persentase maksimal di angka 100%
-  const pct = Math.min(Math.round((tidurJam / diTempat) * 100), 100);
-
-  return { valid: true, message: '', efficiencyPercent: pct };
-}
-
-function updateEfficiencyAlert() {
-  const alert = document.getElementById('efficiencyAlert');
-  const validation = getSleepEfficiencyValidation();
-  alert.textContent = validation.valid ? '' : validation.message;
-  alert.classList.toggle('is-visible', !validation.valid);
-  return validation;
-}
-
-// 3. Fungsi Utama Utama Hitung Skor Final
-function hitungSkor() {
-  const nama = document.getElementById('nama').value.trim();
-  const usia = document.getElementById('usia').value.trim();
-  const targetInterpretation = document.getElementById('interpretation');
-  const targetScorePanel = document.getElementById('scorePanel');
-
-  // Validasi Soft Alert Data Klien
-  if (!nama || !usia) {
-    targetInterpretation.innerHTML = `⚠️ <span style="color: #e74c3c; font-weight: 600;">Data Klien Belum Lengkap.</span> Pastikan kolom Nama dan Usia sudah terisi sebelum melihat analisis kalkulasi skor.`;
-    targetScorePanel.scrollIntoView({behavior: 'smooth'});
-    return;
-  }
-
-  // Validasi Logika Waktu Tidur
-  const efficiencyValidation = updateEfficiencyAlert();
-  if (!efficiencyValidation.valid) {
-    document.getElementById('totalScore').textContent = '—';
-    targetInterpretation.innerHTML = `⚠️ ${efficiencyValidation.message}`;
-    return;
-  }
-
-  // --- KALKULASI SKOR PER KOMPONEN ---
-  
-  // C1: Kualitas Tidur Subjektif
-  const c1 = getRadioVal('c1');
-
-  // C2: Latensi Tidur
-  const menit = getInputVal('q2a');
-  const q2b = getRadioVal('q2b');
-  let c2score = null;
-  if (menit !== null && q2b !== null) {
-    let menitScore = menit <= 15 ? 0 : menit <= 30 ? 1 : menit <= 60 ? 2 : 3;
-    let sum = menitScore + q2b;
-    c2score = sum === 0 ? 0 : sum <= 2 ? 1 : sum <= 4 ? 2 : 3;
-  }
-
-  // C3: Durasi Tidur
-  const durasi = getInputVal('q3');
-  let c3 = null;
-  if (durasi !== null) {
-    c3 = durasi >= 7 ? 0 : durasi >= 6 ? 1 : durasi >= 5 ? 2 : 3; // FIXED LOGIC: Sebelumnya ada typo tanda '>' pada kode baru
-  }
-
-  // C4: Efisiensi Tidur
-  let c4 = null;
-  let efisiensiPersen = efficiencyValidation.efficiencyPercent;
-  if (durasi !== null && document.getElementById('q4a').value && document.getElementById('q4b').value) {
-    c4 = efisiensiPersen >= 85 ? 0 : efisiensiPersen >= 75 ? 1 : efisiensiPersen >= 65 ? 2 : 3;
-  }
-
-  // C5: Gangguan Tidur
-  const q5ids = ['q5a','q5b','q5c','q5d','q5e','q5f','q5g','q5h','q5i','q5j'];
-  let q5vals = q5ids.map(id => getSelectVal(id));
-  let c5 = null;
-  if (q5vals.every(v => v !== null)) {
-    let sum = q5vals.reduce((a,b) => a+b, 0);
-    c5 = sum === 0 ? 0 : sum <= 9 ? 1 : sum <= 18 ? 2 : 3;
-  }
-
-  // C6: Penggunaan Obat Tidur
-  const c6 = getRadioVal('c6');
-
-  // C7: Disfungsi di Siang Hari
-  const c7a = getRadioVal('c7a');
-  const c7b = getRadioVal('c7b');
-  let c7 = null;
-  if (c7a !== null && c7b !== null) {
-    let sum = c7a + c7b;
-    c7 = sum === 0 ? 0 : sum <= 2 ? 1 : sum <= 4 ? 2 : 3;
-  }
-
-  // Mapping Output Nilai ke UI Dashboard
-  const scores = {c1, c2: c2score, c3, c4, c5, c6, c7};
-  const labels = ['sc1','sc2','sc3','sc4','sc5','sc6','sc7'];
-  const keys = ['c1','c2','c3','c4','c5','c6','c7'];
-
-  keys.forEach((k, i) => {
-    document.getElementById(labels[i]).textContent = scores[k] !== null ? scores[k] : '?';
+function buildTidur() {
+  const c = document.getElementById('tidurQ');
+  tidurItems.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'q-item';
+    if (item.special) {
+      div.innerHTML = `<div class="q-text"><span class="q-num">B1.</span>${item.text}</div>
+      <div class="dur-options">
+        <label class="dur-btn"><input type="radio" name="t0" value="1">
+          <div class="dur-box"><div class="dur-jam">7–9 jam</div><div class="dur-skor">Skor 1 · Optimal</div></div></label>
+        <label class="dur-btn"><input type="radio" name="t0" value="3">
+          <div class="dur-box"><div class="dur-jam">6–7 / 9–10 jam</div><div class="dur-skor">Skor 3 · Borderline</div></div></label>
+        <label class="dur-btn"><input type="radio" name="t0" value="5">
+          <div class="dur-box"><div class="dur-jam">&lt;6 / &gt;10 jam</div><div class="dur-skor">Skor 5 · Perlu perhatian</div></div></label>
+      </div>`;
+    } else {
+      div.innerHTML = `<div class="q-text"><span class="q-num">B${i+1}.</span>${item.text}</div>
+      <div class="scale-options">${[1,2,3,4,5].map(v=>`
+        <label class="scale-btn">
+          <input type="radio" name="t${i}" value="${v}">
+          <div class="scale-circle">${v}</div>
+          <div class="scale-lbl">${scaleLabels[v].replace('\n','<br>')}</div>
+        </label>`).join('')}</div>`;
+    }
+    c.appendChild(div);
   });
-
-  // Cek Kelengkapan Isian Form Kuesioner
-  if (Object.values(scores).some(v => v === null)) {
-    document.getElementById('totalScore').textContent = '—';
-    targetInterpretation.innerHTML = '⚠️ <strong>Komponen Kuesioner Belum Lengkap.</strong> Selesaikan seluruh pertanyaan dari nomor 1 sampai 7 untuk melihat akumulasi skor global.';
-    return;
-  }
-
-  // Menghitung Total Skor Akhir Global PSQI
-  const total = Object.values(scores).reduce((a,b) => a+b, 0);
-  document.getElementById('totalScore').textContent = total;
-
-  // Output Interpretasi Klinis
-  let interp = '';
-  if (total <= 5) {
-    interp = `<strong>Kualitas Tidur Baik (Good Sleeper)</strong> — Skor ${total}/21. Pola tidur Anda berada dalam batas rentang adaptif yang sehat. Pertahankan jadwal jam sirkadian ini secara konsisten.`;
-  } else if (total <= 10) {
-    interp = `<strong>Kualitas Tidur Buruk (Poor Sleeper)</strong> — Skor ${total}/21. Terindikasi adanya kendala istirahat yang signifikan. Evaluasi nilai komponen skor tertinggi (skor 2 atau 3) sebagai fokus utama intervensi <em>sleep hygiene</em> Anda.`;
-  } else {
-    interp = `<strong>Gangguan Tidur Serius</strong> — Skor ${total}/21. Skor global menunjukkan hambatan tidur yang berat mendalam. Sangat direkomendasikan untuk melakukan konsultasi klinis lanjutan bersama profesional kesehatan medis atau spesialis somnologi.`;
-  }
-  targetInterpretation.innerHTML = interp;
-
-  // --- GENERATE DATA SUMMARY PRINT OUT ---
-  const tanggalIsi = document.getElementById('tanggal').value;
-  const tglFmt = tanggalIsi ? new Date(tanggalIsi).toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'}) : '—';
-  const namaCoach = document.getElementById('coach').value || '—';
-
-  let summaryHtml = `
-    <div class="summary-item-print" style="grid-column: 1 / -1; font-weight: 600; border-bottom: 2px solid var(--cream2); padding-bottom: 8px; margin-bottom: 6px;">
-      Nama Klien: <strong>${nama}</strong> &nbsp;|&nbsp; Usia: <strong>${usia} thn</strong> &nbsp;|&nbsp; Coach: <strong>${namaCoach}</strong> &nbsp;|&nbsp; Tanggal: <strong>${tglFmt}</strong>
-    </div>
-    <div class="summary-item-print">1. Jam bersiap tidur: <strong>${document.getElementById('q4a').value || '—'}</strong></div>
-    <div class="summary-item-print">2. Jeda waktu terlelap: <strong>${menit || '0'} menit</strong></div>
-    <div class="summary-item-print">3. Jam terbangun pagi: <strong>${document.getElementById('q4b').value || '—'}</strong></div>
-    <div class="summary-item-print">4. Durasi tidur efektif: <strong>${durasi || '0'} jam</strong> (Efisiensi: ${efisiensiPersen}%)</div>
-    <div class="summary-item-print">5. Kualitas tidur subjektif: <strong>${getRadioText('c1')}</strong></div>
-    <div class="summary-item-print">2b. Masalah tidur dalam 30 menit: <strong>${getRadioText('q2b')}</strong></div>
-    <div class="summary-item-print">5a. Tidak bisa lelap dlm 30 menit: <strong>${getSelectText('q5a')}</strong></div>
-    <div class="summary-item-print">5b. Terbangun tengah malam/dini hari: <strong>${getSelectText('q5b')}</strong></div>
-    <div class="summary-item-print">5c. Terbangun untuk ke kamar mandi: <strong>${getSelectText('q5c')}</strong></div>
-    <div class="summary-item-print">5d. Tidak bisa bernapas nyaman: <strong>${getSelectText('q5d')}</strong></div>
-    <div class="summary-item-print">5e. Batuk / mendengkur keras: <strong>${getSelectText('q5e')}</strong></div>
-    <div class="summary-item-print">5f. Merasa kedinginan: <strong>${getSelectText('q5f')}</strong></div>
-    <div class="summary-item-print">5g. Merasa kepanasan: <strong>${getSelectText('q5g')}</strong></div>
-    <div class="summary-item-print">5h. Mengalami mimpi buruk: <strong>${getSelectText('q5h')}</strong></div>
-    <div class="summary-item-print">5i. Merasakan nyeri fisik: <strong>${getSelectText('q5i')}</strong></div>
-    <div class="summary-item-print">5j. Alasan gangguan fisik/lingkungan lain: <strong>${getSelectText('q5j')}</strong></div>
-    <div class="summary-item-print">6. Penggunaan obat tidur: <strong>${getRadioText('c6')}</strong></div>
-    <div class="summary-item-print">7. Kesulitan terjaga / mengantuk siang: <strong>${getRadioText('c7a')}</strong></div>
-    <div class="summary-item-print">8. Gangguan antusiasme kerja: <strong>${getRadioText('c7b')}</strong></div>
-  `;
-  document.getElementById('summaryTargetGrid').innerHTML = summaryHtml;
 }
 
-// 4. Reset form & event handler initialisasi
+// ── INTERPRETASI DATA ────────────────────────────────────────────────────────
+const stressCat = s => s <= 20 ? 0 : s <= 35 ? 1 : 2;
+const tidurCat  = t => t <= 12 ? 2 : t <= 21 ? 1 : 0; // 0=perlu perhatian(atas), 2=restoratif(bawah)
+
+const catStressLabel = ['Rendah','Sedang','Tinggi'];
+const catTidurLabel  = ['Perlu Perhatian','Bisa Lebih Optimal','Restoratif'];
+
+const catStressColor = ['var(--green)','var(--yellow)','var(--red)'];
+const catTidurColor  = ['var(--red)','var(--orange)','var(--green)'];
+
+// grid [tidurRow][stressCol] — tidurRow: 0=perlu perhatian(atas), 2=restoratif(bawah)
+const interpretasi = [
+  // tidur = perlu perhatian (row 0, atas)
+  [
+    { title:'Perbaiki Tidur',                         warna:'var(--yellow)', narasi:'Stress kamu masih terkendali, tapi kualitas tidur perlu diperbaiki. Kemungkinan ada faktor lain yang mempengaruhi tidur — bisa dari lingkungan, kebiasaan, atau chronotype. Diskusikan lebih lanjut dengan coach.' },
+    { title:'Perbaiki Tidur dan Manajemen Stress',    warna:'var(--orange)', narasi:'Stress mulai meningkat dan tidurmu juga terganggu. Keduanya bisa saling memperparah. Mulai intervensi di salah satu area — memperbaiki tidur bisa membantu menurunkan stress, dan sebaliknya.' },
+    { title:'Perlu Intervensi Segera',                warna:'var(--red)',    narasi:'Stress tinggi dan kualitas tidur buruk adalah kombinasi yang berat. Keduanya sangat mungkin saling memperparah dalam loop yang sulit diputus sendiri. Sangat disarankan untuk segera diskusi mendalam bersama coach.' }
+  ],
+  // tidur = bisa lebih optimal (row 1)
+  [
+    { title:'Ada Peluang Lebih Baik',                 warna:'var(--green)',  narasi:'Kondisi cukup baik. Stress rendah dan tidur masih oke meski ada ruang untuk ditingkatkan. Perhatikan konsistensi jam tidur dan faktor lingkungan untuk membawa tidur ke level restoratif.' },
+    { title:'Mulai Aware dengan Stress dan Tidur',    warna:'var(--yellow)', narasi:'Stress dan kualitas tidur keduanya berada di zona tengah. Belum darurat, tapi kalau dibiarkan keduanya bisa saling memperburuk. Mulai perhatikan satu area yang paling terasa mengganggu.' },
+    { title:'Perlu Intervensi',                       warna:'var(--orange)', narasi:'Stress tinggi meski tidur masih cukup. Ini sinyal penting — tidur yang belum optimal dikombinasikan dengan stress tinggi berisiko membentuk loop negatif. Perlu penanganan stress yang lebih serius.' }
+  ],
+  // tidur = restoratif (row 2, bawah)
+  [
+    { title:'Baik',                                   warna:'var(--green)',  narasi:'Kondisi sangat baik. Stress terkendali dan tidurmu restoratif. Pertahankan pola ini — konsistensi adalah kunci. Bagikan kebiasaan baikmu kepada orang-orang di sekitarmu.' },
+    { title:'Mulai Perhatikan Stressor',              warna:'var(--yellow)', narasi:'Tidurmu restoratif — ini modal besar. Tapi stress mulai naik dan perlu ditangani sebelum mulai mengganggu kualitas tidur. Identifikasi sumber stress utama bersama coach.' },
+    { title:'Kelola Tingkat Stress',                  warna:'var(--yellow)', narasi:'Tidurmu masih terjaga meski stress tinggi — kemungkinan ada coping mechanism yang bekerja. Tapi ini tidak akan bertahan lama kalau stress tidak ditangani. Prioritaskan manajemen stress sekarang.' }
+  ]
+];
+
+// ── HITUNG ───────────────────────────────────────────────────────────────────
+function hitung() {
+  const errBox = document.getElementById('errorBox');
+  errBox.style.display = 'none';
+
+  // Kumpulkan skor stress
+  let sStress = 0;
+  for (let i = 0; i < 10; i++) {
+    const v = document.querySelector(`input[name="s${i}"]:checked`);
+    if (!v) { showError(`Pertanyaan A${i+1} belum diisi.`); return; }
+    sStress += parseInt(v.value);
+  }
+
+  // Kumpulkan skor tidur
+  let sTidur = 0;
+  for (let i = 0; i < 7; i++) {
+    const v = document.querySelector(`input[name="t${i}"]:checked`);
+    if (!v) { showError(`Pertanyaan B${i+1} belum diisi.`); return; }
+    sTidur += parseInt(v.value);
+  }
+
+  const sc = stressCat(sStress); // 0=rendah,1=sedang,2=tinggi
+  const tc = tidurCat(sTidur);   // 0=perlu perhatian,1=bisa optimal,2=restoratif
+  const data = interpretasi[tc][sc];
+
+  // Grid row: tc=2(restoratif)→row2(bawah), tc=0(perlu perhatian)→row0(atas)
+  // Tapi di grid HTML: row0=perlu perhatian(atas), row2=restoratif(bawah)
+  // tc sudah: 0=perlu perhatian=row0, 1=bisa optimal=row1, 2=restoratif=row2
+  const plotRow = tc === 0 ? 0 : tc === 1 ? 1 : 2;
+  const plotCol = sc;
+
+  // Identitas
+  const nama  = document.getElementById('nama').value || 'Klien';
+  const usia  = document.getElementById('usia').value;
+  const coach = document.getElementById('coach').value;
+  const tgl   = document.getElementById('tgl').value;
+  const tglFmt = tgl ? new Date(tgl).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+
+  document.getElementById('rNama').textContent = nama;
+  let subs = [];
+  if (usia)  subs.push('Usia ' + usia + ' tahun');
+  if (coach) subs.push('Coach: ' + coach);
+  subs.push(tglFmt);
+  document.getElementById('rSub').textContent = subs.join(' · ');
+
+  // Skor
+  document.getElementById('rStressVal').textContent = sStress;
+  document.getElementById('rTidurVal').textContent  = sTidur;
+
+  const sCatEl = document.getElementById('rStressCat');
+  sCatEl.textContent = catStressLabel[sc];
+  sCatEl.style.background = sc===0?'#eafaf1':sc===1?'#fef9e7':'#fdedec';
+  sCatEl.style.color = catStressColor[sc];
+
+  const tCatEl = document.getElementById('rTidurCat');
+  tCatEl.textContent = catTidurLabel[tc];
+  tCatEl.style.background = tc===2?'#eafaf1':tc===1?'#fdf2e9':'#fdedec';
+  tCatEl.style.color = catTidurColor[tc];
+
+  // Plot — highlight sel aktif
+  document.querySelectorAll('.plot-cell').forEach(el => {
+    el.classList.remove('active');
+    const star = el.querySelector('.star');
+    if (star) star.remove();
+  });
+  const activeCell = document.querySelector(`.plot-cell[data-row="${plotRow}"][data-col="${plotCol}"]`);
+  if (activeCell) {
+    activeCell.classList.add('active');
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.textContent = '★';
+    star.style.color = 'white';
+    activeCell.appendChild(star);
+  }
+
+  // Hasil box
+  const hBox = document.getElementById('hasilBox');
+  hBox.style.borderColor = data.warna;
+  hBox.style.background  = data.warna === 'var(--green)'  ? '#eafaf1' :
+                            data.warna === 'var(--yellow)' ? '#fef9e7' :
+                            data.warna === 'var(--orange)' ? '#fdf2e9' : '#fdedec';
+  document.getElementById('hasilLabel').textContent  = catStressLabel[sc] + ' · ' + catTidurLabel[tc];
+  document.getElementById('hasilLabel').style.color  = data.warna;
+  document.getElementById('hasilTitle').textContent  = data.title;
+  document.getElementById('hasilTitle').style.color  = data.warna;
+  document.getElementById('hasilNarasi').textContent = data.narasi;
+
+  document.getElementById('resultSection').style.display = 'block';
+  setTimeout(() => document.getElementById('resultSection').scrollIntoView({behavior:'smooth'}), 100);
+}
+
+function showError(msg) {
+  const e = document.getElementById('errorBox');
+  document.getElementById('errorMsg').textContent = msg;
+  e.style.display = 'block';
+  e.scrollIntoView({behavior:'smooth'});
+}
+
 function resetForm() {
-  if (!confirm('Apakah Anda yakin ingin menghapus semua lembar jawaban ini?')) return;
+  document.getElementById('resultSection').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
   document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
-  document.querySelectorAll('input[type="number"], input[type="text"], input[type="date"], input[type="time"]').forEach(i => i.value = '');
-  document.querySelectorAll('select').forEach(s => s.value = '');
-  document.querySelectorAll('.radio-option').forEach(opt => {
-    opt.style.borderColor = 'var(--cream2)';
-    opt.style.background = 'var(--cream)';
-  });
-  ['sc1','sc2','sc3','sc4','sc5','sc6','sc7'].forEach(id => document.getElementById(id).textContent = '—');
-  document.getElementById('totalScore').textContent = '—';
-  document.getElementById('interpretation').innerHTML = 'Isi seluruh pertanyaan lalu klik <strong>Hitung Skor</strong> untuk melihat interpretasi.';
-  document.getElementById('summaryTargetGrid').innerHTML = '';
-  updateEfficiencyAlert();
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
-// Event hooks setup untuk reactive validation
-document.getElementById('tanggal').valueAsDate = new Date();
-['q3','q4a','q4b'].forEach(id => {
-  document.getElementById(id).addEventListener('input', updateEfficiencyAlert);
-  document.getElementById(id).addEventListener('change', updateEfficiencyAlert);
-});
+// ── INIT ─────────────────────────────────────────────────────────────────────
+buildStress();
+buildTidur();
+document.getElementById('tgl').valueAsDate = new Date();
 </script>
 </body>
 </html>
