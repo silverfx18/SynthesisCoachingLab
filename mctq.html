@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MCTQ — Synthesis Coaching Lab</title>
-<link rel="icon" type="image/png" href="Logo.png">
+<link rel="icon" type="image/png" href="favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&display=swap" rel="stylesheet">
+
 <style>
 :root {
   --teal: #2F9794;
@@ -184,7 +185,8 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
 .card-logo svg { width: 100%; height: 100%; }
 
 .chrono-hero { padding: 24px 32px; display: flex; align-items: center; gap: 28px; position: relative; }
-.animal-svg { width: 100px; height: 100px; flex-shrink: 0; }
+.animal-svg { width: 130px; height: 100px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.animal-img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .chrono-info { flex: 1; }
 .chrono-badge { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 8px; }
 .chrono-name { font-size: 26px; font-weight: 900; margin-bottom: 4px; line-height: 1; }
@@ -195,7 +197,8 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
 .spectrum-wrap { padding: 0 32px 20px; border-bottom: 1px solid var(--cream2); }
 .spectrum-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
 .spectrum-bar { position: relative; height: 10px; border-radius: 5px; background: linear-gradient(90deg, #e8892a 0%, #e8a02a 22%, #2F9794 40%, #2F9794 65%, #3a3a6e 82%, #1a1a4e 100%); margin-bottom: 24px; }
-.spectrum-labels { display: flex; justify-content: space-between; font-size: 9px; color: var(--muted); font-weight: 600; margin-top: 6px; }
+.spectrum-labels { position: relative; height: 28px; font-size: 9px; color: var(--muted); font-weight: 600; margin-top: 6px; }
+.spectrum-labels span { position: absolute; top: 0; transform: translateX(-50%); text-align: center; white-space: nowrap; }
 .spectrum-pointer { position: absolute; top: -5px; width: 20px; height: 20px; border-radius: 50%; background: white; border: 3px solid var(--dark); transform: translateX(-50%); transition: left 0.5s ease; }
 .spectrum-pointer-label { position: absolute; top: -22px; transform: translateX(-50%); font-size: 9px; font-weight: 700; white-space: nowrap; color: var(--dark); background: white; padding: 1px 4px; border-radius: 3px; }
 
@@ -427,10 +430,8 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
         </div>
       </div>
       <div class="spectrum-labels">
-        <span>00:00<br>Ext. Early</span>
-        <span>02:00<br>Singa</span>
-        <span>04:00<br>Beruang</span>
-        <span>06:00+<br>Serigala</span>
+        <span style="left:37.5%;">02:00<br>Lion</span>
+        <span style="left:62.5%;">04:00<br>Wolf</span>
       </div>
     </div>
 
@@ -495,72 +496,48 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
 
 <script>
 // ── ANIMALS ENGINE (Source 1) ────────────────────────────────────────────────
+// ── ANIMALS ENGINE (Baru - Menggunakan Path PNG ke Sub-Repo Assets) ──────────
 const animals = {
-  lion: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="60" cy="62" r="38" fill="#e8892a" opacity="0.25"/>
-    <circle cx="60" cy="62" r="30" fill="#e8892a" opacity="0.4"/>
-    <ellipse cx="60" cy="82" rx="22" ry="18" fill="#f5b84a"/>
-    <circle cx="60" cy="55" r="22" fill="#f5b84a"/>
-    <polygon points="40,38 34,22 50,32" fill="#f5b84a"/>
-    <polygon points="80,38 86,22 70,32" fill="#f5b84a"/>
-    <ellipse cx="52" cy="52" rx="4" ry="4.5" fill="white"/>
-    <ellipse cx="68" cy="52" rx="4" ry="4.5" fill="white"/>
-    <circle cx="53" cy="53" r="2.5" fill="#2a1a00"/>
-    <circle cx="69" cy="53" r="2.5" fill="#2a1a00"/>
-    <ellipse cx="60" cy="60" rx="6" ry="4" fill="#e8892a"/>
-    <path d="M54,64 Q60,70 66,64" stroke="#7a3a00" stroke-width="1.5" fill="none"/>
-  </svg>`,
-  bear: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="60" cy="85" rx="26" ry="22" fill="#2F9794"/>
-    <circle cx="60" cy="56" r="26" fill="#2F9794"/>
-    <circle cx="38" cy="36" r="10" fill="#2F9794"/>
-    <circle cx="82" cy="36" r="10" fill="#2F9794"/>
-    <circle cx="60" cy="60" r="16" fill="#3db8b4" opacity="0.35"/>
-    <ellipse cx="52" cy="53" rx="4" ry="4.5" fill="white"/>
-    <ellipse cx="68" cy="53" rx="4" ry="4.5" fill="white"/>
-    <circle cx="53" cy="54" r="2.5" fill="#0e181d"/>
-    <circle cx="69" cy="54" r="2.5" fill="#0e181d"/>
-    <ellipse cx="60" cy="62" rx="5" ry="3.5" fill="#0e181d"/>
-    <path d="M55,66 Q60,72 65,66" stroke="#0e181d" stroke-width="1.5" fill="none"/>
-  </svg>`,
-  wolf: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="60" cy="85" rx="24" ry="20" fill="#3a3a6e"/>
-    <ellipse cx="60" cy="56" rx="24" ry="26" fill="#3a3a6e"/>
-    <polygon points="38,38 32,12 52,32" fill="#3a3a6e"/>
-    <polygon points="82,38 88,12 68,32" fill="#3a3a6e"/>
-    <ellipse cx="50" cy="53" rx="4.5" ry="4" fill="#f0e060"/>
-    <ellipse cx="70" cy="53" rx="4.5" ry="4" fill="#f0e060"/>
-    <ellipse cx="51" cy="54" rx="2" ry="3" fill="#0e181d"/>
-    <ellipse cx="71" cy="54" rx="2" ry="3" fill="#0e181d"/>
-    <ellipse cx="60" cy="62" rx="5" ry="3.5" fill="#0e181d"/>
-  </svg>`
+  lion: 'assets/lion.png',
+  bear: 'assets/bear.png',
+  wolf: 'assets/wolf.png'
 };
 
 // ── TEXT TEXT DATA (Source 1) ────────────────────────────────────────────────
 const chronoData = {
-  lionEx: {
-    animal:'lion', name:'🦁 SINGA', sub:'Extremely Early Chronotype', badge:'EXTREMELY EARLY', badgeClass:'lion',
-    about:'Kamu berada di ujung paling awal spektrum chronotype — hanya sekitar 5% populasi. Energi puncak sangat pagi (07:00–11:00), dan kamu mungkin sulit bertahan hingga larut malam bahkan di hari bebas. Ini bawaan biologis, bukan pilihan gaya hidup.',
+  extremeEarly: {
+    animal:'lion', name:'EXTREMELY EARLY', sub:'Extreme Morningness', badge:'MSFsc < 00:00', badgeClass:'lion',
+    about:'Kamu berada di area singa paling awal. Titik tengah tidurmu jatuh sebelum tengah malam, sehingga ritme biologismu sangat pagi dan rasa kantuk biasanya datang lebih cepat dari jadwal sosial umum.',
     tidur:'19:30–21:00', fokus:'07:00–11:00', olahraga:'06:00–08:00'
   },
-  lion: {
-    animal:'lion', name:'🦁 SINGA', sub:'Early Chronotype', badge:'Early Bird', badgeClass:'lion',
-    about:'Jam biologismu lebih awal dari mayoritas populasi. Kamu cenderung mudah bangun pagi, energi puncak di pagi–siang hari, dan ngantuk lebih awal di malam hari. Tubuhmu memang dirancang untuk "pagi hari".',
+  moderatelyEarly: {
+    animal:'lion', name:'EARLY', sub:'Morningness', badge:'MSFsc 00:00–01:44', badgeClass:'lion',
+    about:'Kamu berada di area singa. Chronotype kamu condong pagi, biasanya lebih nyaman memulai aktivitas lebih awal dan performa terbaik cenderung muncul pada pagi hingga menjelang siang.',
     tidur:'21:00–22:30', fokus:'08:00–13:00', olahraga:'07:00–10:00'
   },
-  bear: {
-    animal:'bear', name:'🐻 BERUANG', sub:'Intermediate Chronotype', badge:'Intermediate', badgeClass:'bear',
-    about:'Ritme biologismu selaras dengan siklus matahari — ini chronotype mayoritas populasi (~50%). Kamu butuh sedikit "pemanasan" di pagi hari sebelum performa puncak, dan energi terbaikmu ada di pertengahan hari.',
+  earlyIntermediate: {
+    animal:'bear', name:'EARLY INTERMEDIATE', sub:'Slight Morningness', badge:'MSFsc 01:45–02:29', badgeClass:'bear',
+    about:'Ritme biologismu sedikit condong pagi, tetapi masih dekat dengan rentang intermediate. Kamu umumnya cukup adaptif, dengan performa yang mulai stabil dari pagi menuju pertengahan hari.',
+    tidur:'22:00–23:00', fokus:'09:00–13:00', olahraga:'08:00–11:00'
+  },
+  intermediate: {
+    animal:'bear', name:'INTERMEDIATE', sub:'Intermediate', badge:'MSFsc 02:30–03:29', badgeClass:'bear',
+    about:'Ritme biologismu berada di area tengah spektrum chronotype. Kamu cenderung paling mudah menyesuaikan diri dengan jadwal sosial umum, terutama jika jam tidur dan bangun konsisten.',
     tidur:'23:00–00:00', fokus:'10:00–14:00', olahraga:'10:00–12:00'
   },
-  wolf: {
-    animal:'wolf', name:'🐺 SERIGALA', sub:'Late Chronotype', badge:'Night Owl', badgeClass:'wolf',
-    about:'Jam biologismu lebih lambat dari mayoritas. Kamu cenderung sulit bangun pagi, energi puncak baru muncul di sore–malam hari, dan otak paling tajam setelah jam 12 siang. Ini bukan kemalasan — ini genetik dan hormonal.',
+  lateIntermediate: {
+    animal:'bear', name:'LATE INTERMEDIATE', sub:'Slight Eveningness', badge:'MSFsc 03:30–04:14', badgeClass:'bear',
+    about:'Chronotype kamu sedikit condong malam. Energi terbaik sering muncul lebih lambat dibanding jadwal pagi standar, tetapi kamu masih berada dekat area tengah spektrum.',
+    tidur:'00:00–01:00', fokus:'11:00–16:00', olahraga:'15:00–18:00'
+  },
+  moderatelyLate: {
+    animal:'wolf', name:'LATE', sub:'Eveningness', badge:'MSFsc 04:15–05:59', badgeClass:'wolf',
+    about:'Kamu mulai masuk area wolf. Jam biologismu condong malam, sehingga kamu mungkin butuh waktu lebih lama untuk aktif penuh di pagi hari, sementara fokus sering lebih kuat pada sore hingga malam.',
     tidur:'01:00–02:00', fokus:'13:00–18:00', olahraga:'17:00–20:00'
   },
-  wolfEx: {
-    animal:'wolf', name:'🐺 SERIGALA', sub:'Extremely Late Chronotype', badge:'EXTREMELY LATE', badgeClass:'wolf',
-    about:'Kamu berada di ujung paling malam spektrum chronotype — sekitar 5% populasi. Ritme sirkadianmu jauh tertinggal dari "standar sosial". Ini sering disalahartikan sebagai kemalasan, padahal ada dasar biologis yang kuat.',
+  extremeLate: {
+    animal:'wolf', name:'EXTREMELY LATE', sub:'Extreme Eveningness', badge:'MSFsc ≥ 06:00', badgeClass:'wolf',
+    about:'Kamu berada di ujung paling malam spektrum chronotype. Ritme biologismu jauh lebih lambat dari jadwal sosial umum, sehingga strategi penyesuaian jadwal dan paparan cahaya perlu dibuat bertahap.',
     tidur:'02:30–04:00', fokus:'15:00–20:00', olahraga:'18:00–21:00'
   }
 };
@@ -574,9 +551,10 @@ function getTime(hId, mId) {
 
 function hoursToTime(h) {
   h = ((h % 24) + 24) % 24;
-  const hh = Math.floor(h);
-  const mm = Math.round((h - hh) * 60);
-  return String(hh).padStart(2,'0') + ':' + String(mm >= 60 ? 59 : mm).padStart(2,'0');
+  const totalMin = Math.round(h * 60) % (24 * 60);
+  const hh = Math.floor(totalMin / 60);
+  const mm = totalMin % 60;
+  return String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
 }
 
 function durFmt(h) {
@@ -590,6 +568,18 @@ function durFmt(h) {
 function circularDiff(a, b) {
   const raw = Math.abs(a - b);
   return Math.min(raw, 24 - raw);
+}
+
+function chronotypeHour(h) {
+  const normalized = ((h % 24) + 24) % 24;
+  return normalized >= 12 ? normalized - 24 : normalized;
+}
+
+function spectrumPercent(h) {
+  const min = -1;
+  const max = 7;
+  const scaled = ((h - min) / (max - min)) * 100;
+  return Math.min(Math.max(scaled, 3), 97);
 }
 
 // ── CALCULATION ENGINE (Source 1) ───────────────────────────────────────────
@@ -630,6 +620,14 @@ function hitungMCTQ() {
 
   const sdW = seW - soW;
   const sdF = seF - soF;
+
+  if (sdW < 3 || sdW > 14 || sdF < 3 || sdF > 14) {
+    document.getElementById('errorMsg').textContent = 'Durasi tidur tampak tidak realistis. Pastikan jam mulai tidur dan bangun menghasilkan durasi 3–14 jam untuk hari kerja dan hari bebas.';
+    errBox.style.display = 'block';
+    errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
   const sdWeek = (sdW * wd + sdF * fd) / 7;
 
   // Logika Evaluasi Sleep Debt Singkat Engine Source 1
@@ -641,13 +639,16 @@ function hitungMCTQ() {
 
   const sjl = circularDiff(((msfSc % 24) + 24) % 24, ((msw % 24) + 24) % 24);
   const msfH = ((msfSc % 24) + 24) % 24;
+  const chronoH = chronotypeHour(msfSc);
 
   let cType;
-  if (msfH < 1.5)       cType = 'lionEx';
-  else if (msfH < 4.0)  cType = 'lion';
-  else if (msfH < 6.0)  cType = 'bear';
-  else if (msfH < 7.5)  cType = 'wolf';
-  else                  cType = 'wolfEx';
+  if (chronoH < 0)          cType = 'extremeEarly';
+  else if (chronoH < 1.75)  cType = 'moderatelyEarly';
+  else if (chronoH < 2.5)   cType = 'earlyIntermediate';
+  else if (chronoH < 3.5)   cType = 'intermediate';
+  else if (chronoH < 4.25)  cType = 'lateIntermediate';
+  else if (chronoH < 6.0)   cType = 'moderatelyLate';
+  else                      cType = 'extremeLate';
 
   const cd = chronoData[cType];
 
@@ -675,7 +676,7 @@ function hitungMCTQ() {
     sjlDetail = 'Social jet lag ekstrem. Level misalignment yang sangat serius. Perlu strategi penyesuaian bertahap.';
   }
 
-  const specPct = Math.min(Math.max((msfH / 8) * 100, 3), 97);
+  const specPct = spectrumPercent(chronoH);
 
   const coach = document.getElementById('coach').value;
   const tgl = document.getElementById('tgl').value;
@@ -698,7 +699,7 @@ function hitungMCTQ() {
 
   const hero = document.getElementById('chronoHero');
   hero.className = 'chrono-hero ' + cd.badgeClass;
-  document.getElementById('animalSvg').innerHTML = animals[cd.animal];
+  document.getElementById('animalSvg').innerHTML = `<img src="${animals[cd.animal]}" alt="${cd.name} Chronotype" class="animal-img">`;
   document.getElementById('chronoBadge').textContent = cd.badge;
   document.getElementById('chronoName').textContent = cd.name;
   document.getElementById('chronoSub').textContent = cd.sub;
@@ -724,6 +725,20 @@ function resetForm() {
   document.getElementById('resultSection').style.display = 'none';
   document.getElementById('errorBox').style.display = 'none';
   document.getElementById('softAlert').style.display = 'none';
+  document.getElementById('nama').value = '';
+  document.getElementById('usia').value = '';
+  document.getElementById('coach').value = '';
+  document.getElementById('tgl').valueAsDate = new Date();
+  document.getElementById('soW_h').value = '23';
+  document.getElementById('soW_m').value = '00';
+  document.getElementById('seW_h').value = '06';
+  document.getElementById('seW_m').value = '00';
+  document.getElementById('soF_h').value = '00';
+  document.getElementById('soF_m').value = '00';
+  document.getElementById('seF_h').value = '08';
+  document.getElementById('seF_m').value = '00';
+  document.getElementById('alarmW').value = 'yes';
+  document.getElementById('freeDays').value = '2';
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
