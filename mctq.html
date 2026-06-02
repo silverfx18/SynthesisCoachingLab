@@ -54,6 +54,13 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
     page-break-inside: avoid;
     break-inside: avoid;
   }
+  
+  /* PERBAIKAN 1: Paksa warna background dan gradient spectrum agar muncul saat dicetak/PDF */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   .card-header { padding: 14px 20px 10px !important; }
   .card-header::after { left: 20px !important; right: 20px !important; }
   .card-name { font-size: 18px !important; }
@@ -267,7 +274,6 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
       <p>Temukan jam biologis alami tubuhmu berdasarkan pola tidur di hari kerja dan hari bebas.</p>
     </div>
     <div class="header-logo">
-      <!-- Logo SVG MCTQ Asli Tetap Dipertahankan -->
       <svg viewBox="0 0 342 488" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
         <g transform="matrix(1,0,0,1,-214.223845,-2080.871108)">
           <g transform="matrix(0.997224,0,0,0.997224,-76.830008,-247.417603)">
@@ -292,8 +298,8 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
   <div class="section-label">Data Klien</div>
   <div class="id-grid">
     <div class="field"><label>Nama</label><input type="text" id="nama" placeholder="Nama lengkap"></div>
-    <div class="field"><label>Usia</label><input type="number" id="usia" placeholder="Tahun" min="10" max="100"></div>
-    <div class="field"><label>Tanggal</label><input type="date" id="tgl"></div>
+    <div class="field"><label>Tanggal Lahir</label><input type="date" id="tglLahir"></div>
+    <div class="field"><label>Tanggal Assessment</label><input type="date" id="tgl"></div>
     <div class="field"><label>Coach</label><input type="text" id="coach" placeholder="Nama coach"></div>
   </div>
 </div>
@@ -385,8 +391,6 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
 </div>
 
 <div id="resultSection">
-  
-  
 
   <div class="result-card" id="resultCard">
     <div class="card-header">
@@ -396,7 +400,6 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
         <div class="card-sub" id="rSub">—</div>
       </div>
       <div class="card-logo">
-        <!-- Logo SVG MCTQ Asli Tetap Dipertahankan -->
       <svg viewBox="0 0 342 488" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
         <g transform="matrix(1,0,0,1,-214.223845,-2080.871108)">
           <g transform="matrix(0.997224,0,0,0.997224,-76.830008,-247.417603)">
@@ -485,7 +488,6 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
     </div>
   </div>
 
-<!-- Kontrol PDF/Print diposisikan di atas Card agar aman tidak terpotong -->
   <div class="actions-result no-print">
     <button class="btn btn-primary" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
     <button class="btn btn-secondary" onclick="resetForm()">← Isi Ulang Form</button>
@@ -495,8 +497,7 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
 </div>
 
 <script>
-// ── ANIMALS ENGINE (Source 1) ────────────────────────────────────────────────
-// ── ANIMALS ENGINE (Baru - Menggunakan Path PNG ke Sub-Repo Assets) ──────────
+// ── ANIMALS ENGINE (Path PNG ke Sub-Repo Assets) ──────────────────────────
 const animals = {
   lion: 'assets/lion.png',
   bear: 'assets/bear.png',
@@ -590,15 +591,47 @@ function hitungMCTQ() {
   softAlert.style.display = 'none';
 
   const namaInput = document.getElementById('nama').value.trim();
-  const usiaInput = document.getElementById('usia').value.trim();
+  const tglLahirInput = document.getElementById('tglLahir').value;
 
-  // Validasi Soft Notification Nama & Usia
-  if (!namaInput || !usiaInput) {
-    softAlert.innerHTML = `🔔 <strong>Pemberitahuan:</strong> Mohon isi <strong>Nama</strong> dan <strong>Usia</strong> terlebih dahulu agar hasil analisis cetak kartu dapat terisi dengan lengkap.`;
+  // Validasi Awal: Kelengkapan Data
+  if (!namaInput || !tglLahirInput) {
+    softAlert.innerHTML = `🔔 <strong>Pemberitahuan:</strong> Mohon isi <strong>Nama</strong> dan <strong>Tanggal Lahir</strong> terlebih dahulu agar hasil analisis cetak kartu dapat terisi dengan lengkap.`;
     softAlert.style.display = 'block';
     softAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
+
+  // PERBAIKAN 2: Validasi Nama Keras (Regex). Menolak angka / simbol aneh. Hanya alfabet, spasi, titik, atau petik tunggal. Minimum 2 karakter.
+  const namaRegex = /^[a-zA-Z\s\.\']{2,50}$/;
+  if (!namaRegex.test(namaInput)) {
+    document.getElementById('errorMsg').textContent = 'Format Nama tidak valid. Nama hanya boleh berisi huruf, spasi, titik, atau tanda petik tunggal (tanpa angka / simbol aneh) dengan panjang 2–50 karakter.';
+    errBox.style.display = 'block';
+    errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  // Hitung Usia & PERBAIKAN 3: Validasi Tanggal Lahir (Tidak boleh lebih besar dari hari ini)
+  const tglLahirObj = new Date(tglLahirInput);
+  const hariIni = new Date();
+  
+  // Set waktu hari ini ke 00:00:00 untuk perbandingan tanggal murni
+  hariIni.setHours(0,0,0,0);
+  tglLahirObj.setHours(0,0,0,0);
+
+  if (tglLahirObj > hariIni) {
+    document.getElementById('errorMsg').textContent = 'Tanggal Lahir tidak valid. Tanggal lahir tidak boleh melebihi tanggal hari ini.';
+    errBox.style.display = 'block';
+    errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  let usiaDihitung = hariIni.getFullYear() - tglLahirObj.getFullYear();
+  const m = hariIni.getMonth() - tglLahirObj.getMonth();
+  if (m < 0 || (m === 0 && hariIni.getDate() < tglLahirObj.getDate())) {
+    usiaDihitung--;
+  }
+  
+  const tglLahirFmt = tglLahirObj.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
 
   let soW = getTime('soW_h','soW_m');
   let seW = getTime('seW_h','seW_m');
@@ -629,8 +662,6 @@ function hitungMCTQ() {
   }
 
   const sdWeek = (sdW * wd + sdF * fd) / 7;
-
-  // Logika Evaluasi Sleep Debt Singkat Engine Source 1
   const debt = noAlarmWork ? 0 : Math.max(0, sdWeek - sdW);
 
   const msfRaw = soF + sdF / 2;
@@ -652,7 +683,6 @@ function hitungMCTQ() {
 
   const cd = chronoData[cType];
 
-  // Tingkat Keparahan Deskripsi SJL Engine Source 1
   let sjlColor, sjlStatusTxt, sjlAnalogy, sjlDetail;
   if (sjl < 1) {
     sjlColor = 'var(--sjl-low)';
@@ -682,10 +712,10 @@ function hitungMCTQ() {
   const tgl = document.getElementById('tgl').value;
   const tglFmt = tgl ? new Date(tgl).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
 
-  // Tampilkan Nama & Usia pada Hasil Akhir Result Card
   document.getElementById('rNama').textContent = namaInput;
   let subParts = [];
-  subParts.push('Usia ' + usiaInput + ' tahun');
+  subParts.push('Lahir: ' + tglLahirFmt);
+  subParts.push('Usia: ' + usiaDihitung + ' tahun');
   if (coach) subParts.push('Coach: ' + coach);
   subParts.push(tglFmt);
   document.getElementById('rSub').textContent = subParts.join(' · ');
@@ -717,8 +747,53 @@ function hitungMCTQ() {
   document.getElementById('specPtr').style.left = specPct + '%';
   document.getElementById('specLabel').textContent = hoursToTime(msfSc);
 
+  // ── INTEGRASI WEB APP GOOGLE SHEETS ──────────────────────────────────────
+  // PERBAIKAN: URL dibungkus string tanda petik ganda agar tidak crash
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzOMcAJDNSDD6IPoWweqL2WyeddNUqmUxpSW8CjbT5TM4118WoPr2L_i9FxJ1n9uoQRUg/exec";
+
+  const payload = {
+    tanggalInput: tglFmt,
+    nama: namaInput,
+    tglLahir: tglLahirFmt,
+    usia: usiaDihitung + " Tahun",
+    coach: coach ? coach : "-",
+    sdKerja: durFmt(sdW),
+    sdBebas: durFmt(sdF),
+    chronotype: cd.name,
+    msfsc: hoursToTime(msfSc),
+    sjl: durFmt(sjl),
+    sleepDebt: noAlarmWork ? "0 jam (natural)" : durFmt(debt)
+  };
+
+  fetch(WEB_APP_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(() => { console.log("Data sukses tersinkronisasi ke Google Sheets."); })
+  .catch((error) => { console.error("Sinkronisasi gagal:", error); });
+  // ── AKHIR INTEGRASI ──────────────────────────────────────────────────────
+
   document.getElementById('resultSection').style.display = 'block';
   setTimeout(()=> document.getElementById('resultSection').scrollIntoView({behavior:'smooth'}), 100);
+}
+
+// ── MANAJEMEN RESET DAN BASIS TANGGAL SEARAH/SINKRON ───────────────────────
+function initTanggalOtomatis() {
+  const infoHariIni = new Date();
+  
+  // Format tanggal lokal YYYY-MM-DD agar aman di semua browser & zona waktu
+  const yyyy = infoHariIni.getFullYear();
+  const mm = String(infoHariIni.getMonth() + 1).padStart(2, '0');
+  const dd = String(infoHariIni.getDate()).padStart(2, '0');
+  const hariIniFmt = `${yyyy}-${mm}-${dd}`;
+
+  // 1. Kunci batas maksimal kalender tanggal lahir
+  document.getElementById('tglLahir').setAttribute('max', hariIniFmt);
+
+  // 2. Set default tanggal assessment otomatis hari ini
+  document.getElementById('tgl').value = hariIniFmt;
 }
 
 function resetForm() {
@@ -726,9 +801,12 @@ function resetForm() {
   document.getElementById('errorBox').style.display = 'none';
   document.getElementById('softAlert').style.display = 'none';
   document.getElementById('nama').value = '';
-  document.getElementById('usia').value = '';
+  document.getElementById('tglLahir').value = ''; 
   document.getElementById('coach').value = '';
-  document.getElementById('tgl').valueAsDate = new Date();
+  
+  // Memanggil fungsi tanggal terpusat agar stabil saat di-reset
+  initTanggalOtomatis();
+  
   document.getElementById('soW_h').value = '23';
   document.getElementById('soW_m').value = '00';
   document.getElementById('seW_h').value = '06';
@@ -742,7 +820,8 @@ function resetForm() {
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
-document.getElementById('tgl').valueAsDate = new Date();
+// Jalankan sistem tanggal otomatis pertama kali saat halaman dibuka
+initTanggalOtomatis();
 </script>
 </body>
 </html>
