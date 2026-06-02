@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --teal:       #2F9794;
+  --teal:        #2F9794;
   --teal-light: #3db8b4;
   --teal-dark:  #1e6b69;
   --cream:      #faf3ea;
@@ -46,6 +46,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
   .hasil-box{margin:8px 18px!important;padding:10px 14px!important;}
   .hasil-title{font-size:13px!important;}
   .hasil-narasi{font-size:10px!important;line-height:1.5!important;}
+  .kendala-container{margin:8px 18px!important;padding:10px 14px!important;}
   .disclaimer{padding:8px 18px!important;}
   .ref{padding:6px 18px!important;}
   .skor-row{page-break-inside:avoid;}
@@ -173,10 +174,20 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
 .cell-red.active     {background:#c0392b;}
 
 /* HASIL BOX */
-.hasil-box{margin:16px 28px;border-radius:10px;padding:16px 20px;border:2px solid;}
+.hasil-box{margin:16px 28px 8px;border-radius:10px;padding:16px 20px;border:2px solid;}
 .hasil-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
 .hasil-title{font-size:18px;font-weight:900;margin-bottom:8px;}
 .hasil-narasi{font-size:12px;line-height:1.7;font-weight:400;}
+
+/* KENDALA BOX (BARU) */
+.kendala-container{margin:0 28px 16px;background:#fffbf5;border:1px solid var(--cream2);border-radius:10px;padding:18px 20px;}
+.kendala-head{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--dark);margin-bottom:12px;border-bottom:1.5px solid var(--cream2);padding-bottom:6px;}
+.kendala-sec{margin-bottom:14px;}
+.kendala-sec:last-child{margin-bottom:0;}
+.kendala-title{font-size:11px;font-weight:700;color:var(--teal-dark);margin-bottom:6px;}
+.kendala-list{list-style:none;padding-left:0;}
+.kendala-list li{font-size:11.5px;line-height:1.6;position:relative;padding-left:14px;color:var(--dark);margin-bottom:4px;}
+.kendala-list li::before{content:"•";color:var(--teal);font-weight:bold;position:absolute;left:0;}
 
 /* DISCLAIMER */
 .disclaimer{padding:14px 28px;border-top:1px solid var(--cream2);background:#fffbf5;}
@@ -192,14 +203,13 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
   .header,.instruksi,.card,.section-head,.questions,.actions,.error-box{margin-left:14px;margin-right:14px;}
   .result-card{margin-left:14px;margin-right:14px;}
   .scale-circle{width:30px;height:30px;font-size:11px;}
-  .rc-header,.skor-box,.plot-section,.hasil-box,.disclaimer,.ref{padding-left:18px;padding-right:18px;}
+  .rc-header,.skor-box,.plot-section,.hasil-box,.kendala-container,.disclaimer,.ref{padding-left:18px;padding-right:18px;}
 }
 </style>
 </head>
 <body>
 <div class="page-wrap">
 
-<!-- HEADER -->
 <div class="header no-print">
   <div class="header-inner">
     <div>
@@ -224,7 +234,6 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
   </div>
 </div>
 
-<!-- INSTRUKSI -->
 <div class="instruksi no-print">
   <p><strong>Timeframe:</strong> Isi berdasarkan kondisi <strong>1 bulan terakhir</strong>.</p>
   <p><strong>Cara mengisi:</strong> Pilih angka yang paling menggambarkan kondisimu. Tidak ada jawaban benar atau salah.</p>
@@ -237,18 +246,24 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
   </div>
 </div>
 
-<!-- IDENTITAS -->
 <div class="card no-print">
-  <div class="card-title">Data Klien</div>
-  <div class="id-grid">
-    <div class="field"><label>Nama</label><input type="text" id="nama" placeholder="Nama lengkap"></div>
-    <div class="field"><label>Usia</label><input type="number" id="usia" placeholder="Tahun" min="10" max="100"></div>
-    <div class="field"><label>Tanggal</label><input type="date" id="tgl"></div>
-    <div class="field"><label>Coach</label><input type="text" id="coach" placeholder="Nama coach"></div>
+    <div class="card-title">Data Klien</div>
+    <div class="id-grid">
+      <!-- Input nama dengan proteksi karakter -->
+      <div class="field">
+        <label>Nama</label>
+        <input type="text" id="nama" placeholder="Nama lengkap & Gelar" oninput="validasiNama(this)">
+      </div>
+      <!-- Diubah dari Usia menjadi Tanggal Lahir -->
+      <div class="field">
+        <label>Tanggal Lahir</label>
+        <input type="date" id="tglLahir">
+      </div>
+      <div class="field"><label>Tanggal Assessment</label><input type="date" id="tgl"></div>
+      <div class="field"><label>Coach</label><input type="text" id="coach" placeholder="Nama coach"></div>
+    </div>
   </div>
-</div>
 
-<!-- BAGIAN A: STRESS -->
 <div class="section-head no-print">
   <div class="section-num">A</div>
   <div>
@@ -257,11 +272,8 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
   </div>
 </div>
 
-<div class="questions no-print" id="stressQ">
-  <!-- Item A1–A10 dibuat JS -->
-</div>
+<div class="questions no-print" id="stressQ"></div>
 
-<!-- BAGIAN B: TIDUR -->
 <div class="section-head no-print">
   <div class="section-num">B</div>
   <div>
@@ -270,9 +282,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
   </div>
 </div>
 
-<div class="questions no-print" id="tidurQ">
-  <!-- Item B1–B7 dibuat JS -->
-</div>
+<div class="questions no-print" id="tidurQ"></div>
 
 <div class="error-box" id="errorBox">⚠️ <span id="errorMsg"></span></div>
 
@@ -281,11 +291,9 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
   <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
 </div>
 
-<!-- HASIL -->
 <div id="resultSection">
   <div class="result-card" id="resultCard">
 
-    <!-- RC HEADER -->
     <div class="rc-header">
       <div>
         <div class="rc-meta">Synthesis Coaching Lab · Hasil Self Assessment Stress &amp; Tidur</div>
@@ -308,7 +316,6 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
       </div>
     </div>
 
-    <!-- SKOR ROW -->
     <div class="skor-row">
       <div class="skor-box">
         <div class="skor-label">Stress</div>
@@ -324,11 +331,9 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
       </div>
     </div>
 
-    <!-- PLOT -->
     <div class="plot-section">
       <div class="plot-title">Peta Kondisi</div>
       <div class="plot-outer">
-        <!-- Y AXIS -->
         <div class="plot-y-axis">
           <div class="plot-y-title">Kualitas Tidur ↑</div>
           <div class="plot-y-labels">
@@ -337,18 +342,14 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
             <div class="plot-y-label">Restoratif</div>
           </div>
         </div>
-        <!-- GRID -->
         <div class="plot-main">
           <div class="plot-grid" id="plotGrid">
-            <!-- row 0: tidur=perlu perhatian (atas) -->
             <div class="plot-cell cell-yellow"  data-row="0" data-col="0"></div>
             <div class="plot-cell cell-orange"  data-row="0" data-col="1"></div>
             <div class="plot-cell cell-red"     data-row="0" data-col="2"></div>
-            <!-- row 1: tidur=bisa lebih optimal -->
             <div class="plot-cell cell-green"   data-row="1" data-col="0"></div>
             <div class="plot-cell cell-yellow"  data-row="1" data-col="1"></div>
             <div class="plot-cell cell-orange"  data-row="1" data-col="2"></div>
-            <!-- row 2: tidur=restoratif (bawah) -->
             <div class="plot-cell cell-green"   data-row="2" data-col="0"></div>
             <div class="plot-cell cell-green"   data-row="2" data-col="1"></div>
             <div class="plot-cell cell-yellow"  data-row="2" data-col="2"></div>
@@ -363,24 +364,33 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
       </div>
     </div>
 
-    <!-- HASIL BOX -->
     <div class="hasil-box" id="hasilBox" style="border-color:var(--teal);">
       <div class="hasil-label" id="hasilLabel">—</div>
       <div class="hasil-title" id="hasilTitle">—</div>
       <div class="hasil-narasi" id="hasilNarasi">—</div>
     </div>
 
-    <!-- DISCLAIMER -->
+    <div class="kendala-container">
+      <div class="kendala-head">Analisis Kendala Utama Anda</div>
+      <div class="kendala-sec">
+        <div class="kendala-title">⚠️ Faktor Stress Dominan:</div>
+        <ul class="kendala-list" id="stressKendalaList"></ul>
+      </div>
+      <div class="kendala-sec">
+        <div class="kendala-title">🌙 Faktor Gangguan Tidur Dominan:</div>
+        <ul class="kendala-list" id="tidurKendalaList"></ul>
+      </div>
+    </div>
+
     <div class="disclaimer">
       <p>⚠️ <strong>Disclaimer:</strong> Hasil assessment ini hanya untuk gambaran umum dan bukan merupakan diagnosis klinis. Gunakan sebagai titik awal diskusi bersama coach. Untuk kondisi yang memerlukan penanganan lebih lanjut, konsultasikan dengan profesional kesehatan.</p>
     </div>
 
-    <!-- REF -->
     <div class="ref">
       <p><strong>Referensi:</strong> Cohen S, Kamarck T, Mermelstein R. (1983). Perceived Stress Scale. <em>Health Psychology</em>, 2(4):385–396 &nbsp;·&nbsp; Buysse DJ, et al. (1989). Pittsburgh Sleep Quality Index. <em>Psychiatry Research</em>, 28(2):193–213 &nbsp;·&nbsp; Materi Pelatihan AIFO</p>
     </div>
 
-  </div><!-- end result-card -->
+  </div>
 
   <div class="actions">
     <button class="btn btn-primary no-print" onclick="window.print()">🖨️ Export PDF</button>
@@ -388,10 +398,12 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
   </div>
 </div>
 
-</div><!-- end page-wrap -->
+</div>
 
 <script>
-// ── DATA PERTANYAAN ──────────────────────────────────────────────────────────
+// PENTING: Ganti string di bawah ini dengan URL Web App Google Apps Script Anda yang baru
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzoRuXUnf7WQ0_tvilg5wQSVlN1iexQ9Iy4OcZ4IC7JAZfrlqRudSTbZsqVWyT0PZWm/exec";
+
 const stressItems = [
   "Saya merasa gugup, tegang, atau cemas dalam keseharian saya.",
   "Saya merasa tidak mampu mengontrol hal-hal penting dalam hidup saya.",
@@ -417,7 +429,6 @@ const tidurItems = [
 
 const scaleLabels = ['','Tidak\npernah','Jarang','Kadang-\nkadang','Sering','Sangat\nsering'];
 
-// ── BUILD FORM ───────────────────────────────────────────────────────────────
 function buildStress() {
   const c = document.getElementById('stressQ');
   stressItems.forEach((txt, i) => {
@@ -462,9 +473,8 @@ function buildTidur() {
   });
 }
 
-// ── INTERPRETASI DATA ────────────────────────────────────────────────────────
 const stressCat = s => s <= 20 ? 0 : s <= 35 ? 1 : 2;
-const tidurCat  = t => t <= 12 ? 2 : t <= 21 ? 1 : 0; // 0=perlu perhatian(atas), 2=restoratif(bawah)
+const tidurCat  = t => t <= 12 ? 2 : t <= 21 ? 1 : 0;
 
 const catStressLabel = ['Rendah','Sedang','Tinggi'];
 const catTidurLabel  = ['Perlu Perhatian','Bisa Lebih Optimal','Restoratif'];
@@ -472,74 +482,82 @@ const catTidurLabel  = ['Perlu Perhatian','Bisa Lebih Optimal','Restoratif'];
 const catStressColor = ['var(--green)','var(--yellow)','var(--red)'];
 const catTidurColor  = ['var(--red)','var(--orange)','var(--green)'];
 
-// grid [tidurRow][stressCol] — tidurRow: 0=perlu perhatian(atas), 2=restoratif(bawah)
 const interpretasi = [
-  // tidur = perlu perhatian (row 0, atas)
   [
-    { title:'Perbaiki Tidur',                         warna:'var(--yellow)', narasi:'Stress kamu masih terkendali, tapi kualitas tidur perlu diperbaiki. Kemungkinan ada faktor lain yang mempengaruhi tidur — bisa dari lingkungan, kebiasaan, atau chronotype. Diskusikan lebih lanjut dengan coach.' },
+    { title:'Perbaiki Tidur',                  warna:'var(--yellow)', narasi:'Stress kamu masih terkendali, tapi kualitas tidur perlu diperbaiki. Kemungkinan ada faktor lain yang mempengaruhi tidur — bisa dari lingkungan, kebiasaan, atau chronotype. Diskusikan lebih lanjut dengan coach.' },
     { title:'Perbaiki Tidur dan Manajemen Stress',    warna:'var(--orange)', narasi:'Stress mulai meningkat dan tidurmu juga terganggu. Keduanya bisa saling memperparah. Mulai intervensi di salah satu area — memperbaiki tidur bisa membantu menurunkan stress, dan sebaliknya.' },
     { title:'Perlu Intervensi Segera',                warna:'var(--red)',    narasi:'Stress tinggi dan kualitas tidur buruk adalah kombinasi yang berat. Keduanya sangat mungkin saling memperparah dalam loop yang sulit diputus sendiri. Sangat disarankan untuk segera diskusi mendalam bersama coach.' }
   ],
-  // tidur = bisa lebih optimal (row 1)
   [
     { title:'Ada Peluang Lebih Baik',                 warna:'var(--green)',  narasi:'Kondisi cukup baik. Stress rendah dan tidur masih oke meski ada ruang untuk ditingkatkan. Perhatikan konsistensi jam tidur dan faktor lingkungan untuk membawa tidur ke level restoratif.' },
     { title:'Mulai Aware dengan Stress dan Tidur',    warna:'var(--yellow)', narasi:'Stress dan kualitas tidur keduanya berada di zona tengah. Belum darurat, tapi kalau dibiarkan keduanya bisa saling memperburuk. Mulai perhatikan satu area yang paling terasa mengganggu.' },
     { title:'Perlu Intervensi',                       warna:'var(--orange)', narasi:'Stress tinggi meski tidur masih cukup. Ini sinyal penting — tidur yang belum optimal dikombinasikan dengan stress tinggi berisiko membentuk loop negatif. Perlu penanganan stress yang lebih serius.' }
   ],
-  // tidur = restoratif (row 2, bawah)
   [
-    { title:'Baik',                                   warna:'var(--green)',  narasi:'Kondisi sangat baik. Stress terkendali dan tidurmu restoratif. Pertahankan pola ini — konsistensi adalah kunci. Bagikan kebiasaan baikmu kepada orang-orang di sekitarmu.' },
+    { title:'Baik',                                    warna:'var(--green)',  narasi:'Kondisi sangat baik. Stress terkendali dan tidurmu restoratif. Pertahankan pola ini — konsistensi adalah kunci. Bagikan kebiasaan baikmu kepada orang-orang di sekitarmu.' },
     { title:'Mulai Perhatikan Stressor',              warna:'var(--yellow)', narasi:'Tidurmu restoratif — ini modal besar. Tapi stress mulai naik dan perlu ditangani sebelum mulai mengganggu kualitas tidur. Identifikasi sumber stress utama bersama coach.' },
     { title:'Kelola Tingkat Stress',                  warna:'var(--yellow)', narasi:'Tidurmu masih terjaga meski stress tinggi — kemungkinan ada coping mechanism yang bekerja. Tapi ini tidak akan bertahan lama kalau stress tidak ditangani. Prioritaskan manajemen stress sekarang.' }
   ]
 ];
 
-// ── HITUNG ───────────────────────────────────────────────────────────────────
 function hitung() {
   const errBox = document.getElementById('errorBox');
   errBox.style.display = 'none';
 
-  // Kumpulkan skor stress
   let sStress = 0;
+  let arrStressVal = [];
   for (let i = 0; i < 10; i++) {
     const v = document.querySelector(`input[name="s${i}"]:checked`);
     if (!v) { showError(`Pertanyaan A${i+1} belum diisi.`); return; }
-    sStress += parseInt(v.value);
+    let val = parseInt(v.value);
+    sStress += val;
+    arrStressVal.push(val);
   }
 
-  // Kumpulkan skor tidur
   let sTidur = 0;
+  let arrTidurVal = [];
   for (let i = 0; i < 7; i++) {
     const v = document.querySelector(`input[name="t${i}"]:checked`);
     if (!v) { showError(`Pertanyaan B${i+1} belum diisi.`); return; }
-    sTidur += parseInt(v.value);
+    let val = parseInt(v.value);
+    sTidur += val;
+    arrTidurVal.push(val);
   }
 
-  const sc = stressCat(sStress); // 0=rendah,1=sedang,2=tinggi
-  const tc = tidurCat(sTidur);   // 0=perlu perhatian,1=bisa optimal,2=restoratif
+  const sc = stressCat(sStress); 
+  const tc = tidurCat(sTidur);   
   const data = interpretasi[tc][sc];
 
-  // Grid row: tc=2(restoratif)→row2(bawah), tc=0(perlu perhatian)→row0(atas)
-  // Tapi di grid HTML: row0=perlu perhatian(atas), row2=restoratif(bawah)
-  // tc sudah: 0=perlu perhatian=row0, 1=bisa optimal=row1, 2=restoratif=row2
   const plotRow = tc === 0 ? 0 : tc === 1 ? 1 : 2;
   const plotCol = sc;
 
-  // Identitas
-  const nama  = document.getElementById('nama').value || 'Klien';
-  const usia  = document.getElementById('usia').value;
+  // Identitas & Validasi Baru
+  const nama  = document.getElementById('nama').value.trim() || 'Klien';
+  const tglLahirVal = document.getElementById('tglLahir').value;
+  
+  if (!tglLahirVal) { 
+    showError("Tanggal Lahir wajib diisi untuk menghitung kategori usia."); 
+    return; 
+  }
+  
+  // Hitung usia otomatis secara real-time
+  const usia = hitungUsia(tglLahirVal);
+  
+  // Format tampilan tanggal lahir untuk report PDF klien
+  const tglLahirFmt = new Date(tglLahirVal).toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
+
   const coach = document.getElementById('coach').value;
   const tgl   = document.getElementById('tgl').value;
   const tglFmt = tgl ? new Date(tgl).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
 
   document.getElementById('rNama').textContent = nama;
   let subs = [];
-  if (usia)  subs.push('Usia ' + usia + ' tahun');
+  subs.push('Lahir: ' + tglLahirFmt);
+  subs.push('Usia: ' + usia + ' tahun');
   if (coach) subs.push('Coach: ' + coach);
-  subs.push(tglFmt);
+  subs.push('Asesmen: ' + tglFmt);
   document.getElementById('rSub').textContent = subs.join(' · ');
 
-  // Skor
   document.getElementById('rStressVal').textContent = sStress;
   document.getElementById('rTidurVal').textContent  = sTidur;
 
@@ -553,7 +571,6 @@ function hitung() {
   tCatEl.style.background = tc===2?'#eafaf1':tc===1?'#fdf2e9':'#fdedec';
   tCatEl.style.color = catTidurColor[tc];
 
-  // Plot — highlight sel aktif
   document.querySelectorAll('.plot-cell').forEach(el => {
     el.classList.remove('active');
     const star = el.querySelector('.star');
@@ -569,7 +586,27 @@ function hitung() {
     activeCell.appendChild(star);
   }
 
-  // Hasil box
+  // LOGIKA DETEKSI KENDALA (FEEDBACK LOOP)
+  let kendalaStress = [];
+  if(arrStressVal[0] >= 4 || arrStressVal[5] >= 4) kendalaStress.push("<strong>Regulasi Emosi & Kecemasan:</strong> Sering merasa cemas, tegang, dan mood swing.");
+  if(arrStressVal[1] >= 4 || arrStressVal[4] >= 4 || arrStressVal[6] >= 4 || arrStressVal[8] >= 4) kendalaStress.push("<strong>Kewalahan & Kehilangan Kendali:</strong> Merasa beban melebihi kemampuan dan masalah terasa di luar kendali.");
+  if(arrStressVal[2] >= 4 || arrStressVal[7] >= 4) kendalaStress.push("<strong>Overthinking & Pikiran Penuh:</strong> Sulit konsentrasi karena pikiran terus berputar tanpa penyelesaian.");
+  if(arrStressVal[9] >= 4) kendalaStress.push("<strong>Gejala Fisik Somatik:</strong> Tekanan psikologis mulai termanifestasi ke fisik (leher tegang, sakit kepala, nafsu makan berubah).");
+
+  let kendalaTidur = [];
+  if(arrTidurVal[0] === 5 || arrTidurVal[4] >= 4) kendalaTidur.push("<strong>Kesulitan Memulai Tidur (Sleep Onset):</strong> Jam tidur kurang optimal dan butuh waktu lama untuk terlelap saat berbaring.");
+  if(arrTidurVal[1] >= 4) kendalaTidur.push("<strong>Gangguan Tengah Malam (Sleep Maintenance):</strong> Sering terbangun di tengah malam dan sulit menyambung tidur kembali.");
+  if(arrTidurVal[2] >= 4 || arrTidurVal[6] >= 4) kendalaTidur.push("<strong>Kualitas Pemulihan Rendah:</strong> Bangun pagi merasa lelah, tidak segar, atau suasana hati murung.");
+  if(arrTidurVal[3] >= 4) kendalaTidur.push("<strong>Kantuk Siang Hari (Daytime Dysfunction):</strong> Sering mengantuk berat dan kehilangan fokus saat beraktivitas.");
+  if(arrTidurVal[5] >= 4) kendalaTidur.push("<strong>Jadwal Tidur Tidak Konsisten:</strong> Ritme sirkadian terganggu karena jam tidur berubah-ubah (termasuk weekend).");
+
+  const sList = document.getElementById('stressKendalaList');
+  sList.innerHTML = kendalaStress.length > 0 ? kendalaStress.map(k => `<li>${k}</li>`).join('') : "<li>Luar biasa! Tidak ada kendala stress dominan yang terdeteksi.</li>";
+
+  const tList = document.getElementById('tidurKendalaList');
+  tList.innerHTML = kendalaTidur.length > 0 ? kendalaTidur.map(k => `<li>${k}</li>`).join('') : "<li>Luar biasa! Tidak ada gangguan tidur dominan yang terdeteksi.</li>";
+
+  // HASIL BOX TAMPILAN
   const hBox = document.getElementById('hasilBox');
   hBox.style.borderColor = data.warna;
   hBox.style.background  = data.warna === 'var(--green)'  ? '#eafaf1' :
@@ -580,6 +617,33 @@ function hitung() {
   document.getElementById('hasilTitle').textContent  = data.title;
   document.getElementById('hasilTitle').style.color  = data.warna;
   document.getElementById('hasilNarasi').textContent = data.narasi;
+
+  // ─── PERBAIKAN PENGIRIMAN GOOGLE SHEETS ───
+  if (WEB_APP_URL) {
+    const payload = {
+      tanggal: tglFmt,
+      nama: nama,
+      tanggalLahir: tglLahirFmt, 
+      usia: usia + " Tahun",     
+      coach: coach || "-",
+      skorStress: sStress,
+      kategoriStress: catStressLabel[sc],
+      kendalaStress: kendalaStress.length > 0 ? kendalaStress.map(k => k.replace(/<\/?[^>]+(>|$)/g, "")).join(" | ") : "Aman",
+      skorTidur: sTidur,
+      kategoriTidur: catTidurLabel[tc],
+      kendalaTidur: kendalaTidur.length > 0 ? kendalaTidur.map(k => k.replace(/<\/?[^>]+(>|$)/g, "")).join(" | ") : "Aman",
+      kesimpulan: data.title + " - " + data.narasi
+    };
+
+    // Menggunakan method POST standar tanpa no-cors agar JSON terbaca sempurna
+    fetch(WEB_APP_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" }, // Menggunakan text/plain aman dari CORS di Apps Script
+      body: JSON.stringify(payload)
+    })
+    .then(res => console.log("Data berhasil dikirim ke Google Sheets!"))
+    .catch(err => console.error("Gagal mengirim data:", err));
+  }
 
   document.getElementById('resultSection').style.display = 'block';
   setTimeout(() => document.getElementById('resultSection').scrollIntoView({behavior:'smooth'}), 100);
@@ -599,9 +663,35 @@ function resetForm() {
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
-// ── INIT ─────────────────────────────────────────────────────────────────────
+// ── INIT & VALIDASI RAW DATA ──────────────────────────────────────────────────
 buildStress();
 buildTidur();
+
+// Set default tanggal assessment hari ini
+const hariIni = new Date().toISOString().split('T')[0];
+document.getElementById('tgl').value = hariIni;
+
+// Pasang batas MAX pada input Tanggal Lahir agar tidak bisa pilih tanggal masa depan
+document.getElementById('tglLahir').max = hariIni;
+
+// Fungsi filter nama jalankan real-time saat klien mengetik
+function validasiNama(input) {
+  // Hanya mengizinkan Huruf, Spasi, Titik, Koma, Petik Satu, Garis Miring, dan Kurung Buka/Tutup
+  input.value = input.value.replace(/[^a-zA-Z\s\.\,\'\/ \(\)]/g, '');
+}
+
+// Fungsi hitung usia otomatis berdasarkan Tanggal Lahir
+function hitungUsia(birthDateString) {
+  if (!birthDateString) return "-";
+  const today = new Date();
+  const birthDate = new Date(birthDateString);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
 document.getElementById('tgl').valueAsDate = new Date();
 </script>
 </body>
