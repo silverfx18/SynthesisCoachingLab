@@ -72,12 +72,19 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
 
   /* HEADER */
   .rc-header {
-    padding: 16px 20px !important; /* Dihemat sedikit */
-    background: #0e181d !important;
-    border-radius: 12px 12px 0 0;
+    padding: 14px 20px 10px !important;
+    background: white !important;
+    border-radius: 14px 14px 0 0 !important;
+    position: relative !important;
   }
-  .rc-name { font-size: 20px !important; }
-  .rc-sub { font-size: 10px !important; }
+  .rc-header::after {
+    content: ''; position: absolute; bottom: 0; left: 20px; right: 20px;
+    height: 1px; background: #e7e2da !important;
+  }
+  .rc-meta { color: #6b7d7c !important; }
+  .rc-name { font-size: 18px !important; color: #0e181d !important; }
+  .rc-sub { font-size: 9px !important; color: #6b7d7c !important; }
+  .rc-logo { width: 32px !important; height: auto !important; }
 
   /* KOTAK SKOR */
   .skor-box { padding: 12px !important; }
