@@ -7,7 +7,7 @@
   // PENTING: isi dengan URL Web App Apps Script "Collector" setelah deploy
   // (lihat apps-script/README.md). Kalau kosong, data tidak dikirim ke mana pun
   // — halaman tetap berfungsi dan hasil tetap bisa di-export PDF.
-  const HUB_URL = "";
+  const HUB_URL = "https://script.google.com/macros/s/AKfycbzA0Emi9UU9LOjSyMeJjcAzz4rkK27ajq7Om7RPjmasZj65PlSGCBoghh8ox9PJ-w6D/exec";
 
   const ID_KEY = "scl_identity";
 
