@@ -6,7 +6,7 @@
 <title>PSQI — Pittsburgh Sleep Quality Index</title>
 <link rel="icon" type="image/png" href="Logo.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script type="text/javascript" src="http://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=ByUc8wOoXkObzTbCN_TS9T2lMMFw8rdCkXPYO467HBUU0kerM9hl5z5DlrSGqNCczcSCUl3Hl65RBbY0_4vvXw" charset="UTF-8"></script><style>
+<style>
   :root {
     --teal: #2F9794;
     --teal-light: #3db8b4;
@@ -587,6 +587,10 @@
       <input type="text" id="nama" placeholder="Nama lengkap" required>
     </div>
     <div class="field-group">
+      <label>No. WhatsApp</label>
+      <input type="tel" id="wa" placeholder="08xxxxxxxxxx" inputmode="tel">
+    </div>
+    <div class="field-group">
       <label>Usia</label>
       <input type="number" id="usia" placeholder="Tahun" required>
     </div>
@@ -818,6 +822,7 @@
   <p style="margin-top:4px">Synthesis Coaching Lab · Instrumen ini bukan pengganti diagnosis klinis</p>
 </div>
 
+<script src="shared.js"></script>
 <script>
 // 1. Interaktivitas UI Radio Button (Tetap dipertahankan)
 document.querySelectorAll('.radio-group').forEach(group => {
@@ -908,8 +913,8 @@ function hitungSkor() {
   const targetScorePanel = document.getElementById('scorePanel');
 
   // Validasi Soft Alert Data Klien
-  if (!nama || !usia) {
-    targetInterpretation.innerHTML = `⚠️ <span style="color: #e74c3c; font-weight: 600;">Data Klien Belum Lengkap.</span> Pastikan kolom Nama dan Usia sudah terisi sebelum melihat analisis kalkulasi skor.`;
+  if (!nama || !usia || !SCL.normalizeWA(document.getElementById('wa').value)) {
+    targetInterpretation.innerHTML = `⚠️ <span style="color: #e74c3c; font-weight: 600;">Data Klien Belum Lengkap.</span> Pastikan kolom Nama, No. WhatsApp (contoh: 081234567890), dan Usia sudah terisi sebelum melihat analisis kalkulasi skor.`;
     targetScorePanel.scrollIntoView({behavior: 'smooth'});
     return;
   }
@@ -1033,6 +1038,21 @@ function hitungSkor() {
     <div class="summary-item-print">8. Gangguan antusiasme kerja: <strong>${getRadioText('c7b')}</strong></div>
   `;
   document.getElementById('summaryTargetGrid').innerHTML = summaryHtml;
+
+  // ─── SIMPAN KE SYNTHESIS DATA HUB (shared.js) ───
+  const kategori = total <= 5 ? 'Kualitas Tidur Baik' : total <= 10 ? 'Kualitas Tidur Buruk' : 'Gangguan Tidur Serius';
+  SCL.send('PSQI', {
+    tanggal: tglFmt,
+    nama: nama,
+    usia: usia + ' Tahun',
+    coach: namaCoach,
+    skorTotal: total,
+    kategori: kategori,
+    c1Kualitas: scores.c1, c2Latensi: scores.c2, c3Durasi: scores.c3, c4Efisiensi: scores.c4,
+    c5Gangguan: scores.c5, c6Obat: scores.c6, c7Disfungsi: scores.c7,
+    jamTidur: document.getElementById('q4a').value, jamBangun: document.getElementById('q4b').value,
+    latensiMenit: menit, durasiJam: durasi, efisiensiPersen: efisiensiPersen
+  }, { wa: document.getElementById('wa').value, nama: nama });
 }
 
 // 4. Reset form & event handler initialisasi
@@ -1058,6 +1078,7 @@ document.getElementById('tanggal').valueAsDate = new Date();
   document.getElementById(id).addEventListener('input', updateEfficiencyAlert);
   document.getElementById(id).addEventListener('change', updateEfficiencyAlert);
 });
+SCL.bindIdentity({ nama: 'nama', wa: 'wa', usia: 'usia' });
 </script>
 </body>
 </html>

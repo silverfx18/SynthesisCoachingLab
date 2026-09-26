@@ -298,6 +298,7 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
   <div class="section-label">Data Klien</div>
   <div class="id-grid">
     <div class="field"><label>Nama</label><input type="text" id="nama" placeholder="Nama lengkap"></div>
+    <div class="field"><label>No. WhatsApp</label><input type="tel" id="wa" placeholder="08xxxxxxxxxx" inputmode="tel"></div>
     <div class="field"><label>Tanggal Lahir</label><input type="date" id="tglLahir"></div>
     <div class="field"><label>Tanggal Assessment</label><input type="date" id="tgl"></div>
     <div class="field"><label>Coach</label><input type="text" id="coach" placeholder="Nama coach"></div>
@@ -496,6 +497,7 @@ body { font-family: 'Montserrat', sans-serif; background: var(--cream); color: v
 
 </div>
 
+<script src="shared.js"></script>
 <script>
 // ── ANIMALS ENGINE (Path PNG ke Sub-Repo Assets) ──────────────────────────
 const animals = {
@@ -594,8 +596,8 @@ function hitungMCTQ() {
   const tglLahirInput = document.getElementById('tglLahir').value;
 
   // Validasi Awal: Kelengkapan Data
-  if (!namaInput || !tglLahirInput) {
-    softAlert.innerHTML = `🔔 <strong>Pemberitahuan:</strong> Mohon isi <strong>Nama</strong> dan <strong>Tanggal Lahir</strong> terlebih dahulu agar hasil analisis cetak kartu dapat terisi dengan lengkap.`;
+  if (!namaInput || !tglLahirInput || !SCL.normalizeWA(document.getElementById('wa').value)) {
+    softAlert.innerHTML = `🔔 <strong>Pemberitahuan:</strong> Mohon isi <strong>Nama</strong>, <strong>No. WhatsApp</strong> (contoh: 081234567890), dan <strong>Tanggal Lahir</strong> terlebih dahulu agar hasil tersambung ke data kamu.`;
     softAlert.style.display = 'block';
     softAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
@@ -747,10 +749,7 @@ function hitungMCTQ() {
   document.getElementById('specPtr').style.left = specPct + '%';
   document.getElementById('specLabel').textContent = hoursToTime(msfSc);
 
-  // ── INTEGRASI WEB APP GOOGLE SHEETS ──────────────────────────────────────
-  // PERBAIKAN: URL dibungkus string tanda petik ganda agar tidak crash
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzOMcAJDNSDD6IPoWweqL2WyeddNUqmUxpSW8CjbT5TM4118WoPr2L_i9FxJ1n9uoQRUg/exec";
-
+  // ── SIMPAN KE SYNTHESIS DATA HUB (shared.js) ────────────────────────────
   const payload = {
     tanggalInput: tglFmt,
     nama: namaInput,
@@ -764,15 +763,7 @@ function hitungMCTQ() {
     sjl: durFmt(sjl),
     sleepDebt: noAlarmWork ? "0 jam (natural)" : durFmt(debt)
   };
-
-  fetch(WEB_APP_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  })
-  .then(() => { console.log("Data sukses tersinkronisasi ke Google Sheets."); })
-  .catch((error) => { console.error("Sinkronisasi gagal:", error); });
+  SCL.send('MCTQ', payload, { wa: document.getElementById('wa').value, nama: namaInput });
   // ── AKHIR INTEGRASI ──────────────────────────────────────────────────────
 
   document.getElementById('resultSection').style.display = 'block';
@@ -801,6 +792,7 @@ function resetForm() {
   document.getElementById('errorBox').style.display = 'none';
   document.getElementById('softAlert').style.display = 'none';
   document.getElementById('nama').value = '';
+  document.getElementById('wa').value = '';
   document.getElementById('tglLahir').value = ''; 
   document.getElementById('coach').value = '';
   
@@ -822,6 +814,7 @@ function resetForm() {
 
 // Jalankan sistem tanggal otomatis pertama kali saat halaman dibuka
 initTanggalOtomatis();
+SCL.bindIdentity({ nama: 'nama', wa: 'wa', tglLahir: 'tglLahir' });
 </script>
 </body>
 </html>

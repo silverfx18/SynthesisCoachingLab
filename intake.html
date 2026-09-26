@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assessment Awal — Synthesis Coaching Lab</title>
+<link rel="icon" type="image/png" href="Logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal:#2F9794; --teal-light:#3db8b4; --teal-dark:#1e6b69;
+  --cream:#faf3ea; --cream2:#e7e2da; --dark:#0e181d; --muted:#6b7d7c; --white:#ffffff;
+  --green:#27ae60; --green-bg:#eafaf1; --yellow:#f39c12; --yellow-bg:#fef9e7;
+  --orange:#e67e22; --orange-bg:#fdf2e9; --red:#c0392b; --red-bg:#fdedec;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dark);min-height:100vh;}
+.page-wrap{max-width:820px;margin:0 auto;padding:0 0 80px;}
+
+/* HEADER */
+.header{background:var(--dark);padding:32px 40px 28px;position:relative;overflow:hidden;}
+.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--teal-light),var(--teal));}
+.header-inner{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;}
+.header-logo{width:48px;height:48px;flex-shrink:0;margin-top:4px;}
+.header-logo svg{width:100%;height:100%;}
+.header-badge{display:inline-block;background:var(--teal);color:white;font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;padding:3px 10px;border-radius:2px;margin-bottom:10px;}
+.header h1{font-size:clamp(20px,4vw,30px);font-weight:800;color:var(--cream);line-height:1.1;letter-spacing:-0.5px;margin-bottom:6px;}
+.header h1 span{color:var(--teal-light);}
+.header p{color:var(--muted);font-size:12px;font-weight:300;max-width:500px;line-height:1.6;}
+
+/* PROGRESS */
+.progress{position:sticky;top:0;z-index:20;background:var(--cream);padding:14px 36px 10px;border-bottom:1px solid var(--cream2);}
+.progress-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px;}
+.progress-step{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--teal);}
+.progress-title{font-size:13px;font-weight:800;color:var(--dark);}
+.progress-bar{height:5px;background:var(--cream2);border-radius:5px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-light));border-radius:5px;transition:width .3s;}
+
+/* STEP */
+.step{display:none;}
+.step.active{display:block;}
+.step-intro{margin:20px 36px 0;background:var(--white);border-left:4px solid var(--teal);border-radius:0 8px 8px 0;padding:14px 20px;font-size:11.5px;color:var(--muted);line-height:1.7;}
+.step-intro strong{color:var(--dark);}
+
+.group-head{margin:22px 36px 0;display:flex;align-items:center;gap:12px;}
+.group-num{width:30px;height:30px;border-radius:50%;background:var(--teal);color:white;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.group-title{font-size:15px;font-weight:800;}
+.group-sub{font-size:11px;color:var(--muted);margin-top:1px;line-height:1.5;}
+
+.questions{margin:10px 36px 0;background:var(--white);border-radius:10px;border:1px solid var(--cream2);overflow:hidden;}
+.q-item{padding:16px 20px;border-bottom:1px solid var(--cream2);}
+.q-item:last-child{border-bottom:none;}
+.q-item.invalid{background:#fff6f5;box-shadow:inset 3px 0 0 var(--red);}
+.q-text{font-size:12.5px;font-weight:600;color:var(--dark);margin-bottom:10px;line-height:1.5;}
+.q-text .req{color:var(--red);margin-left:2px;}
+.q-help{font-size:10.5px;color:var(--muted);font-weight:400;margin:-6px 0 10px;line-height:1.55;}
+
+/* INPUTS */
+.inp{width:100%;border:1.5px solid var(--cream2);border-radius:6px;padding:9px 11px;font-family:'Montserrat',sans-serif;font-size:13px;color:var(--dark);background:var(--cream);outline:none;transition:border-color .2s;}
+.inp:focus{border-color:var(--teal);background:white;}
+textarea.inp{min-height:70px;resize:vertical;line-height:1.5;}
+.inp-unit{display:flex;align-items:center;gap:8px;max-width:220px;}
+.inp-unit span{font-size:12px;font-weight:600;color:var(--muted);}
+.other-inp{margin-top:8px;}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px;}
+.chip{cursor:pointer;}
+.chip input{position:absolute;opacity:0;pointer-events:none;}
+.chip span{display:inline-block;border:1.5px solid var(--cream2);background:var(--cream);border-radius:20px;padding:7px 13px;font-size:11.5px;font-weight:500;color:var(--dark);transition:all .15s;line-height:1.3;}
+.chip:hover span{border-color:var(--teal);}
+.chip input:checked + span{background:var(--teal);border-color:var(--teal);color:white;font-weight:600;}
+.chip input:focus-visible + span{outline:2px solid var(--teal-dark);outline-offset:2px;}
+
+.scale{display:flex;gap:5px;}
+.scale .chip{flex:1;}
+.scale .chip span{display:flex;align-items:center;justify-content:center;width:100%;height:36px;padding:0;border-radius:50%;font-weight:700;max-width:40px;margin:0 auto;}
+.scale-ends{display:flex;justify-content:space-between;font-size:9px;font-weight:600;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.5px;}
+
+.grid-tbl{width:100%;border-collapse:collapse;font-size:11.5px;}
+.grid-tbl th{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:0 4px 8px;text-align:center;}
+.grid-tbl td{padding:8px 4px;border-top:1px solid var(--cream2);text-align:center;}
+.grid-tbl td:first-child{text-align:left;font-weight:500;padding-right:10px;line-height:1.4;}
+.grid-tbl .chip span{width:22px;height:22px;padding:0;border-radius:50%;}
+
+.consent-box{display:flex;gap:12px;align-items:flex-start;cursor:pointer;background:var(--cream);border:1.5px solid var(--cream2);border-radius:8px;padding:14px 16px;}
+.consent-box input{width:20px;height:20px;accent-color:var(--teal);flex-shrink:0;margin-top:1px;}
+.consent-box span{font-size:12px;font-weight:600;line-height:1.5;}
+
+.info-block{font-size:11.5px;line-height:1.7;color:var(--dark);}
+.info-block ul{padding-left:18px;margin-top:6px;}
+.info-block li{margin-bottom:4px;}
+.info-block .muted{color:var(--muted);}
+
+/* ILUSTRASI UKUR */
+.ukur-wrap{display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:center;}
+.ukur-wrap svg{width:100%;height:auto;}
+.ukur-tips{font-size:11px;line-height:1.65;}
+.ukur-tips p{margin-bottom:8px;}
+.ukur-tips b{color:var(--teal-dark);}
+
+/* BRISTOL */
+.bristol{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;}
+.bristol .chip span{display:flex;flex-direction:column;align-items:flex-start;gap:4px;border-radius:10px;padding:10px 12px;height:100%;}
+.bristol svg{width:84px;height:34px;}
+.bristol b{font-size:11px;}
+.bristol small{font-size:10px;color:var(--muted);font-weight:500;line-height:1.35;}
+.bristol .chip input:checked + span small{color:rgba(255,255,255,.85);}
+
+/* KALKULASI */
+.calc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
+.stat{border:1px solid var(--cream2);border-radius:8px;padding:10px 12px;background:#fffbf5;}
+.stat-label{font-size:8.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.stat-val{font-size:20px;font-weight:900;color:var(--teal);line-height:1.1;}
+.stat-val small{font-size:10px;font-weight:600;color:var(--muted);}
+.stat-cat{display:inline-block;margin-top:5px;font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:12px;}
+.cat-ok{background:var(--green-bg);color:var(--green);}
+.cat-warn{background:var(--yellow-bg);color:#a86a00;}
+.cat-risk{background:var(--red-bg);color:var(--red);}
+.cat-na{background:var(--cream);color:var(--muted);}
+.calc-note{font-size:10px;color:var(--muted);margin-top:8px;line-height:1.5;}
+
+/* ERROR & TOMBOL */
+.error-box{margin:14px 36px 0;background:#fff0f0;border:1.5px solid var(--red);border-radius:8px;padding:12px 18px;font-size:12px;color:var(--red);display:none;line-height:1.5;}
+.actions{margin:22px 36px 0;display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+.actions .spacer{flex:1;}
+.btn{padding:12px 24px;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;border:none;text-transform:uppercase;transition:all .2s;text-decoration:none;display:inline-block;}
+.btn-primary{background:var(--teal);color:white;}
+.btn-primary:hover{background:var(--teal-dark);}
+.btn-secondary{background:transparent;color:var(--teal);border:2px solid var(--teal);}
+.btn-secondary:hover{background:var(--teal);color:white;}
+.btn-ghost{background:transparent;color:var(--muted);padding:12px 10px;}
+.draft-note{font-size:10px;color:var(--muted);margin:10px 36px 0;}
+
+/* HASIL */
+#resultSection{display:none;}
+.result-card{margin:24px 36px 0;background:var(--white);border-radius:14px;overflow:hidden;border:1px solid var(--cream2);box-shadow:0 6px 32px rgba(14,24,29,.09);}
+.rc-header{background:var(--dark);padding:24px 28px;position:relative;}
+.rc-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--teal-light),var(--teal));}
+.rc-meta{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.rc-name{font-size:20px;font-weight:800;color:var(--cream);margin-bottom:3px;}
+.rc-sub{font-size:10px;color:var(--muted);}
+.rc-sec{padding:18px 28px;border-bottom:1px solid var(--cream2);}
+.rc-sec-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:12px;}
+.rc-text{font-size:12px;line-height:1.7;}
+.notice{border-radius:10px;padding:14px 18px;font-size:11.5px;line-height:1.65;border:1.5px solid;}
+.notice-warn{background:var(--yellow-bg);border-color:var(--yellow);}
+.notice-ok{background:var(--green-bg);border-color:var(--green);}
+.next-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;}
+.next-item{display:block;text-decoration:none;color:var(--dark);border:1.5px solid var(--cream2);border-radius:10px;padding:12px 14px;transition:all .15s;}
+.next-item:hover{border-color:var(--teal);background:#f4fbfa;}
+.next-item b{display:block;font-size:12px;margin-bottom:3px;}
+.next-item small{font-size:10px;color:var(--muted);line-height:1.4;}
+.ans-sec{margin-bottom:14px;}
+.ans-sec h4{font-size:11px;font-weight:800;color:var(--teal-dark);margin-bottom:6px;}
+.ans-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:10.5px;padding:5px 0;border-bottom:1px dashed var(--cream2);line-height:1.45;}
+.ans-row span:first-child{color:var(--muted);}
+.ans-row span:last-child{font-weight:600;}
+.disclaimer{padding:14px 28px;background:#fffbf5;}
+.disclaimer p{font-size:10px;color:var(--muted);line-height:1.6;}
+
+@media(max-width:600px){
+  .header{padding:26px 18px 22px;}
+  .progress{padding-left:14px;padding-right:14px;}
+  .step-intro,.group-head,.questions,.actions,.error-box,.result-card,.draft-note{margin-left:14px;margin-right:14px;}
+  .q-item{padding:14px 14px;}
+  .ukur-wrap{grid-template-columns:1fr;}
+  .ukur-wrap svg{max-width:240px;margin:0 auto;display:block;}
+  .rc-header,.rc-sec,.disclaimer{padding-left:18px;padding-right:18px;}
+  .ans-row{grid-template-columns:1fr;gap:2px;}
+  .scale .chip span{height:30px;font-size:11px;}
+  .grid-tbl{font-size:10.5px;}
+}
+
+@media print{
+  .no-print{display:none !important;}
+  @page{size:A4;margin:10mm 12mm;}
+  body{background:white !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+  .page-wrap{max-width:100%;padding:0;}
+  .result-card{margin:0;box-shadow:none;border:1px solid var(--cream2);}
+  .rc-header{background:white !important;}
+  .rc-header::after{background:var(--cream2) !important;height:1px;}
+  .rc-name{color:var(--dark) !important;}
+  .rc-sec,.ans-sec{break-inside:avoid;}
+  .next-sec{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+<div class="header no-print">
+  <div class="header-inner">
+    <div>
+      <div class="header-badge">Synthesis Coaching Lab</div>
+      <h1>Assessment <span>Awal Klien</span></h1>
+      <p>Kenalan dulu, yuk. Jawabanmu membantu coach menyiapkan sesi pertama supaya langsung tepat sasaran. Butuh sekitar 12–15 menit, dan jawaban tersimpan otomatis di perangkatmu.</p>
+    </div>
+    <div class="header-logo">
+      <svg viewBox="0 0 342 488" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+        <g transform="matrix(1,0,0,1,-214.223845,-2080.871108)">
+          <g transform="matrix(0.997224,0,0,0.997224,-76.830008,-247.417603)">
+            <g transform="matrix(-0.536959,-0.843609,0.843609,-0.536959,-585.980542,4447.151703)">
+              <path d="M1078.51,1876.296C1114.841,1863.327 1142.066,1873.902 1153.076,1899.331C1106.362,1907.407 977.637,1985.486 976.981,1985.773C920.97,2010.303 829.729,2007.475 787.378,1924.044C758.421,1866.998 769.796,1811.032 801.641,1764.288C831.292,1720.764 879.232,1685.611 925.921,1666.608L943.588,1710.014C904.897,1725.762 864.943,1754.605 840.371,1790.673C817.993,1823.523 808.817,1862.742 829.167,1902.832C857.62,1958.884 919.212,1959.456 957.245,1943.25L1078.51,1876.296Z" style="fill:rgb(47,151,148);"/>
+            </g>
+            <g transform="matrix(0.5373,0.843391,-0.843391,0.5373,1511.370449,710.822435)">
+              <path d="M1078.51,1876.296C1114.841,1863.327 1142.066,1873.902 1153.076,1899.331C1106.362,1907.407 977.637,1985.486 976.981,1985.773C920.97,2010.303 829.729,2007.475 787.378,1924.044C758.421,1866.998 769.796,1811.032 801.641,1764.288C831.292,1720.764 879.232,1685.611 925.921,1666.608L943.588,1710.014C904.897,1725.762 864.943,1754.605 840.371,1790.673C817.993,1823.523 808.817,1862.742 829.167,1902.832C857.62,1958.884 919.212,1959.456 957.245,1943.25L1078.51,1876.296Z" style="fill:rgb(47,151,148);"/>
+            </g>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<div id="wizard" class="no-print">
+  <div class="progress">
+    <div class="progress-top">
+      <div><div class="progress-step" id="progStep"></div><div class="progress-title" id="progTitle"></div></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+  </div>
+
+  <div id="steps"></div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <div class="actions">
+    <button class="btn btn-secondary" id="btnBack" type="button">← Kembali</button>
+    <div class="spacer"></div>
+    <button class="btn btn-primary" id="btnNext" type="button">Lanjut →</button>
+  </div>
+  <p class="draft-note">💾 Jawaban tersimpan otomatis di perangkat ini. Kamu bisa tutup halaman dan lanjut nanti. <button class="btn btn-ghost" type="button" id="btnClear" style="font-size:9.5px">Hapus & mulai dari awal</button></p>
+</div>
+
+<div id="resultSection">
+  <div class="result-card">
+    <div class="rc-header">
+      <div class="rc-meta">Assessment Awal · Synthesis Coaching Lab</div>
+      <div class="rc-name" id="rNama"></div>
+      <div class="rc-sub" id="rSub"></div>
+    </div>
+    <div class="rc-sec">
+      <div class="rc-sec-title">Gambaran Tubuhmu Saat Ini</div>
+      <div id="rCalc"></div>
+    </div>
+    <div class="rc-sec" id="rParqSec">
+      <div class="rc-sec-title">Keamanan Sebelum Latihan</div>
+      <div id="rParq"></div>
+    </div>
+    <div class="rc-sec next-sec no-print">
+      <div class="rc-sec-title">Langkah Berikutnya</div>
+      <p class="rc-text" style="margin-bottom:12px">Lanjutkan 3 assessment singkat di bawah ini. Nama & nomor WA-mu sudah terisi otomatis.</p>
+      <div class="next-list">
+        <a class="next-item" href="mctq.html"><b>⏰ Chronotype (MCTQ)</b><small>Jam biologismu · ~5 menit</small></a>
+        <a class="next-item" href="psqi.html"><b>🌙 Kualitas Tidur (PSQI)</b><small>Kualitas tidur 1 bulan terakhir · ~7 menit</small></a>
+        <a class="next-item" href="stress-tidur.html"><b>🧠 Stress & Tidur</b><small>Peta kondisi stres & tidur · ~10 menit</small></a>
+      </div>
+    </div>
+    <div class="rc-sec">
+      <div class="rc-sec-title">Ringkasan Jawaban</div>
+      <div id="rAnswers"></div>
+    </div>
+    <div class="disclaimer">
+      <p><strong>Catatan:</strong> Angka di atas dihitung dari data yang kamu isi sendiri dan hanya gambaran awal. Coach akan mengukur ulang saat sesi. Hasil ini bukan diagnosis medis.</p>
+    </div>
+  </div>
+  <div class="actions no-print">
+    <button class="btn btn-primary" type="button" onclick="window.print()">🖨️ Export PDF</button>
+    <button class="btn btn-secondary" type="button" id="btnEdit">✏️ Ubah Jawaban</button>
+  </div>
+</div>
+
+</div>
+
+<script src="shared.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   SKEMA PERTANYAAN
+   t: text | tel | email | num | date | time | area | radio | check | scale
+      | grid | consent | info | calc | bristol | group
+   req: wajib · show: (A) => tampil? · none: opsi eksklusif · other: + "Lainnya"
+   ══════════════════════════════════════════════════════════════════════════ */
+const isF = A => A.jk === 'Perempuan';
+const has = (A, k, v) => Array.isArray(A[k]) && A[k].includes(v);
+const any = (A, k, none) => Array.isArray(A[k]) && A[k].some(v => v !== none);
+
+const UKUR_SVG = `
+<svg viewBox="0 0 270 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ilustrasi titik ukur lingkar pinggang, perut, dan panggul">
+  <path d="M84 8 Q100 0 116 8 L114 26 Q100 30 86 26 Z" fill="#e7e2da"/>
+  <path d="M86 26 Q60 28 50 40 Q40 70 60 100 Q68 122 63 140 Q50 168 48 196 L54 262 L94 262 L100 222 L106 262 L146 262 L152 196 Q150 168 137 140 Q132 122 140 100 Q160 70 150 40 Q140 28 114 26 Z" fill="#faf3ea" stroke="#6b7d7c" stroke-width="1.5"/>
+  <path d="M66 92 Q100 108 134 92" fill="none" stroke="#c9c2b8" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <text x="100" y="88" text-anchor="middle" font-size="7" fill="#9aa6a5" font-family="Montserrat">rusuk terbawah</text>
+  <path d="M62 152 Q70 146 80 150 M138 152 Q130 146 120 150" fill="none" stroke="#c9c2b8" stroke-width="1.2"/>
+  <text x="100" y="162" text-anchor="middle" font-size="7" fill="#9aa6a5" font-family="Montserrat">tulang panggul atas</text>
+  <circle cx="100" cy="134" r="2" fill="#6b7d7c"/>
+  <line x1="56" y1="120" x2="178" y2="120" stroke="#2F9794" stroke-width="2.2"/>
+  <line x1="56" y1="134" x2="178" y2="134" stroke="#e67e22" stroke-width="2.2" stroke-dasharray="5 3"/>
+  <line x1="42" y1="196" x2="178" y2="196" stroke="#1e6b69" stroke-width="2.2"/>
+  <text x="182" y="116" font-size="10" font-weight="700" fill="#2F9794" font-family="Montserrat">① Pinggang</text>
+  <text x="182" y="126" font-size="7.5" fill="#6b7d7c" font-family="Montserrat">tengah rusuk–panggul</text>
+  <text x="182" y="142" font-size="10" font-weight="700" fill="#e67e22" font-family="Montserrat">② Perut</text>
+  <text x="182" y="152" font-size="7.5" fill="#6b7d7c" font-family="Montserrat">sejajar pusar</text>
+  <text x="182" y="194" font-size="10" font-weight="700" fill="#1e6b69" font-family="Montserrat">③ Panggul</text>
+  <text x="182" y="204" font-size="7.5" fill="#6b7d7c" font-family="Montserrat">bokong terlebar</text>
+</svg>`;
+
+const UKUR_INFO = `
+<div class="ukur-wrap">
+  ${UKUR_SVG}
+  <div class="ukur-tips">
+    <p><b>Persiapan:</b> ukur pagi hari sebelum makan, pakai meteran jahit, berdiri tegak, kaki rapat, perut rileks (jangan ditahan/dikempiskan).</p>
+    <p><b>① Pinggang</b>: raba rusuk paling bawah dan tulang panggul paling atas di sisi badan. Lingkarkan meteran tepat di tengah-tengahnya.</p>
+    <p><b>② Perut</b>: lingkarkan meteran sejajar pusar.</p>
+    <p><b>③ Panggul</b>: lingkarkan di bagian bokong yang paling menonjol/lebar.</p>
+    <p class="muted">Meteran harus datar (sejajar lantai), menempel tapi tidak menekan kulit. Baca angkanya di akhir buang napas normal. Tidak punya meteran? Kosongkan saja, nanti diukur saat sesi.</p>
+  </div>
+</div>`;
+
+const BRISTOL = [
+  ['Tipe 1', 'Gumpalan keras terpisah, seperti kacang', '<circle cx="14" cy="18" r="6"/><circle cx="32" cy="13" r="5"/><circle cx="46" cy="21" r="6"/><circle cx="62" cy="14" r="5"/><circle cx="74" cy="22" r="4.5"/>'],
+  ['Tipe 2', 'Bentuk sosis tapi bergumpal-gumpal', '<circle cx="14" cy="17" r="8"/><circle cx="27" cy="15" r="8.5"/><circle cx="41" cy="17" r="8"/><circle cx="55" cy="15" r="8.5"/><circle cx="69" cy="17" r="8"/>'],
+  ['Tipe 3', 'Seperti sosis, ada retakan di permukaan', '<rect x="5" y="8" width="74" height="18" rx="9"/><path d="M20 9v6M32 26v-6M46 9v5M58 26v-6M68 9v5" stroke="#faf3ea" stroke-width="1.6"/>'],
+  ['Tipe 4', 'Halus & lembut, seperti sosis/ular', '<path d="M8 22 Q24 6 42 17 T78 12" fill="none" stroke="#7a4b24" stroke-width="10" stroke-linecap="round"/>'],
+  ['Tipe 5', 'Gumpalan lembut dengan tepi jelas', '<ellipse cx="16" cy="18" rx="11" ry="7"/><ellipse cx="42" cy="15" rx="12" ry="7"/><ellipse cx="68" cy="19" rx="10" ry="6.5"/>'],
+  ['Tipe 6', 'Lembek, potongan halus, tepi tidak rata', '<path d="M6 20 q4 -9 10 -4 q3 -8 10 -2 q5 -6 9 1 q6 -5 9 2 q5 -4 8 3 q6 -3 7 4 q-6 6 -14 3 q-6 5 -12 0 q-7 5 -12 -1 q-7 4 -15 -6z"/><circle cx="68" cy="14" r="3"/><circle cx="76" cy="21" r="2.5"/>'],
+  ['Tipe 7', 'Cair, tidak ada bagian padat', '<ellipse cx="42" cy="21" rx="36" ry="8" fill="#b88a5e"/><path d="M16 20 q6 -4 12 0 t12 0 t12 0 t12 0" fill="none" stroke="#e7d3bd" stroke-width="1.4"/>']
+];
+const BRISTOL_HTML = q => `<div class="bristol">${BRISTOL.map((b, i) => `
+  <label class="chip"><input type="radio" name="${q.id}" data-k="${q.id}" value="${i + 1}">
+    <span><svg viewBox="0 0 84 34" fill="#7a4b24">${b[2]}</svg><b>${b[0]}</b><small>${b[1]}</small></span></label>`).join('')}</div>`;
+
+const PARQ = [
+  'Pernahkah dokter mengatakan kamu punya <b>kondisi jantung</b> atau <b>tekanan darah tinggi</b>?',
+  'Apakah kamu merasakan <b>nyeri dada</b> saat istirahat, saat aktivitas sehari-hari, atau saat berolahraga?',
+  'Dalam 12 bulan terakhir, apakah kamu pernah <b>kehilangan keseimbangan karena pusing</b>, atau pernah <b>pingsan</b>?',
+  'Apakah kamu pernah didiagnosis <b>penyakit kronis lain</b> (selain jantung atau tekanan darah tinggi)?',
+  'Apakah saat ini kamu minum <b>obat resep untuk penyakit kronis</b>?',
+  'Apakah saat ini (atau dalam 12 bulan terakhir) kamu punya <b>masalah tulang, sendi, atau otot/ligamen</b> yang bisa memburuk kalau lebih aktif bergerak?',
+  'Pernahkah dokter mengatakan kamu <b>hanya boleh berolahraga di bawah pengawasan medis</b>?'
+];
+const strip = s => s.replace(/<[^>]+>/g, '');
+
+const STEPS = [
+  { title: 'Sebelum Mulai', intro: 'Halo! Sebelum mulai, baca dulu sebentar ya.', qs: [
+    { id: 'infoConsent', t: 'info', html: `
+      <p><b>Tentang assessment ini</b></p>
+      <ul>
+        <li>Ada 7 bagian singkat: tentang kamu, kesehatan, tubuh, kebiasaan & gerak, pola makan, pencernaan, tidur & stres.</li>
+        <li>Jawab sejujurnya, tidak ada jawaban benar atau salah. Kalau ragu, pilih yang paling mendekati.</li>
+        <li>Pertanyaan bertanda <span style="color:var(--red)">*</span> wajib diisi, sisanya boleh dikosongkan.</li>
+      </ul>
+      <p style="margin-top:10px"><b>Privasi data kesehatanmu</b></p>
+      <ul>
+        <li>Data yang kamu isi (termasuk data kesehatan) hanya dipakai untuk keperluan coaching-mu.</li>
+        <li>Data disimpan di Google Sheets milik Synthesis Coaching Lab dan hanya bisa diakses oleh coach-mu.</li>
+        <li>Data tidak dibagikan ke pihak lain tanpa izinmu. Kamu bisa minta data dihapus kapan saja lewat WhatsApp coach.</li>
+      </ul>
+      <p style="margin-top:10px" class="muted"><b>Penting:</b> coaching gaya hidup bukan pengganti pemeriksaan, diagnosis, atau pengobatan dokter. Kalau punya kondisi medis, tetap konsultasikan dengan dokter.</p>` },
+    { id: 'consent', t: 'consent', req: true, q: 'Saya sudah membaca informasi di atas dan menyetujui data saya (termasuk data kesehatan) dipakai untuk keperluan coaching.' }
+  ]},
+
+  { title: 'Tentang Kamu', intro: 'Data dasar & apa yang ingin kamu capai.', qs: [
+    { id: 'nama', t: 'text', q: 'Nama lengkap', req: true, ph: 'Nama lengkap' },
+    { id: 'tglLahir', t: 'date', q: 'Tanggal lahir', req: true },
+    { id: 'jk', t: 'radio', q: 'Jenis kelamin', req: true, opts: ['Laki-laki', 'Perempuan'] },
+    { id: 'wa', t: 'tel', q: 'Nomor WhatsApp', req: true, ph: '08xxxxxxxxxx', help: 'Dipakai untuk menghubungkan semua hasil assessment-mu. Pastikan sama dengan nomor yang kamu pakai chat dengan coach.' },
+    { id: 'email', t: 'email', q: 'Email', ph: 'opsional' },
+    { id: 'pekerjaan', t: 'text', q: 'Pekerjaan', req: true, ph: 'mis. karyawan swasta, wiraswasta, ibu rumah tangga' },
+    { id: 'domisili', t: 'text', q: 'Kota domisili', ph: 'mis. Bandung' },
+    { id: 'status', t: 'radio', q: 'Status', opts: ['Lajang', 'Menikah, belum punya anak', 'Menikah, punya anak', 'Lainnya'] },
+    { id: 'goal', t: 'area', q: 'Apa hal utama yang ingin kamu capai lewat coaching ini?', req: true, ph: 'mis. turun 5 kg, tidak gampang capek, gula darah terkontrol' },
+    { id: 'hambatan', t: 'area', q: 'Menurutmu, apa hambatan terbesar selama ini?', ph: 'opsional' },
+    { id: 'kesiapan', t: 'scale', q: 'Seberapa siap kamu untuk mulai berubah sekarang?', req: true, min: 1, max: 10, lo: 'Belum siap', hi: 'Sangat siap' }
+  ]},
+
+  { title: 'Kesehatan & Keamanan', intro: 'Bagian ini penting supaya program yang dirancang <strong>aman</strong> untuk kondisimu.', qs: [
+    { id: 'keluhan', t: 'check', q: 'Keluhan yang sering kamu alami', req: true, none: 'Tidak ada', other: true,
+      opts: ['Sakit leher', 'Sakit punggung/pinggang', 'Nyeri sendi/lutut', 'Cepat capek', 'Kesemutan/kebas', 'Sering sakit kepala', 'Sesak napas', 'Jantung berdebar', 'Tidak ada'] },
+    { id: 'cedera', t: 'check', q: 'Pernah cedera atau sering nyeri di bagian tubuh ini?', req: true, none: 'Tidak ada',
+      opts: ['Pergelangan kaki', 'Lutut', 'Pinggul', 'Punggung bawah', 'Punggung atas', 'Bahu', 'Siku', 'Pergelangan tangan', 'Leher', 'Tidak ada'] },
+    { id: 'cederaDetail', t: 'text', q: 'Ceritakan singkat cederanya (kapan, masih terasa atau tidak)', show: A => any(A, 'cedera', 'Tidak ada') },
+    { id: 'operasi', t: 'radio', q: 'Pernah menjalani operasi?', req: true, opts: ['Tidak', 'Ya'] },
+    { id: 'operasiDetail', t: 'text', q: 'Operasi apa dan kapan?', show: A => A.operasi === 'Ya' },
+    { id: 'obat', t: 'area', q: 'Obat & suplemen yang rutin diminum', ph: 'Nama + dosis kalau tahu. Kosongkan kalau tidak ada.' },
+    { id: 'kronis', t: 'check', q: 'Penyakit yang pernah didiagnosis dokter', req: true, none: 'Tidak ada', other: true,
+      opts: ['Hipertensi', 'Diabetes / prediabetes', 'Kolesterol tinggi', 'Penyakit jantung', 'Asam urat', 'Asma', 'Gangguan tiroid', 'Penyakit ginjal', 'Fatty liver / penyakit hati', 'PCOS', 'Autoimun', 'Depresi / kecemasan', 'Tidak ada'] },
+    { id: 'hamil', t: 'radio', q: 'Apakah kamu sedang…', req: true, show: isF, opts: ['Tidak hamil / menyusui', 'Hamil', 'Menyusui', 'Program hamil'] },
+    { id: 'lab', t: 'radio', q: 'Punya hasil tes laboratorium (cek darah, dll.)?', req: true, opts: ['Ya, kurang dari 6 bulan', 'Ya, lebih dari 6 bulan', 'Tidak punya'],
+      help: 'Kalau punya, tolong dibawa / dikirim saat sesi pertama ya.' },
+    { id: 'gParq', t: 'group', title: 'Cek Kesiapan Aktivitas Fisik', sub: 'PAR-Q+ · 7 pertanyaan ya/tidak' },
+    ...PARQ.map((txt, i) => ({ id: 'parq' + (i + 1), t: 'radio', q: `${i + 1}. ${txt}`, req: true, opts: ['Tidak', 'Ya'] })),
+    { id: 'gKel', t: 'group', title: 'Riwayat Keluarga', sub: 'Orang tua, kakak/adik kandung, kakek/nenek' },
+    { id: 'keluarga', t: 'check', q: 'Penyakit yang ada di keluarga dekatmu', req: true, none: 'Tidak ada / tidak tahu', other: true,
+      opts: ['Diabetes', 'Hipertensi', 'Penyakit jantung', 'Stroke', 'Kolesterol tinggi', 'Kanker', 'Obesitas', 'Gangguan tiroid', 'Autoimun', 'Tidak ada / tidak tahu'] },
+    { id: 'keluargaSiapa', t: 'text', q: 'Siapa saja? (mis. ayah: diabetes, ibu: hipertensi)', show: A => any(A, 'keluarga', 'Tidak ada / tidak tahu') }
+  ]},
+
+  { title: 'Tubuh', intro: 'Ukuran tubuh & riwayat berat badan. Tidak perlu sempurna, ini gambaran awal dan akan diukur ulang saat sesi.', qs: [
+    { id: 'perangkat', t: 'check', q: 'Alat apa saja yang kamu punya?', req: true, none: 'Tidak punya semuanya',
+      opts: ['Timbangan biasa', 'Smart scale (ada % lemak)', 'Meteran jahit', 'Smartwatch / fitness band', 'Tensimeter', 'Alat cek gula darah / CGM', 'Aplikasi pelacak tidur', 'Tidak punya semuanya'] },
+    { id: 'bb', t: 'num', q: 'Berat badan', req: true, unit: 'kg', min: 25, max: 300 },
+    { id: 'tb', t: 'num', q: 'Tinggi badan', req: true, unit: 'cm', min: 100, max: 230 },
+    { id: 'infoUkur', t: 'info', html: UKUR_INFO },
+    { id: 'pinggang', t: 'num', q: '① Lingkar pinggang', unit: 'cm', min: 40, max: 220 },
+    { id: 'perut', t: 'num', q: '② Lingkar perut (sejajar pusar)', unit: 'cm', min: 40, max: 220 },
+    { id: 'panggul', t: 'num', q: '③ Lingkar panggul', unit: 'cm', min: 50, max: 220 },
+    { id: 'bf', t: 'num', q: 'Persentase lemak tubuh (dari smart scale)', unit: '%', min: 3, max: 70, show: A => has(A, 'perangkat', 'Smart scale (ada % lemak)'), help: 'Opsional. Kalau diisi, BMR dihitung dengan rumus Katch-McArdle yang lebih akurat.' },
+    { id: 'rhr', t: 'num', q: 'Detak jantung istirahat (resting heart rate)', unit: 'bpm', min: 30, max: 140, show: A => has(A, 'perangkat', 'Smartwatch / fitness band'), help: 'Lihat rata-rata 7 hari terakhir di aplikasi smartwatch.' },
+    { id: 'langkah', t: 'num', q: 'Rata-rata langkah per hari', unit: 'langkah', min: 0, max: 60000, show: A => has(A, 'perangkat', 'Smartwatch / fitness band') },
+    { id: 'tensi', t: 'text', q: 'Hasil tensi terakhir', ph: 'mis. 120/80', show: A => has(A, 'perangkat', 'Tensimeter') },
+    { id: 'gula', t: 'text', q: 'Hasil cek gula darah terakhir (puasa/sewaktu)', ph: 'mis. puasa 95 mg/dL', show: A => has(A, 'perangkat', 'Alat cek gula darah / CGM') },
+    { id: 'calc', t: 'calc', q: 'Hasil hitung otomatis' },
+    { id: 'gBB', t: 'group', title: 'Riwayat Berat Badan', sub: 'Sejak usia dewasa (18+ tahun)' },
+    { id: 'bbMax', t: 'num', q: 'Berat badan tertinggi yang pernah kamu capai', unit: 'kg', min: 25, max: 350 },
+    { id: 'bbMin', t: 'num', q: 'Berat badan terendah', unit: 'kg', min: 25, max: 300 },
+    { id: 'bbTren', t: 'radio', q: 'Perubahan berat badan 6–12 bulan terakhir', req: true, opts: ['Stabil (±2 kg)', 'Naik', 'Turun', 'Tidak tahu'] },
+    { id: 'bbTrenKg', t: 'num', q: 'Kira-kira berapa kg?', unit: 'kg', min: 0, max: 100, show: A => A.bbTren === 'Naik' || A.bbTren === 'Turun' },
+    { id: 'bbTrenSengaja', t: 'radio', q: 'Apakah perubahan itu disengaja (sedang diet/program)?', opts: ['Ya, disengaja', 'Tidak disengaja'], show: A => A.bbTren === 'Turun' },
+    { id: 'yoyo', t: 'radio', q: 'Pernah turun berat lalu naik lagi (yo-yo)?', req: true, opts: ['Tidak pernah', '1–2 kali', 'Berulang kali'] }
+  ]},
+
+  { title: 'Kebiasaan & Gerak', intro: 'Kebiasaan harian dan aktivitas fisikmu.', qs: [
+    { id: 'rokok', t: 'radio', q: 'Merokok (termasuk vape)?', req: true, opts: ['Tidak pernah', 'Dulu, sudah berhenti', 'Ya'] },
+    { id: 'rokokJml', t: 'text', q: 'Berapa batang/hari dan biasanya kapan?', show: A => A.rokok === 'Ya' },
+    { id: 'rokokPasif', t: 'radio', q: 'Seberapa sering terpapar asap rokok orang lain?', req: true, opts: ['Jarang', 'Kadang', 'Sering (di rumah/kantor)'] },
+    { id: 'matahari', t: 'radio', q: 'Seberapa sering kena sinar matahari pagi (≥10 menit)?', req: true, opts: ['Hampir tidak pernah', '1–2x/minggu', '3–5x/minggu', 'Hampir tiap hari'] },
+    { id: 'menstruasi', t: 'radio', q: 'Siklus menstruasi', req: true, show: isF, opts: ['Teratur', 'Tidak teratur', 'Sudah tidak menstruasi'] },
+    { id: 'sakit', t: 'radio', q: 'Seberapa sering kamu sakit (flu, radang tenggorokan, dll.)?', req: true, opts: ['Jarang (≤1x/tahun)', '2–3x/tahun', 'Tiap 1–2 bulan', 'Hampir tiap bulan'] },
+    { id: 'gAkt', t: 'group', title: 'Aktivitas Fisik', sub: '' },
+    { id: 'kerja', t: 'radio', q: 'Pekerjaan/keseharianmu lebih banyak…', req: true, opts: ['Duduk hampir seharian', 'Campuran duduk & jalan', 'Banyak berdiri/jalan', 'Kerja fisik berat'] },
+    { id: 'hariAktif', t: 'scale', q: 'Dalam 7 hari terakhir, berapa hari kamu aktif ringan–sedang (jalan kaki, bersih-bersih, belanja, dll.) minimal 30 menit?', req: true, min: 0, max: 7, lo: '0 hari', hi: '7 hari' },
+    { id: 'olahraga', t: 'radio', q: 'Olahraga yang disengaja per minggu', req: true, opts: ['Tidak ada', '1x', '2–3x', '4–5x', '6x atau lebih'] },
+    { id: 'olahragaJenis', t: 'check', q: 'Jenis olahraganya', other: true, show: A => A.olahraga && A.olahraga !== 'Tidak ada',
+      opts: ['Jalan kaki', 'Lari', 'Bersepeda', 'Renang', 'Angkat beban / gym', 'Yoga / pilates', 'Olahraga raket / tim', 'Senam / zumba', 'Bela diri'] },
+    { id: 'olahragaDurasi', t: 'text', q: 'Durasi & intensitasnya kira-kira?', ph: 'mis. 45 menit, sedang (masih bisa ngobrol)', show: A => A.olahraga && A.olahraga !== 'Tidak ada' },
+    { id: 'hambatanGerak', t: 'check', q: 'Yang biasanya menghambat kamu untuk aktif bergerak', req: true, other: true,
+      opts: ['Waktu', 'Energi / capek', 'Cedera / sakit', 'Malas / kurang motivasi', 'Lingkungan kurang mendukung', 'Biaya', 'Tidak tahu mulai dari mana', 'Tidak ada hambatan'], none: 'Tidak ada hambatan' },
+    { id: 'motivasiGerak', t: 'check', q: 'Motivasimu untuk bergerak/olahraga', req: true, other: true,
+      opts: ['Stamina', 'Kekuatan', 'Postur', 'Turun lemak / berat', 'Kesehatan jangka panjang', 'Redakan stres', 'Penampilan', 'Performa olahraga', 'Disarankan dokter / keluarga'] }
+  ]},
+
+  { title: 'Pola Makan', intro: 'Gambaran pola makanmu sehari-hari. Detailnya akan dibahas saat sesi.', qs: [
+    { id: 'makanUtama', t: 'radio', q: 'Berapa kali makan utama per hari?', req: true, opts: ['1x', '2x', '3x', 'Tidak menentu'] },
+    { id: 'porsiBesar', t: 'radio', q: 'Porsi terbesarmu biasanya saat…', req: true, opts: ['Sarapan', 'Makan siang', 'Makan malam', 'Tidak menentu'] },
+    { id: 'camilan', t: 'radio', q: 'Ngemil/camilan per hari', req: true, opts: ['Tidak ngemil', '1x', '2x', '3x atau lebih'] },
+    { id: 'camilanJam', t: 'text', q: 'Biasanya ngemil jam berapa & apa?', ph: 'mis. jam 3 sore, gorengan', show: A => A.camilan && A.camilan !== 'Tidak ngemil' },
+    { id: 'jamKonsisten', t: 'radio', q: 'Jam makanmu…', req: true, opts: ['Cukup konsisten', 'Berubah-ubah'] },
+    { id: 'jamTerakhir', t: 'time', q: 'Biasanya makan terakhir jam berapa?', req: true },
+    { id: 'larut', t: 'radio', q: 'Seberapa sering makan larut malam (setelah jam 21.00)?', req: true, opts: ['Jarang', '1–2x/minggu', '3–5x/minggu', 'Hampir tiap malam'] },
+    { id: 'air', t: 'radio', q: 'Minum air putih per hari', req: true, opts: ['< 1 liter', '1–1,5 liter', '1,5–2 liter', '2–3 liter', '> 3 liter'] },
+    { id: 'alkohol', t: 'radio', q: 'Minum alkohol?', req: true, opts: ['Tidak', 'Jarang (≤1x/bulan)', 'Mingguan', 'Hampir tiap hari'] },
+    { id: 'puasa', t: 'check', q: 'Rutin berpuasa?', req: true, none: 'Tidak', other: true, opts: ['Tidak', 'Puasa agama (Senin-Kamis, dll.)', 'Intermittent fasting'] },
+    { id: 'frek', t: 'grid', q: 'Seberapa sering kamu makan/minum…', req: true, cols: ['Jarang', 'Kadang', 'Sering', 'Tiap hari'],
+      rows: ['Makanan olahan/kemasan (mi instan, sosis, nugget, snack)', 'Makanan & minuman manis (kue, boba, kopi susu, soda)', 'Gorengan', 'Sayur & buah', 'Sumber protein (daging, ikan, telur, tahu, tempe)', 'Karbo putih (nasi putih, roti putih, mi)'] },
+    { id: 'makanSambil', t: 'check', q: 'Kamu sering makan sambil…', req: true, none: 'Tidak, biasanya fokus makan',
+      opts: ['Nonton / scroll HP', 'Kerja', 'Berkendara', 'Buru-buru', 'Tidak, biasanya fokus makan'] },
+    { id: 'pantangan', t: 'check', q: 'Ada makanan yang kamu hindari?', req: true, none: 'Tidak ada',
+      opts: ['Karena agama/keyakinan', 'Karena alergi/intoleransi', 'Karena tidak suka', 'Tidak ada'] },
+    { id: 'pantanganDetail', t: 'text', q: 'Makanan apa saja?', show: A => any(A, 'pantangan', 'Tidak ada') },
+    { id: 'diet', t: 'check', q: 'Diet yang pernah/sedang dicoba', req: true, none: 'Belum pernah', other: true,
+      opts: ['Hitung kalori / defisit', 'Keto / low carb', 'Intermittent fasting', 'Vegetarian / vegan', 'Diet mayo', 'Food combining', 'OCD', 'Obat / teh pelangsing', 'Belum pernah'] }
+  ]},
+
+  { title: 'Pencernaan', intro: 'Pencernaan sering jadi petunjuk penting soal pola makan & stres. Santai saja, ini hal yang wajar dibahas.', qs: [
+    { id: 'babFreq', t: 'radio', q: 'Seberapa sering buang air besar (BAB)?', req: true, opts: ['< 3x/minggu', '3–6x/minggu', '1x/hari', '2–3x/hari', '> 3x/hari'] },
+    { id: 'bristol', t: 'bristol', q: 'Bentuk feses yang paling sering (Skala Bristol)', req: true },
+    { id: 'lega', t: 'radio', q: 'Setelah BAB, apakah terasa tuntas/lega?', req: true, opts: ['Ya', 'Kadang', 'Jarang'] },
+    { id: 'mengejan', t: 'radio', q: 'Perlu mengejan keras saat BAB?', req: true, opts: ['Jarang', 'Kadang', 'Sering'] },
+    { id: 'gejala', t: 'check', q: 'Yang sering kamu alami dalam sebulan terakhir', req: true, none: 'Tidak ada', other: true,
+      opts: ['Perut kembung', 'Sering kentut', 'Sendawa berlebihan', 'Nyeri perut', 'Cepat kenyang/penuh', 'Mual', 'Refluks / GERD / asam naik', 'Sering diare', 'Sering sembelit', 'Darah di feses', 'Lendir di feses', 'Tidak ada'] },
+    { id: 'riwayatCerna', t: 'check', q: 'Pernah mengalami / didiagnosis', req: true, none: 'Tidak ada',
+      opts: ['Infeksi saluran cerna (tifus, dll.)', 'Rutin minum obat lambung (omeprazole, lansoprazole, dll.)', 'IBS / SIBO / SIFO', 'Minum antibiotik dalam 1 tahun terakhir', 'Tidak ada'] },
+    { id: 'alergi', t: 'text', q: 'Alergi / intoleransi makanan yang diketahui', ph: 'mis. susu, telur, kacang. Kosongkan kalau tidak ada.' }
+  ]},
+
+  { title: 'Tidur & Stres', intro: 'Bagian singkat. Skor tidur & stres yang lebih lengkap akan diambil dari 3 assessment lanjutan setelah ini.', qs: [
+    { id: 'kopi', t: 'radio', q: 'Minum kopi / teh / minuman berkafein per hari', req: true, opts: ['Tidak', '1x', '2x', '3x atau lebih'] },
+    { id: 'kopiJam', t: 'time', q: 'Jam berapa minum kafein terakhir biasanya?', show: A => A.kopi && A.kopi !== 'Tidak' },
+    { id: 'tidurSiang', t: 'radio', q: 'Tidur siang?', req: true, opts: ['Tidak', 'Kadang, < 30 menit', 'Kadang, > 30 menit', 'Rutin tiap hari'] },
+    { id: 'sebelumTidur', t: 'check', q: 'Yang biasanya kamu lakukan 1 jam sebelum tidur', req: true, other: true,
+      opts: ['Scroll HP', 'Nonton', 'Makan / ngemil', 'Kerja / belajar', 'Membaca', 'Ibadah / doa', 'Meditasi / latihan napas', 'Mandi air hangat'] },
+    { id: 'sumberStres', t: 'check', q: 'Sumber stres yang paling sering', req: true, none: 'Tidak merasa stres', other: true,
+      opts: ['Pekerjaan', 'Keluarga', 'Finansial', 'Kesehatan', 'Relasi / pasangan', 'Tidak merasa stres'] },
+    { id: 'kelolaStres', t: 'check', q: 'Cara kamu biasanya mengelola stres', req: true, other: true,
+      opts: ['Cerita ke orang lain', 'Menyendiri', 'Olahraga / aktivitas fisik', 'Makan', 'Ibadah / meditasi', 'Tidur', 'Main HP / game / nonton'] },
+    { id: 'support', t: 'radio', q: 'Saat sedang down, apakah kamu punya orang yang bisa diandalkan?', req: true, opts: ['Ya, ada', 'Kadang / tidak selalu', 'Belum ada'] }
+  ]}
+];
+
+const ALL_Q = STEPS.flatMap((s, si) => s.qs.map(q => Object.assign(q, { step: si })));
+const ANSWERABLE = q => !['info', 'calc', 'group'].includes(q.t);
+
+/* ══════════════════════════════════════════════════════════════════════════
+   STATE
+   ══════════════════════════════════════════════════════════════════════════ */
+const DRAFT_KEY = 'scl_intake_draft';
+let A = {};
+let S = 0;
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = v => { const n = parseFloat(String(v == null ? '' : v).replace(',', '.')); return isFinite(n) ? n : null; };
+const fmt = (n, d = 1) => n == null ? '–' : n.toLocaleString('id-ID', { minimumFractionDigits: d, maximumFractionDigits: d });
+const visible = q => !q.show || !!q.show(A);
+
+function saveDraft() { SCL.writeLS(DRAFT_KEY, { A, S }); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RENDER
+   ══════════════════════════════════════════════════════════════════════════ */
+function chipsHtml(q, type) {
+  return `<div class="chips">${q.opts.map(o => `<label class="chip"><input type="${type}" name="${q.id}" data-k="${q.id}" value="${esc(o)}"><span>${esc(o)}</span></label>`).join('')}</div>`;
+}
+
+function renderQ(q) {
+  const label = q.q ? `<div class="q-text">${q.q}${q.req ? '<span class="req">*</span>' : ''}</div>` : '';
+  const help = q.help ? `<div class="q-help">${q.help}</div>` : '';
+  let body = '';
+  switch (q.t) {
+    case 'info': return `<div class="q-item" id="q_${q.id}"><div class="info-block">${q.html}</div></div>`;
+    case 'calc': return `<div class="q-item" id="q_${q.id}">${label}<div id="calcBox"></div></div>`;
+    case 'consent': return `<div class="q-item" id="q_${q.id}"><label class="consent-box"><input type="checkbox" data-k="${q.id}"><span>${q.q}</span></label></div>`;
+    case 'text': case 'tel': case 'email':
+      body = `<input class="inp" type="${q.t === 'tel' ? 'tel' : q.t === 'email' ? 'email' : 'text'}" data-k="${q.id}" maxlength="300" placeholder="${esc(q.ph || '')}"${q.t === 'tel' ? ' inputmode="tel"' : ''}>`; break;
+    case 'date': body = `<input class="inp" type="date" data-k="${q.id}" style="max-width:220px">`; break;
+    case 'time': body = `<input class="inp" type="time" data-k="${q.id}" style="max-width:160px">`; break;
+    case 'num': body = `<div class="inp-unit"><input class="inp" type="text" inputmode="decimal" data-k="${q.id}" placeholder="${q.min}–${q.max}"><span>${q.unit}</span></div>`; break;
+    case 'area': body = `<textarea class="inp" data-k="${q.id}" maxlength="1000" placeholder="${esc(q.ph || '')}"></textarea>`; break;
+    case 'radio': body = chipsHtml(q, 'radio'); break;
+    case 'check':
+      body = chipsHtml(q, 'checkbox') + (q.other ? `<input class="inp other-inp" type="text" data-k="${q.id}_other" maxlength="200" placeholder="Lainnya (opsional)">` : ''); break;
+    case 'scale': {
+      const vals = []; for (let v = q.min; v <= q.max; v++) vals.push(v);
+      body = `<div class="scale">${vals.map(v => `<label class="chip"><input type="radio" name="${q.id}" data-k="${q.id}" value="${v}"><span>${v}</span></label>`).join('')}</div>
+              <div class="scale-ends"><span>${q.lo}</span><span>${q.hi}</span></div>`; break;
+    }
+    case 'grid':
+      body = `<table class="grid-tbl"><thead><tr><th></th>${q.cols.map(c => `<th>${c}</th>`).join('')}</tr></thead><tbody>
+        ${q.rows.map((r, i) => `<tr><td>${r}</td>${q.cols.map(c => `<td><label class="chip"><input type="radio" name="${q.id}_${i}" data-k="${q.id}_${i}" value="${esc(c)}" aria-label="${esc(r)}: ${esc(c)}"><span></span></label></td>`).join('')}</tr>`).join('')}
+      </tbody></table>`; break;
+    case 'bristol': body = BRISTOL_HTML(q); break;
+  }
+  return `<div class="q-item" id="q_${q.id}">${label}${help}${body}</div>`;
+}
+
+function renderSteps() {
+  const wrap = document.getElementById('steps');
+  wrap.innerHTML = STEPS.map((s, si) => {
+    let html = `<div class="step" data-step="${si}"><div class="step-intro">${s.intro}</div>`;
+    let open = false;
+    s.qs.forEach(q => {
+      if (q.t === 'group') {
+        if (open) html += '</div>';
+        html += `<div class="group-head" id="q_${q.id}"><div class="group-num">+</div><div><div class="group-title">${q.title}</div>${q.sub ? `<div class="group-sub">${q.sub}</div>` : ''}</div></div><div class="questions">`;
+        open = true; return;
+      }
+      if (!open) { html += '<div class="questions" style="margin-top:14px">'; open = true; }
+      html += renderQ(q);
+    });
+    return html + (open ? '</div>' : '') + '</div>';
+  }).join('');
+}
+
+function applyDom() {
+  document.querySelectorAll('#steps [data-k]').forEach(el => {
+    const k = el.dataset.k, v = A[k];
+    if (el.type === 'radio') el.checked = v === el.value;
+    else if (el.type === 'checkbox' && k === 'consent') el.checked = !!v;
+    else if (el.type === 'checkbox') el.checked = Array.isArray(v) && v.includes(el.value);
+    else el.value = v == null ? '' : v;
+  });
+}
+
+function onInput(e) {
+  const el = e.target, k = el.dataset.k;
+  if (!k) return;
+  if (el.type === 'radio') A[k] = el.value;
+  else if (el.type === 'checkbox' && k === 'consent') A[k] = el.checked;
+  else if (el.type === 'checkbox') {
+    const q = ALL_Q.find(x => x.id === k);
+    let arr = Array.isArray(A[k]) ? A[k].slice() : [];
+    if (el.checked) {
+      if (q.none && el.value === q.none) arr = [q.none];
+      else arr = arr.filter(v => v !== q.none).concat(el.value);
+    } else arr = arr.filter(v => v !== el.value);
+    A[k] = arr;
+    document.querySelectorAll(`input[data-k="${k}"]`).forEach(c => { c.checked = arr.includes(c.value); });
+  } else A[k] = el.value;
+
+  const item = el.closest('.q-item');
+  if (item) item.classList.remove('invalid');
+  if (['nama', 'wa', 'tglLahir'].includes(k)) SCL.saveIdentity({ [k]: String(A[k] || '').trim() });
+  updateVisibility();
+  updateCalc();
+  saveDraft();
+}
+
+function updateVisibility() {
+  ALL_Q.forEach(q => {
+    if (!q.show) return;
+    const el = document.getElementById('q_' + q.id);
+    if (el) el.style.display = visible(q) ? '' : 'none';
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   KALKULASI TUBUH
+   ══════════════════════════════════════════════════════════════════════════ */
+function calcBody() {
+  const bb = num(A.bb), tb = num(A.tb), pg = num(A.pinggang), pp = num(A.panggul);
+  const bf = visible(ALL_Q.find(q => q.id === 'bf')) ? num(A.bf) : null;
+  const L = A.jk === 'Laki-laki', usia = A.tglLahir ? SCL.hitungUsia(A.tglLahir) : null;
+  const r = { usia };
+  if (bb && tb) {
+    const m = tb / 100;
+    r.bmi = bb / (m * m);
+    r.bmiKat = r.bmi < 18.5 ? ['Berat badan kurang', 'warn'] : r.bmi < 23 ? ['Normal', 'ok'] : r.bmi < 25 ? ['Berisiko (overweight)', 'warn'] : r.bmi < 30 ? ['Obesitas I', 'risk'] : ['Obesitas II', 'risk'];
+    r.bbMaxIdeal = 22.9 * m * m;
+    if (bf) { r.bmr = 370 + 21.6 * bb * (1 - bf / 100); r.bmrMetode = 'Katch-McArdle'; }
+    else if (usia != null && A.jk) { r.bmr = 10 * bb + 6.25 * tb - 5 * usia + (L ? 5 : -161); r.bmrMetode = 'Mifflin-St Jeor'; }
+  }
+  if (pg && A.jk) {
+    const cut = L ? 90 : 80;
+    r.pinggangKat = pg >= cut ? [`Di atas batas Asia (${cut} cm)`, 'risk'] : [`Di bawah batas Asia (${cut} cm)`, 'ok'];
+  }
+  if (pg && pp && A.jk) {
+    r.whr = pg / pp;
+    const cut = L ? 0.90 : 0.85;
+    r.whrKat = r.whr >= cut ? [`≥ ${fmt(cut, 2)} · berisiko`, 'risk'] : [`< ${fmt(cut, 2)} · baik`, 'ok'];
+  }
+  if (pg && tb) {
+    r.whtr = pg / tb;
+    r.whtrKat = r.whtr >= 0.5 ? ['≥ 0,5 · berisiko', 'risk'] : ['< 0,5 · baik', 'ok'];
+  }
+  return r;
+}
+
+function statHtml(label, val, unit, kat) {
+  return `<div class="stat"><div class="stat-label">${label}</div><div class="stat-val">${val}${unit ? ` <small>${unit}</small>` : ''}</div>
+    ${kat ? `<span class="stat-cat cat-${kat[1]}">${kat[0]}</span>` : ''}</div>`;
+}
+
+function calcHtml(r) {
+  const na = ['Belum lengkap', 'na'];
+  return `<div class="calc-grid">
+    ${statHtml('BMI (standar Asia)', r.bmi ? fmt(r.bmi) : '–', '', r.bmiKat || na)}
+    ${statHtml('Lingkar Pinggang', A.pinggang ? fmt(num(A.pinggang), 0) : '–', 'cm', r.pinggangKat || na)}
+    ${statHtml('Rasio Pinggang–Panggul', r.whr ? fmt(r.whr, 2) : '–', '', r.whrKat || na)}
+    ${statHtml('Rasio Pinggang–Tinggi', r.whtr ? fmt(r.whtr, 2) : '–', '', r.whtrKat || na)}
+    ${statHtml('Estimasi BMR', r.bmr ? fmt(r.bmr, 0) : '–', 'kkal/hari', r.bmrMetode ? [r.bmrMetode, 'na'] : na)}
+    ${statHtml('BB Maks. Ideal (BMI 22,9)', r.bbMaxIdeal ? fmt(r.bbMaxIdeal) : '–', 'kg', null)}
+  </div>
+  <p class="calc-note">BMR = energi yang dibakar tubuh saat istirahat total. Batas lingkar pinggang & BMI memakai standar Asia (orang Asia berisiko penyakit metabolik di angka yang lebih rendah). Rasio pinggang–tinggi: idealnya lingkar pinggang kurang dari setengah tinggi badan.</p>`;
+}
+
+function updateCalc() {
+  const box = document.getElementById('calcBox');
+  if (box) box.innerHTML = calcHtml(calcBody());
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   VALIDASI & NAVIGASI
+   ══════════════════════════════════════════════════════════════════════════ */
+function isEmpty(q) {
+  if (q.t === 'grid') return q.rows.some((_, i) => !A[`${q.id}_${i}`]);
+  const v = A[q.id];
+  if (q.t === 'consent') return !v;
+  if (Array.isArray(v)) return v.length === 0 && !(q.other && String(A[q.id + '_other'] || '').trim());
+  return v == null || String(v).trim() === '';
+}
+
+function validateStep(si) {
+  const errs = [];
+  document.querySelectorAll(`.step[data-step="${si}"] .q-item.invalid`).forEach(e => e.classList.remove('invalid'));
+  STEPS[si].qs.forEach(q => {
+    if (!ANSWERABLE(q) || !visible(q)) return;
+    let msg = null;
+    if (q.req && isEmpty(q)) msg = q.t === 'consent' ? 'Centang persetujuan untuk melanjutkan.' : `Belum diisi: ${strip(q.q)}`;
+    else if (q.t === 'num' && String(A[q.id] || '').trim()) {
+      const n = num(A[q.id]);
+      if (n == null || n < q.min || n > q.max) msg = `${strip(q.q)}: isi angka antara ${q.min}–${q.max} ${q.unit}.`;
+    } else if (q.id === 'wa' && A.wa && !SCL.normalizeWA(A.wa)) msg = 'Nomor WhatsApp belum valid (contoh: 081234567890).';
+    else if (q.id === 'tglLahir' && A.tglLahir) {
+      const u = SCL.hitungUsia(A.tglLahir);
+      if (!(u >= 12 && u <= 100)) msg = 'Tanggal lahir belum benar.';
+    }
+    if (msg) {
+      errs.push(msg);
+      const el = document.getElementById('q_' + q.id);
+      if (el) el.classList.add('invalid');
+    }
+  });
+  const box = document.getElementById('errorBox');
+  if (errs.length) {
+    box.innerHTML = '⚠️ ' + errs.slice(0, 4).map(esc).join('<br>⚠️ ') + (errs.length > 4 ? `<br>…dan ${errs.length - 4} lainnya.` : '');
+    box.style.display = 'block';
+    const first = document.querySelector(`.step[data-step="${si}"] .q-item.invalid`);
+    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return false;
+  }
+  box.style.display = 'none';
+  return true;
+}
+
+function showStep(si) {
+  S = si;
+  document.querySelectorAll('.step').forEach(el => el.classList.toggle('active', +el.dataset.step === si));
+  document.getElementById('progStep').textContent = `Bagian ${si + 1} dari ${STEPS.length}`;
+  document.getElementById('progTitle').textContent = STEPS[si].title;
+  document.getElementById('progFill').style.width = ((si + 1) / STEPS.length * 100) + '%';
+  document.getElementById('btnBack').style.visibility = si === 0 ? 'hidden' : 'visible';
+  document.getElementById('btnNext').textContent = si === STEPS.length - 1 ? 'Lihat Ringkasan ✓' : 'Lanjut →';
+  document.getElementById('errorBox').style.display = 'none';
+  saveDraft();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HASIL, FLAG COACH, PAYLOAD
+   ══════════════════════════════════════════════════════════════════════════ */
+function answerText(q) {
+  if (q.t === 'consent') return A[q.id] ? 'Setuju' : '';
+  let v = A[q.id];
+  if (Array.isArray(v)) v = v.join(', ');
+  if (q.t === 'check' && q.other && String(A[q.id + '_other'] || '').trim()) v = (v ? v + ', ' : '') + 'Lainnya: ' + A[q.id + '_other'].trim();
+  if (q.t === 'num' && v) v = `${v} ${q.unit}`;
+  if (q.t === 'bristol' && v) v = `Tipe ${v} (${BRISTOL[v - 1][1]})`;
+  if (q.id === 'wa' && v) v = SCL.normalizeWA(v) || v;
+  return v == null ? '' : String(v).trim();
+}
+
+function coachFlags(r) {
+  const f = [];
+  const parqYes = PARQ.map((_, i) => A['parq' + (i + 1)] === 'Ya' ? i + 1 : 0).filter(Boolean);
+  if (parqYes.length) f.push(`PAR-Q+ "Ya" pada no. ${parqYes.join(', ')}: perlu follow-up / clearance medis sebelum latihan intens`);
+  if (has(A, 'gejala', 'Darah di feses')) f.push('RED FLAG: darah di feses, sarankan pemeriksaan dokter');
+  if (has(A, 'gejala', 'Lendir di feses')) f.push('Lendir di feses: gali lebih lanjut / pertimbangkan rujukan');
+  if (isF(A) && A.hamil && A.hamil !== 'Tidak hamil / menyusui') f.push(`Status: ${A.hamil}`);
+  if (any(A, 'kronis', 'Tidak ada')) f.push(`Penyakit terdiagnosis: ${A.kronis.join(', ')}`);
+  if (num(A.kesiapan) != null && num(A.kesiapan) <= 4) f.push(`Kesiapan berubah rendah (${A.kesiapan}/10): eksplorasi ambivalensi (MI)`);
+  if (A.bbTren === 'Turun' && A.bbTrenSengaja === 'Tidak disengaja') f.push(`BB turun ${A.bbTrenKg || '?'} kg tanpa disengaja`);
+  if (has(A, 'diet', 'Obat / teh pelangsing')) f.push('Pernah pakai obat/teh pelangsing');
+  if (A.support === 'Belum ada') f.push('Belum punya support system');
+  const t = String(A.tensi || '').match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
+  if (t && (+t[1] >= 140 || +t[2] >= 90)) f.push(`Tensi mandiri tinggi (${t[1]}/${t[2]})`);
+  if (r.bmiKat && r.bmiKat[1] === 'risk') f.push(`BMI ${fmt(r.bmi)} (${r.bmiKat[0]})`);
+  return f;
+}
+
+function buildPayload(r, flags) {
+  const data = {};
+  const raw = [];
+  ALL_Q.forEach(q => {
+    if (!ANSWERABLE(q) || !visible(q)) return;
+    if (q.t === 'grid') {
+      q.rows.forEach((row, i) => {
+        data[`${q.id}_${i + 1}`] = A[`${q.id}_${i}`] || '';
+        raw.push({ s: STEPS[q.step].title, q: `${strip(q.q)} ${row}`, v: A[`${q.id}_${i}`] || '' });
+      });
+      return;
+    }
+    const v = answerText(q);
+    data[q.id] = v;
+    raw.push({ s: STEPS[q.step].title, q: strip(q.q), v });
+  });
+  const calc = {
+    usia: r.usia, bmi: r.bmi ? +r.bmi.toFixed(1) : '', bmiKategori: r.bmiKat ? r.bmiKat[0] : '',
+    whr: r.whr ? +r.whr.toFixed(2) : '', whtr: r.whtr ? +r.whtr.toFixed(2) : '',
+    bmr: r.bmr ? Math.round(r.bmr) : '', bmrMetode: r.bmrMetode || '', bbMaxIdeal: r.bbMaxIdeal ? +r.bbMaxIdeal.toFixed(1) : ''
+  };
+  Object.assign(data, calc, { flags: flags.join(' | ') });
+  raw.push(
+    { s: 'Hitungan Otomatis', q: 'Usia', v: r.usia != null ? r.usia + ' tahun' : '' },
+    { s: 'Hitungan Otomatis', q: 'BMI', v: calc.bmi ? `${calc.bmi} (${calc.bmiKategori})` : '' },
+    { s: 'Hitungan Otomatis', q: 'Rasio pinggang–panggul', v: calc.whr ? `${calc.whr} (${r.whrKat[0]})` : '' },
+    { s: 'Hitungan Otomatis', q: 'Rasio pinggang–tinggi', v: calc.whtr ? `${calc.whtr} (${r.whtrKat[0]})` : '' },
+    { s: 'Hitungan Otomatis', q: 'Estimasi BMR', v: calc.bmr ? `${calc.bmr} kkal (${calc.bmrMetode})` : '' },
+    { s: 'Hitungan Otomatis', q: 'BB maks. ideal (BMI 22,9)', v: calc.bbMaxIdeal ? calc.bbMaxIdeal + ' kg' : '' },
+    ...flags.map(f => ({ s: 'Flag untuk Coach', q: '⚑', v: f }))
+  );
+  return { data, raw };
+}
+
+function showResult() {
+  const r = calcBody();
+  const flags = coachFlags(r);
+  const { data, raw } = buildPayload(r, flags);
+
+  const tglFmt = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('rNama').textContent = A.nama || '';
+  document.getElementById('rSub').textContent = [
+    r.usia != null ? `Usia ${r.usia} tahun` : '', A.jk, A.wa ? 'WA ' + (SCL.normalizeWA(A.wa) || A.wa) : '', 'Diisi ' + tglFmt
+  ].filter(Boolean).join(' · ');
+  document.getElementById('rCalc').innerHTML = calcHtml(r);
+
+  const parqYes = PARQ.some((_, i) => A['parq' + (i + 1)] === 'Ya');
+  document.getElementById('rParq').innerHTML = parqYes
+    ? `<div class="notice notice-warn"><b>Ada jawaban "Ya" di cek kesiapan aktivitas fisik.</b> Ini bukan berarti kamu tidak boleh bergerak. Sebelum mulai latihan yang lebih berat dari biasanya, sebaiknya konsultasikan dulu dengan dokter. Coach akan membahasnya bersamamu di sesi pertama supaya programnya tetap aman.</div>`
+    : `<div class="notice notice-ok"><b>Aman untuk mulai bergerak.</b> Tidak ada jawaban "Ya" di cek kesiapan aktivitas fisik. Tetap mulai bertahap, dan kabari coach kalau ada keluhan baru.</div>`;
+
+  const bySec = {};
+  raw.filter(x => x.s !== 'Flag untuk Coach' && x.s !== 'Hitungan Otomatis' && x.v).forEach(x => { (bySec[x.s] = bySec[x.s] || []).push(x); });
+  document.getElementById('rAnswers').innerHTML = Object.keys(bySec).map(s => `
+    <div class="ans-sec"><h4>${esc(s)}</h4>${bySec[s].map(x => `<div class="ans-row"><span>${esc(x.q)}</span><span>${esc(x.v)}</span></div>`).join('')}</div>`).join('');
+
+  document.getElementById('wizard').style.display = 'none';
+  document.getElementById('resultSection').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  SCL.send('Intake', data, { wa: A.wa, nama: A.nama, raw });
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   INIT
+   ══════════════════════════════════════════════════════════════════════════ */
+function init() {
+  const draft = SCL.readLS(DRAFT_KEY);
+  if (draft && draft.A) { A = draft.A; S = Math.min(draft.S || 0, STEPS.length - 1); }
+  const id = SCL.getIdentity();
+  if (!A.nama && id.nama) A.nama = id.nama;
+  if (!A.wa && id.wa) A.wa = '0' + id.wa.slice(2);
+  if (!A.tglLahir && id.tglLahir) A.tglLahir = id.tglLahir;
+
+  renderSteps();
+  const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+  document.querySelector('[data-k="tglLahir"]').max = today;
+  applyDom();
+  updateVisibility();
+  updateCalc();
+
+  const steps = document.getElementById('steps');
+  steps.addEventListener('change', onInput);
+  steps.addEventListener('input', e => { if (e.target.type !== 'radio' && e.target.type !== 'checkbox') onInput(e); });
+
+  document.getElementById('btnNext').addEventListener('click', () => {
+    if (!validateStep(S)) return;
+    if (S < STEPS.length - 1) showStep(S + 1); else showResult();
+  });
+  document.getElementById('btnBack').addEventListener('click', () => { if (S > 0) showStep(S - 1); });
+  document.getElementById('btnEdit').addEventListener('click', () => {
+    document.getElementById('resultSection').style.display = 'none';
+    document.getElementById('wizard').style.display = 'block';
+    showStep(0);
+  });
+  document.getElementById('btnClear').addEventListener('click', () => {
+    if (!confirm('Hapus semua jawaban di perangkat ini dan mulai dari awal?')) return;
+    A = {}; S = 0; saveDraft(); applyDom(); updateVisibility(); updateCalc(); showStep(0);
+  });
+
+  showStep(S);
+}
+
+try { init(); } catch (e) { console.error('Gagal inisialisasi form:', e); }
+</script>
+</body>
+</html>
