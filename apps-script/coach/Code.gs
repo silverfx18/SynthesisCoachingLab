@@ -13,7 +13,10 @@
  * assertCoach_() adalah lapisan kedua kalau suatu saat setelan deploy berubah.
  */
 
-const FORMS = ['Intake', 'MCTQ', 'PSQI', 'StressTidur'];
+const FORMS = ['Intake', 'MCTQ', 'PSQI', 'StressTidur', 'Reassessment'];
+const AI_SHEET = 'AnalisisAI';
+// Data diri yang bisa dilengkapi/dikoreksi coach (disimpan di tab Klien)
+const PROFILE_FIELDS = ['tglLahir', 'jk', 'pekerjaan', 'domisili', 'email', 'catatanKlien'];
 const SESSION_SHEET = 'Sesi';
 const CLIENT_SHEET = 'Klien';
 const MAX_CELL = 5000;
@@ -32,25 +35,41 @@ function getClients() {
   assertCoach_();
   const rows = readSheet_(CLIENT_SHEET);
   return rows
-    .map(r => ({
-      clientId: String(r.clientId), nama: String(r.nama || ''),
-      terakhirAktif: iso_(r.terakhirAktif), pertamaKali: iso_(r.pertamaKali),
-      done: FORMS.concat([SESSION_SHEET]).filter(f => r[f]).reduce((o, f) => { o[f] = iso_(r[f]); return o; }, {})
-    }))
+    .map(r => {
+      const done = FORMS.concat([SESSION_SHEET]).filter(f => r[f]).reduce((o, f) => { o[f] = iso_(r[f]); return o; }, {});
+      const lastDataAt = Object.keys(done).map(f => done[f]).sort().pop() || '';
+      const aiSentAt = iso_(r.aiSentAt);
+      return {
+        clientId: String(r.clientId), nama: String(r.nama || ''),
+        terakhirAktif: iso_(r.terakhirAktif), pertamaKali: iso_(r.pertamaKali),
+        done: done, lastDataAt: lastDataAt, aiSentAt: aiSentAt, aiAnalyzedAt: iso_(r.aiAnalyzedAt),
+        // Ada data baru yang belum pernah disalin ke Claude
+        needsAi: !!lastDataAt && (!aiSentAt || lastDataAt > aiSentAt)
+      };
+    })
     .sort((a, b) => String(b.terakhirAktif).localeCompare(String(a.terakhirAktif)));
 }
 
 function getClientData(clientId) {
   assertCoach_();
   clientId = checkId_(clientId);
-  const out = { clientId: clientId, forms: {}, sessions: [] };
+  const out = { clientId: clientId, forms: {}, history: {}, sessions: [], ai: [] };
   FORMS.forEach(f => {
     const rows = readSheet_(f).filter(r => String(r.clientId) === clientId);
     if (rows.length) {
-      out.forms[f] = toRecord_(rows[rows.length - 1]);
+      out.history[f] = rows.slice(-20).map(toRecord_);        // urut lama → baru
+      out.forms[f] = out.history[f][out.history[f].length - 1];
       out.forms[f].count = rows.length;
     }
   });
+  const k = readSheet_(CLIENT_SHEET).filter(r => String(r.clientId) === clientId)[0] || {};
+  out.profile = { nama: String(k.nama || '') };
+  PROFILE_FIELDS.forEach(f => { out.profile[f] = k['profil_' + f] instanceof Date ? iso_(k['profil_' + f]).slice(0, 10) : String(k['profil_' + f] || ''); });
+  out.ai = readSheet_(AI_SHEET)
+    .filter(r => String(r.clientId) === clientId)
+    .map(toRecord_)
+    .reverse()
+    .slice(0, 5);
   out.sessions = readSheet_(SESSION_SHEET)
     .filter(r => String(r.clientId) === clientId)
     .map(toRecord_)
@@ -83,6 +102,48 @@ function saveSession(clientId, payload) {
     lock.releaseLock();
   }
   return { ok: true, savedAt: iso_(row.submittedAt) };
+}
+
+// Coach melengkapi / mengoreksi data diri klien.
+function saveProfile(clientId, profile) {
+  assertCoach_();
+  clientId = checkId_(clientId);
+  profile = profile || {};
+  const ss = openSS_();
+  const nama = String(profile.nama || '').trim();
+  if (nama) setClientField_(ss, clientId, 'nama', clean_(nama.slice(0, 100)));
+  PROFILE_FIELDS.forEach(f => {
+    if (f in profile) setClientField_(ss, clientId, 'profil_' + f, "'" + String(profile[f] || '').slice(0, 1000));
+  });
+  return { ok: true };
+}
+
+// Dipanggil saat coach menekan "Salin untuk Claude".
+function markAiSent(clientId) {
+  assertCoach_();
+  clientId = checkId_(clientId);
+  const now = new Date();
+  setClientField_(openSS_(), clientId, 'aiSentAt', now);
+  return { ok: true, at: iso_(now) };
+}
+
+// Hasil analisis Claude yang ditempel balik oleh coach.
+function saveAiAnalysis(clientId, text) {
+  assertCoach_();
+  clientId = checkId_(clientId);
+  text = String(text || '').trim();
+  if (!text) throw new Error('Teks analisis kosong.');
+  const now = new Date();
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const ss = openSS_();
+    appendObject_(ss, AI_SHEET, { submittedAt: now, clientId: "'" + clientId, analisis: clean_(text.slice(0, 45000)) });
+    setClientField_(ss, clientId, 'aiAnalyzedAt', now);
+  } finally {
+    lock.releaseLock();
+  }
+  return { ok: true, at: iso_(now) };
 }
 
 /* ── Internal ─────────────────────────────────────────────────────────────── */
@@ -195,14 +256,28 @@ function appendObject_(ss, sheetName, obj) {
 }
 
 function touchClient_(ss, clientId, nama) {
+  const now = new Date();
+  setClientField_(ss, clientId, 'terakhirAktif', now);
+  setClientField_(ss, clientId, SESSION_SHEET, now);
+}
+
+function setClientField_(ss, clientId, field, value) {
   const sh = ss.getSheetByName(CLIENT_SHEET);
   if (!sh || sh.getLastRow() < 2) return;
-  const headers = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
+  const headers = ensureHeaders_(sh, [field]);
   const col = n => headers.indexOf(n) + 1;
   const ids = sh.getRange(2, col('clientId'), sh.getLastRow() - 1, 1).getValues().map(r => String(r[0]));
   const idx = ids.indexOf(clientId);
-  if (idx === -1) return;
-  const now = new Date();
-  sh.getRange(idx + 2, col('terakhirAktif')).setValue(now);
-  if (col(SESSION_SHEET)) sh.getRange(idx + 2, col(SESSION_SHEET)).setValue(now);
+  if (idx !== -1) sh.getRange(idx + 2, col(field)).setValue(value);
+}
+
+function ensureHeaders_(sh, wanted) {
+  const lastCol = sh.getLastColumn();
+  const headers = lastCol ? sh.getRange(1, 1, 1, lastCol).getValues()[0].map(String) : [];
+  const missing = wanted.filter(h => headers.indexOf(h) === -1);
+  if (missing.length) {
+    sh.getRange(1, headers.length + 1, 1, missing.length).setValues([missing]);
+    headers.push(...missing);
+  }
+  return headers;
 }

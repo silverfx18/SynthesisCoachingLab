@@ -98,6 +98,20 @@ textarea.inp{min-height:58px;resize:vertical;line-height:1.5;}
 .btn-o{background:transparent;color:var(--teal);border:2px solid var(--teal);}
 .loading{position:fixed;top:12px;right:16px;background:var(--dark);color:var(--cream);font-size:11px;padding:7px 12px;border-radius:6px;z-index:50;display:none;}
 .err{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red);border-radius:8px;padding:12px 16px;margin-bottom:14px;font-size:12px;}
+/* AI & LINK */
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.ai-badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;background:#fdf2e9;color:#b35900;margin-left:4px;}
+.ai-text{font-size:12px;line-height:1.65;white-space:normal;}
+.ai-text h4{font-size:12px;color:var(--teal-dark);margin:12px 0 4px;}
+.ai-text h4:first-child{margin-top:0;}
+.ai-text ul{margin:0 0 4px 18px;}
+.linkrow{display:grid;grid-template-columns:140px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-top:1px dashed var(--cream2);font-size:11px;}
+.linkrow code{font-size:10.5px;background:var(--cream);padding:5px 7px;border-radius:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.modal{position:fixed;inset:0;background:rgba(14,24,29,.55);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px;}
+.modal-box{background:#fff;border-radius:12px;max-width:720px;width:100%;padding:18px;}
+.modal-box textarea{width:100%;height:320px;font-size:11px;font-family:monospace;border:1.5px solid var(--cream2);border-radius:8px;padding:10px;}
+.ba td.up{color:var(--green);font-weight:700;}
+.ba td.down{color:var(--red);font-weight:700;}
 /* REPORT */
 .rep{background:#fff;border:1px solid var(--cream2);border-radius:12px;overflow:hidden;}
 .rep-h{background:var(--dark);color:var(--cream);padding:22px 26px;}
@@ -110,6 +124,7 @@ textarea.inp{min-height:58px;resize:vertical;line-height:1.5;}
 .tbl td{padding:6px 8px;border-bottom:1px solid var(--cream2);vertical-align:top;}
 .tbl td:first-child{color:var(--muted);width:38%;}
 @media(max-width:800px){
+  .linkrow{grid-template-columns:1fr;}
   .layout{grid-template-columns:1fr;}
   .side{position:static;max-height:260px;border-right:none;border-bottom:1px solid var(--cream2);}
   .main{padding:14px 12px 90px;}
@@ -147,6 +162,8 @@ textarea.inp{min-height:58px;resize:vertical;line-height:1.5;}
    KONFIGURASI: kontak rujukan (isi sendiri)
    ════════════════════════════════════════════════════════════════════════ */
 const REFERRAL_CONTACTS = 'Isi daftar kontak rujukan kamu di sini (psikolog, psikiater, dokter umum, dokter spesialis gizi klinik) — edit konstanta REFERRAL_CONTACTS di Index.html.';
+// Alamat website assessment (GitHub Pages), dipakai untuk membuat link personal klien.
+const PUBLIC_BASE_URL = 'https://silverfx18.github.io/SynthesisCoachingLab/';
 
 /* ════════════════════════════════════════════════════════════════════════
    UTIL
@@ -157,8 +174,8 @@ const num = v => { const n = parseFloat(String(v == null ? '' : v).replace(',', 
 const fmt = (n, d = 1) => n == null || n === '' ? '–' : Number(n).toLocaleString('id-ID', { minimumFractionDigits: d, maximumFractionDigits: d });
 const fmtDate = s => { if (!s) return '–'; const d = new Date(s); return isNaN(d) ? String(s) : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }); };
 const strip = s => String(s).replace(/<[^>]+>/g, '');
-const FORMS = ['Intake', 'MCTQ', 'PSQI', 'StressTidur', 'Sesi'];
-const FORM_LABEL = { Intake: 'Intake', MCTQ: 'MCTQ', PSQI: 'PSQI', StressTidur: 'Stres', Sesi: 'Sesi' };
+const FORMS = ['Intake', 'MCTQ', 'PSQI', 'StressTidur', 'Reassessment', 'Sesi'];
+const FORM_LABEL = { Intake: 'Intake', MCTQ: 'MCTQ', PSQI: 'PSQI', StressTidur: 'Stres', Reassessment: 'Re-assess', Sesi: 'Sesi' };
 
 function api(fn, ...args) {
   $('loading').style.display = 'block';
@@ -296,7 +313,26 @@ const SESI_Q = SESI.flatMap(s => s.qs.map(q => Object.assign(q, { sec: s })));
    ════════════════════════════════════════════════════════════════════════ */
 let CLIENTS = [], CUR = null, CD = null, TAB = 'ringkasan', SA = {}, DIRTY = false;
 
-function intakeData() { return (CD && CD.forms.Intake && CD.forms.Intake.data) || {}; }
+// Data intake + data diri yang dilengkapi coach (isian coach menang kalau diisi)
+function intakeData() {
+  const d = Object.assign({}, (CD && CD.forms.Intake && CD.forms.Intake.data) || {});
+  const p = (CD && CD.profile) || {};
+  ['tglLahir', 'jk', 'pekerjaan', 'domisili', 'email'].forEach(k => { if (p[k]) d[k] = p[k]; });
+  if (p.tglLahir) d.usia = hitungUsia(p.tglLahir);
+  else if (!d.usia) {
+    const other = ['MCTQ', 'StressTidur', 'PSQI'].map(f => CD && CD.forms[f] && CD.forms[f].data.usia).find(Boolean);
+    if (other) d.usia = parseInt(other, 10) || '';
+  }
+  return d;
+}
+function hitungUsia(t) {
+  const n = new Date(), b = new Date(t);
+  if (isNaN(b)) return '';
+  let a = n.getFullYear() - b.getFullYear();
+  const m = n.getMonth() - b.getMonth();
+  if (m < 0 || (m === 0 && n.getDate() < b.getDate())) a--;
+  return a;
+}
 function ctx() { const d = intakeData(); return { jk: d.jk }; }
 function lastSession() { return (CD && CD.sessions[0]) || null; }
 
@@ -312,7 +348,7 @@ function renderClients() {
   const list = CLIENTS.filter(c => !q || c.nama.toLowerCase().includes(q) || c.clientId.includes(q.replace(/^0/, '62')));
   $('clientList').innerHTML = list.length ? list.map(c => `
     <div class="cl ${c.clientId === CUR ? 'active' : ''}" data-id="${esc(c.clientId)}">
-      <b>${esc(c.nama || '(tanpa nama)')}</b><small>+${esc(c.clientId)} · aktif ${fmtDate(c.terakhirAktif)}</small>
+      <b>${esc(c.nama || '(tanpa nama)')}${c.needsAi ? '<span class="ai-badge">🤖 belum dianalisis</span>' : ''}</b><small>+${esc(c.clientId)} · aktif ${fmtDate(c.terakhirAktif)}</small>
       <div class="dots">${FORMS.map(f => `<span class="dot ${c.done[f] ? 'on' : ''}">${FORM_LABEL[f]}</span>`).join('')}</div>
     </div>`).join('') : '<div class="none-text">Belum ada klien.</div>';
 }
@@ -338,7 +374,7 @@ async function openClient(id) {
    ════════════════════════════════════════════════════════════════════════ */
 function clientName() {
   const c = CLIENTS.find(x => x.clientId === CUR);
-  return (c && c.nama) || intakeData().nama || '(tanpa nama)';
+  return (CD && CD.profile && CD.profile.nama) || (c && c.nama) || intakeData().nama || '(tanpa nama)';
 }
 function renderMain() {
   const d = intakeData();
@@ -346,13 +382,20 @@ function renderMain() {
   $('main').innerHTML = `
     <div class="head-name">${esc(clientName())}</div>
     <div class="head-sub">${sub ? sub + '<br>' : ''}<a href="https://wa.me/${esc(CUR)}" target="_blank" rel="noopener">WhatsApp +${esc(CUR)}</a></div>
+    <div class="toolbar no-print">
+      <button class="btn btn-p" id="btnClaude">🤖 Salin untuk Claude</button>
+      <button class="btn btn-o" id="btnLinks">🔗 Link untuk klien</button>
+    </div>
     <div class="tabs no-print">
-      ${[['ringkasan', 'Ringkasan'], ['sesi', 'Form Sesi'], ['report', 'Report']].map(([k, l]) => `<button class="tab ${TAB === k ? 'active' : ''}" data-tab="${k}">${l}</button>`).join('')}
+      ${[['ringkasan', 'Ringkasan'], ['sesi', 'Form Sesi'], ['ba', 'Before–After'], ['report', 'Report']].map(([k, l]) => `<button class="tab ${TAB === k ? 'active' : ''}" data-tab="${k}">${l}</button>`).join('')}
     </div>
     <div id="tabBody"></div>`;
   document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => { TAB = b.dataset.tab; renderMain(); }));
+  $('btnClaude').addEventListener('click', copyForClaude);
+  $('btnLinks').addEventListener('click', showLinks);
   if (TAB === 'ringkasan') renderRingkasan();
   else if (TAB === 'sesi') renderSesi();
+  else if (TAB === 'ba') renderBA();
   else renderReport();
 }
 
@@ -367,6 +410,10 @@ function allFlags() {
   if (p && num(p.skorTotal) > 10) f.push({ t: `PSQI ${p.skorTotal}/21 (gangguan tidur serius): pertimbangkan rujukan`, src: 'PSQI' });
   const st = CD.forms.StressTidur && CD.forms.StressTidur.data;
   if (st && st.kategoriStress === 'Tinggi') f.push({ t: `Stres tinggi (skor ${st.skorStress}/40)`, src: 'Stress-Tidur' });
+  const re = CD.forms.Reassessment && CD.forms.Reassessment.data;
+  if (re) String(re.flags || '').split(' | ').filter(Boolean).forEach(x => f.push({ t: x, src: 'Re-assessment ' + (re.fase || '') }));
+  const c = CLIENTS.find(x => x.clientId === CUR);
+  if (c && c.needsAi) f.push({ t: `🤖 Ada data baru sejak ${c.aiSentAt ? 'terakhir disalin ke Claude (' + fmtDate(c.aiSentAt) + ')' : 'awal'}, belum dianalisis AI`, src: 'Sistem' });
   return f;
 }
 function flagsHtml() {
@@ -419,12 +466,46 @@ function renderRingkasan() {
   const done = FORMS.filter(f => f !== 'Sesi').map(f => `<span class="dot ${CD.forms[f] ? 'on' : ''}" title="${CD.forms[f] ? fmtDate(CD.forms[f].submittedAt) : 'belum'}">${FORM_LABEL[f]}${CD.forms[f] ? ' · ' + fmtDate(CD.forms[f].submittedAt) : ''}</span>`).join(' ');
   $('tabBody').innerHTML = `
     <div class="card"><div class="card-title">Flag untuk Coach</div>${flagsHtml()}</div>
+    ${aiCardHtml()}
+    ${profileCardHtml()}
     <div class="card"><div class="card-title">Status Assessment</div><div class="dots" style="flex-wrap:wrap;gap:6px">${done}</div>
       <p class="stat-s" style="margin-top:8px">Goal: <b>${esc(intakeData().goal || '–')}</b></p></div>
     <div class="card"><div class="card-title">Tubuh (data mandiri klien)</div>${bodyHtml()}</div>
     <div class="card"><div class="card-title">Tidur & Stres</div>${scoresHtml()}</div>
     <div class="card"><div class="card-title">Jawaban Intake</div>${rawHtml(CD.forms.Intake && CD.forms.Intake.raw, false, ['Flag untuk Coach'])}</div>
     ${CD.sessions.length ? `<div class="card"><div class="card-title">Riwayat Sesi</div>${CD.sessions.map(s => `<div class="ans-row"><span>${fmtDate(s.submittedAt)}</span><span>${esc(s.data.prioritas || s.data.miTarget || 'Tersimpan')}</span></div>`).join('')}</div>` : ''}`;
+  bindAiCard();
+  bindProfileCard();
+}
+
+function profileCardHtml() {
+  const d = intakeData(), p = CD.profile || {};
+  const missing = ['tglLahir', 'jk', 'pekerjaan'].filter(k => !d[k]);
+  const f = (k, l, type, extra) => `<div><div class="stat-l">${l}</div>${type === 'jk'
+    ? `<select class="inp" data-pf="${k}"><option value="">–</option>${['Laki-laki', 'Perempuan'].map(o => `<option ${d[k] === o ? 'selected' : ''}>${o}</option>`).join('')}</select>`
+    : `<input class="inp" data-pf="${k}" type="${type || 'text'}" value="${esc(k === 'nama' ? clientName() : (p[k] || d[k] || ''))}" ${extra || ''}>`}</div>`;
+  return `<div class="card"><div class="card-title">Data Klien</div>
+    <details class="no-print" ${missing.length ? 'open' : ''}><summary>${missing.length ? '⚠️ Belum lengkap: ' + missing.map(k => ({ tglLahir: 'tanggal lahir', jk: 'jenis kelamin', pekerjaan: 'pekerjaan' }[k])).join(', ') + '. Lengkapi di sini' : 'Lihat / koreksi data diri'}</summary>
+    <div class="ans"><div class="grid" style="margin-top:8px">
+      ${f('nama', 'Nama')}${f('tglLahir', 'Tanggal lahir', 'date')}${f('jk', 'Jenis kelamin', 'jk')}${f('pekerjaan', 'Pekerjaan')}${f('domisili', 'Domisili')}${f('email', 'Email', 'email')}
+    </div>
+    <div style="margin-top:8px"><div class="stat-l">Catatan tentang klien</div><textarea class="inp" data-pf="catatanKlien">${esc(p.catatanKlien || '')}</textarea></div>
+    <p class="stat-s" style="margin-top:6px">Isian di sini dipakai di seluruh Console & prompt Claude, dan menggantikan data intake bila berbeda. Jawaban asli klien tetap tersimpan.</p>
+    <div style="margin-top:8px"><button class="btn btn-p" id="btnProfile">Simpan Data Klien</button> <span class="stat-s" id="pfMsg"></span></div></div></details></div>`;
+}
+function bindProfileCard() {
+  const b = $('btnProfile'); if (!b) return;
+  b.addEventListener('click', async () => {
+    const prof = {};
+    document.querySelectorAll('[data-pf]').forEach(el => { prof[el.dataset.pf] = el.value.trim(); });
+    b.disabled = true; $('pfMsg').textContent = 'Menyimpan…';
+    try {
+      await api('saveProfile', CUR, prof);
+      CD = await api('getClientData', CUR);
+      await loadClients();
+      renderMain();
+    } catch (e) { $('pfMsg').textContent = 'Gagal: ' + (e.message || e); b.disabled = false; }
+  });
 }
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -586,6 +667,197 @@ async function saveSesi() {
 }
 
 /* ════════════════════════════════════════════════════════════════════════
+   CLAUDE: SALIN PROMPT & TEMPEL BALIK HASIL
+   ════════════════════════════════════════════════════════════════════════ */
+function initials(n) { return String(n || '').split(/\s+/).filter(Boolean).map(w => w[0].toUpperCase() + '.').join(''); }
+
+// Data identitas tidak ikut dikirim ke Claude (cukup inisial + usia + JK)
+const PII_Q = ['Nama lengkap', 'Nomor WhatsApp', 'Email', 'Tanggal lahir', 'Kota domisili'];
+function rawText(raw, skip) {
+  const g = rawGroups((raw || []).filter(x => !PII_Q.includes(x.q)), skip);
+  return Object.keys(g).map(s => `[${s}]\n` + g[s].map(x => `- ${x.q}: ${x.v}`).join('\n')).join('\n');
+}
+function dataText(d, keys) {
+  return keys.filter(k => d[k] !== undefined && d[k] !== '').map(k => `${k}: ${d[k]}`).join(' · ');
+}
+
+function buildClaudePrompt() {
+  const d = intakeData();
+  const H = CD.history;
+  const lines = [];
+  lines.push('Kamu adalah asisten analisis untuk coach kesehatan & gaya hidup di Synthesis Coaching Lab (Indonesia). Coach bersertifikasi sport nutrition advisor dan ahli ilmu faal olahraga. Tugasmu membantu coach menganalisis data klien, BUKAN mendiagnosis. Tandai dengan jelas hal yang perlu dirujuk ke dokter / psikolog.');
+  lines.push('', '=== PROFIL KLIEN (anonim) ===', `Inisial: ${initials(clientName())} · Usia: ${d.usia || '-'} · JK: ${d.jk || '-'} · Pekerjaan: ${d.pekerjaan || '-'}`);
+  if (CD.profile && CD.profile.catatanKlien) lines.push(`Catatan coach tentang klien: ${CD.profile.catatanKlien}`);
+  lines.push('', '=== FLAG OTOMATIS ===', allFlags().filter(x => x.src !== 'Sistem').map(x => `- ${x.t} (${x.src})`).join('\n') || '- tidak ada');
+  if (CD.forms.Intake) lines.push('', `=== INTAKE (${fmtDate(CD.forms.Intake.submittedAt)}) ===`, rawText(CD.forms.Intake.raw, ['Sebelum Mulai', 'Flag untuk Coach']));
+  const tools = [['MCTQ', ['chronotype', 'msfsc', 'sjl', 'sleepDebt', 'sdKerja', 'sdBebas']], ['PSQI', ['skorTotal', 'kategori', 'c1Kualitas', 'c2Latensi', 'c3Durasi', 'c4Efisiensi', 'c5Gangguan', 'c6Obat', 'c7Disfungsi', 'jamTidur', 'jamBangun', 'efisiensiPersen']], ['StressTidur', ['skorStress', 'kategoriStress', 'kendalaStress', 'skorTidur', 'kategoriTidur', 'kendalaTidur']]];
+  tools.forEach(([f, keys]) => { if (H[f]) lines.push('', `=== ${f} (semua pengisian, lama → baru) ===`, H[f].map(r => `- ${fmtDate(r.submittedAt)}: ${dataText(r.data, keys)}`).join('\n')); });
+  (H.Reassessment || []).forEach(r => lines.push('', `=== RE-ASSESSMENT ${String(r.data.fase || '').toUpperCase()} (${fmtDate(r.submittedAt)}) ===`, rawText(r.raw, ['Sebelum Mulai', 'Kondisi Sekarang'])));
+  const s = lastSession();
+  if (s) lines.push('', `=== CATATAN SESI COACH TERAKHIR (${fmtDate(s.submittedAt)}) ===`, rawText(s.raw));
+  if (CD.ai.length) lines.push('', `=== ANALISIS AI SEBELUMNYA (${fmtDate(CD.ai[0].submittedAt)}) ===`, String(CD.ai[0].data.analisis || '').slice(0, 3000));
+  lines.push('', '=== TUGAS ===',
+    'Analisis data di atas. Fokus pada hal yang paling berdampak & aman. Jika ada data before-after, evaluasi progresnya. Jika ada analisis sebelumnya, fokus pada apa yang berubah.',
+    'Jawab dalam Bahasa Indonesia, ringkas, pakai poin-poin, dan gunakan PERSIS heading berikut:',
+    '## Ringkasan Kondisi', '## Flag & Rujukan', '## Hipotesis Akar Masalah', '## 3 Prioritas Intervensi (2 Minggu)', '## Pertanyaan untuk Sesi Berikutnya', '## Evaluasi Progres',
+    'Pisahkan fakta dari data vs dugaanmu (tandai dugaan dengan "(dugaan)").');
+  return lines.join('\n');
+}
+
+function copyText(text, title) {
+  const fallback = () => {
+    const m = document.createElement('div');
+    m.className = 'modal';
+    m.innerHTML = `<div class="modal-box"><div class="card-title">${esc(title)}</div><p class="stat-s" style="margin-bottom:8px">Salin manual: klik di kotak → Ctrl/Cmd+A → Ctrl/Cmd+C.</p>
+      <textarea readonly></textarea><div style="text-align:right;margin-top:10px"><button class="btn btn-p">Tutup</button></div></div>`;
+    m.querySelector('textarea').value = text;
+    m.querySelector('button').onclick = () => m.remove();
+    document.body.appendChild(m);
+    m.querySelector('textarea').select();
+    try { document.execCommand('copy'); } catch (e) { /* abaikan */ }
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => alert(title + ' sudah disalin ✓'), fallback);
+  else fallback();
+}
+
+async function copyForClaude() {
+  copyText(buildClaudePrompt(), 'Prompt untuk Claude');
+  try {
+    const r = await api('markAiSent', CUR);
+    const c = CLIENTS.find(x => x.clientId === CUR);
+    if (c) { c.aiSentAt = r.at; c.needsAi = false; }
+    renderClients();
+    if (TAB === 'ringkasan') renderRingkasan();
+  } catch (e) { alert('Prompt tersalin, tapi status gagal dicatat: ' + (e.message || e)); }
+}
+
+function mdLite(t) {
+  const out = [];
+  let inList = false;
+  String(t || '').split('\n').forEach(line => {
+    const l = esc(line.trim()).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+    if (/^[-*•]\s+/.test(line.trim())) { if (!inList) { out.push('<ul>'); inList = true; } out.push('<li>' + l.replace(/^[-*•]\s+/, '') + '</li>'); return; }
+    if (inList) { out.push('</ul>'); inList = false; }
+    if (/^#{1,4}\s+/.test(line.trim())) out.push('<h4>' + l.replace(/^#{1,4}\s+/, '') + '</h4>');
+    else if (l) out.push('<p>' + l + '</p>');
+  });
+  if (inList) out.push('</ul>');
+  return out.join('');
+}
+
+function aiCardHtml() {
+  const a = CD.ai[0];
+  const c = CLIENTS.find(x => x.clientId === CUR) || {};
+  return `<div class="card"><div class="card-title">Analisis AI (Claude)</div>
+    <p class="stat-s" style="margin-bottom:10px">Terakhir disalin ke Claude: <b>${c.aiSentAt ? fmtDate(c.aiSentAt) : 'belum pernah'}</b> · Hasil terakhir ditempel: <b>${a ? fmtDate(a.submittedAt) : 'belum ada'}</b></p>
+    ${a ? `<div class="ai-text" style="margin-bottom:12px">${mdLite(a.data.analisis)}</div>` : ''}
+    <details class="no-print" ${a ? '' : 'open'}><summary>Tempel hasil analisis Claude</summary><div class="ans">
+      <p class="stat-s" style="margin:6px 0 8px">1) Klik <b>🤖 Salin untuk Claude</b> di atas → paste ke Claude. 2) Salin jawaban Claude → tempel di sini → Simpan. Baca & koreksi dulu sebelum disimpan, ini tetap keputusan coach.</p>
+      <textarea class="inp" id="aiPaste" style="min-height:140px" placeholder="Tempel jawaban Claude di sini…"></textarea>
+      <div style="margin-top:8px"><button class="btn btn-p" id="btnAiSave">Simpan Analisis</button> <span class="stat-s" id="aiMsg"></span></div>
+    </div></details></div>`;
+}
+function bindAiCard() {
+  const b = $('btnAiSave'); if (!b) return;
+  b.addEventListener('click', async () => {
+    const t = $('aiPaste').value.trim();
+    if (!t) { $('aiMsg').textContent = 'Masih kosong.'; return; }
+    b.disabled = true; $('aiMsg').textContent = 'Menyimpan…';
+    try {
+      await api('saveAiAnalysis', CUR, t);
+      CD = await api('getClientData', CUR);
+      await loadClients();
+      renderMain();
+    } catch (e) { $('aiMsg').textContent = 'Gagal: ' + (e.message || e); b.disabled = false; }
+  });
+}
+
+function showLinks() {
+  const n = encodeURIComponent(clientName());
+  const wa = '0' + CUR.slice(2);
+  const q = `wa=${wa}&nama=${n}`;
+  const links = [
+    ['Assessment awal', `${PUBLIC_BASE_URL}intake.html?${q}`],
+    ['Re-assessment tengah', `${PUBLIC_BASE_URL}intake.html?mode=tengah&${q}`],
+    ['Re-assessment akhir', `${PUBLIC_BASE_URL}intake.html?mode=akhir&${q}`],
+    ['MCTQ', `${PUBLIC_BASE_URL}mctq.html?${q}`], ['PSQI', `${PUBLIC_BASE_URL}psqi.html?${q}`], ['Stress & Tidur', `${PUBLIC_BASE_URL}stress-tidur.html?${q}`]
+  ];
+  const m = document.createElement('div');
+  m.className = 'modal';
+  m.innerHTML = `<div class="modal-box"><div class="card-title">Link personal untuk ${esc(clientName())}</div>
+    <p class="stat-s" style="margin-bottom:8px">Nama & WA klien otomatis terisi di halaman. Setelah re-assessment, minta klien mengisi ulang MCTQ, PSQI, dan Stress-Tidur.</p>
+    ${links.map(([l, u]) => `<div class="linkrow"><b>${l}</b><code>${esc(u)}</code><button class="btn btn-o" data-u="${esc(u)}" style="padding:6px 10px">Salin</button></div>`).join('')}
+    <div style="text-align:right;margin-top:12px"><button class="btn btn-p" id="lnClose">Tutup</button></div></div>`;
+  document.body.appendChild(m);
+  m.addEventListener('click', e => {
+    if (e.target.id === 'lnClose' || e.target === m) m.remove();
+    else if (e.target.dataset.u) copyText(e.target.dataset.u, 'Link');
+  });
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   BEFORE–AFTER
+   ════════════════════════════════════════════════════════════════════════ */
+const BA_ROWS = [
+  ['Tubuh', [['bb', 'Berat badan', 0], ['pinggang', 'Lingkar pinggang', 0], ['perut', 'Lingkar perut', 0], ['panggul', 'Lingkar panggul', 0], ['bf', 'Body fat', 0], ['bmi', 'BMI', -1], ['whr', 'Rasio pinggang–panggul', -1], ['whtr', 'Rasio pinggang–tinggi', -1], ['rhr', 'Detak jantung istirahat', -1], ['langkah', 'Langkah / hari', 1], ['tensi', 'Tensi']]],
+  ['Nilai 1–10', [['nilaiEnergi', 'Energi', 1], ['nilaiTidur', 'Kualitas tidur', 1], ['nilaiMood', 'Mood', 1], ['nilaiKontrolMakan', 'Percaya diri atur makan', 1]]],
+  ['Gerak', [['hariAktif', 'Hari aktif / minggu', 1], ['olahraga', 'Olahraga / minggu'], ['olahragaIntensitas', 'Intensitas'], ['kerja', 'Keseharian']]],
+  ['Makan', [['makanUtama', 'Makan utama'], ['camilan', 'Camilan'], ['larut', 'Makan larut malam'], ['air', 'Air putih'], ['frek_1', 'Makanan olahan/kemasan'], ['frek_2', 'Manis'], ['frek_3', 'Gorengan'], ['frek_4', 'Sayur & buah'], ['frek_5', 'Protein'], ['frek_6', 'Karbo olahan'], ['makanSambil', 'Makan sambil']]],
+  ['Pencernaan', [['babFreq', 'Frekuensi BAB'], ['bristol', 'Bristol'], ['gejala', 'Gejala']]],
+  ['Tidur & Stres', [['kopi', 'Kafein / hari'], ['tidurSiang', 'Tidur siang'], ['sebelumTidur', 'Sebelum tidur'], ['support', 'Support system']]]
+];
+// arah: 1 = naik itu baik, -1 = turun itu baik, 0 = angka tanpa penilaian (tergantung goal),
+// undefined = jawaban kategori → tidak dihitung selisihnya
+function deltaCell(a, b, dir) {
+  if (dir === undefined) return '<td></td>';
+  const x = num(a), y = num(b);
+  if (x == null || y == null) return '<td></td>';
+  const d = y - x;
+  if (!d) return '<td>=</td>';
+  const good = dir ? (d * dir > 0) : null; // dir 0 → netral
+  return `<td class="${good == null ? '' : good ? 'up' : 'down'}">${d > 0 ? '▲' : '▼'} ${fmt(Math.abs(d), Math.abs(d) < 1 ? 2 : 1)}</td>`;
+}
+
+function renderBA() {
+  const H = CD.history;
+  const points = [];
+  if (CD.forms.Intake) points.push({ label: 'Awal', at: CD.forms.Intake.submittedAt, d: CD.forms.Intake.data });
+  (H.Reassessment || []).forEach(r => points.push({ label: r.data.fase || 'Re', at: r.submittedAt, d: r.data }));
+  if (!points.length) { $('tabBody').innerHTML = '<div class="card none-text">Belum ada data intake.</div>'; return; }
+  const first = points[0], last = points[points.length - 1];
+  const head = `<tr><th></th>${points.map(p => `<th>${esc(p.label)}<br><span style="font-weight:500">${fmtDate(p.at)}</span></th>`).join('')}${points.length > 1 ? '<th>Δ awal→akhir</th>' : ''}</tr>`;
+  const table = BA_ROWS.map(([grp, rows]) => `<tr><td colspan="${points.length + 2}" style="color:var(--teal-dark);font-weight:800;padding-top:12px">${grp}</td></tr>` +
+    rows.map(([k, l, dir]) => `<tr><td>${esc(l)}</td>${points.map(p => `<td>${esc(p.d[k] == null ? '' : p.d[k])}</td>`).join('')}${points.length > 1 ? deltaCell(first.d[k], last.d[k], dir) : ''}</tr>`).join('')).join('');
+
+  const scoreRows = [['PSQI', 'skorTotal', '/21 (makin rendah makin baik)', -1], ['StressTidur', 'skorStress', '/40 stres (makin rendah makin baik)', -1], ['StressTidur', 'skorTidur', 'skor tidur (makin rendah makin baik)', -1]];
+  const scores = scoreRows.map(([f, k, lbl, dir]) => {
+    const h = H[f] || [];
+    if (!h.length) return `<tr><td>${f} · ${esc(lbl)}</td><td colspan="3" class="none-text">belum diisi</td></tr>`;
+    return `<tr><td>${f} · ${esc(lbl)}</td><td>${h.map(r => `${esc(r.data[k])} <small>(${fmtDate(r.submittedAt)})</small>`).join(' → ')}</td>${h.length > 1 ? deltaCell(h[0].data[k], h[h.length - 1].data[k], dir) : '<td></td>'}</tr>`;
+  }).join('');
+  const mctq = (H.MCTQ || []).map(r => `${esc(r.data.chronotype)} · SJL ${esc(r.data.sjl)} <small>(${fmtDate(r.submittedAt)})</small>`).join(' → ');
+
+  const sess = CD.sessions.slice().reverse().filter(s => s.data.bb || s.data.pinggang);
+  const sessTbl = sess.length > 1 ? `<table class="tbl ba"><tr><th></th><th>Sesi pertama ${fmtDate(sess[0].submittedAt)}</th><th>Sesi terakhir ${fmtDate(sess[sess.length - 1].submittedAt)}</th><th>Δ</th></tr>
+    ${[['bb', 'Berat badan'], ['pinggang', 'Lingkar pinggang'], ['panggul', 'Lingkar panggul'], ['bf', 'Body fat', -1], ['lean', 'Lean mass', 1], ['visceral', 'Visceral fat', -1], ['grip', 'Grip', 1], ['rhr', 'Detak jantung istirahat', -1]]
+      .map(([k, l, dir = 0]) => `<tr><td>${l}</td><td>${esc(sess[0].data[k])}</td><td>${esc(sess[sess.length - 1].data[k])}</td>${deltaCell(sess[0].data[k], sess[sess.length - 1].data[k], dir)}</tr>`).join('')}</table>`
+    : '<div class="none-text">Butuh minimal 2 sesi dengan pengukuran coach.</div>';
+
+  const refl = (H.Reassessment || []).map(r => `<details open><summary>Refleksi ${esc(r.data.fase || '')} · ${fmtDate(r.submittedAt)}</summary><div class="ans">${rawGroups(r.raw)['Refleksi'] ? rawGroups(r.raw)['Refleksi'].map(x => `<div class="ans-row"><span>${esc(x.q)}</span><span>${esc(x.v)}</span></div>`).join('') : ''}</div></details>`).join('');
+
+  $('tabBody').innerHTML = `
+    <div class="no-print" style="margin-bottom:12px"><button class="btn btn-p" onclick="window.print()">🖨️ Cetak Before–After</button></div>
+    <div class="card"><div class="card-title">Data Klien: Awal vs Re-assessment</div>
+      ${points.length < 2 ? '<p class="stat-s" style="margin-bottom:8px">Belum ada re-assessment. Kirim link <b>Re-assessment tengah/akhir</b> lewat tombol 🔗 di atas.</p>' : ''}
+      <div style="overflow-x:auto"><table class="tbl ba">${head}${table}</table></div>
+      <p class="stat-s" style="margin-top:8px">Hijau = membaik, merah = memburuk (untuk angka yang arah baiknya jelas). Perubahan berat badan tidak dinilai karena tergantung goal klien.</p></div>
+    <div class="card"><div class="card-title">Skor Tidur & Stres (semua pengisian)</div>
+      <table class="tbl ba">${scores}<tr><td>MCTQ · chronotype & social jet lag</td><td colspan="2">${mctq || '<span class="none-text">belum diisi</span>'}</td></tr></table></div>
+    <div class="card"><div class="card-title">Pengukuran Coach (sesi pertama vs terakhir)</div>${sessTbl}</div>
+    ${refl ? `<div class="card"><div class="card-title">Refleksi Klien</div>${refl}</div>` : ''}`;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
    REPORT
    ════════════════════════════════════════════════════════════════════════ */
 function renderReport() {
@@ -602,6 +874,7 @@ function renderReport() {
         ${row('Goal klien', d.goal)}${row('Hambatan (klien)', d.hambatan)}${row('Kesiapan berubah', sd.miSkor || d.kesiapan ? (sd.miSkor || d.kesiapan) + '/10' : '')}
         ${row('Target 3 bulan', sd.miTarget)}${row('Langkah kecil pertama', sd.miLangkah)}</table></div>
       <div class="rep-s"><div class="card-title">Flag & Keamanan</div>${flagsHtml()}</div>
+      ${CD.ai.length ? `<div class="rep-s"><div class="card-title">Analisis AI (${fmtDate(CD.ai[0].submittedAt)}) · ditinjau coach</div><div class="ai-text">${mdLite(CD.ai[0].data.analisis)}</div></div>` : ''}
       <div class="rep-s"><div class="card-title">Tubuh</div><table class="tbl"><tr><th></th><th>Mandiri (intake)</th><th>Coach (sesi)</th></tr>
         ${bodyRow('Berat badan', d.bb, sd.bb)}${bodyRow('Tinggi badan', d.tb, sd.tb)}${bodyRow('Lingkar pinggang', d.pinggang, sd.pinggang)}
         ${bodyRow('Lingkar perut', d.perut, sd.perut)}${bodyRow('Lingkar panggul', d.panggul, sd.panggul)}

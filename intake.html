@@ -62,6 +62,9 @@ textarea.inp{min-height:70px;resize:vertical;line-height:1.5;}
 .inp-unit{display:flex;align-items:center;gap:8px;max-width:220px;}
 .inp-unit span{font-size:12px;font-weight:600;color:var(--muted);}
 .other-inp{margin-top:8px;}
+.time24{display:flex;align-items:center;gap:8px;}
+.time24 select{width:auto;min-width:78px;}
+.time24 span{font-size:11px;color:var(--muted);font-weight:600;}
 
 .chips{display:flex;flex-wrap:wrap;gap:7px;}
 .chip{cursor:pointer;}
@@ -267,6 +270,7 @@ textarea.inp{min-height:70px;resize:vertical;line-height:1.5;}
   <div class="actions no-print">
     <button class="btn btn-primary" type="button" onclick="window.print()">🖨️ Export PDF</button>
     <button class="btn btn-secondary" type="button" id="btnEdit">✏️ Ubah Jawaban</button>
+    <a class="btn btn-primary" href="index.html" style="text-decoration:none;display:inline-block">✓ Selesai, kembali ke Hub</a>
   </div>
 </div>
 
@@ -327,7 +331,9 @@ const BRISTOL = [
 ];
 const BRISTOL_HTML = q => `<div class="bristol">${BRISTOL.map((b, i) => `
   <label class="chip"><input type="radio" name="${q.id}" data-k="${q.id}" value="${i + 1}">
-    <span><svg viewBox="0 0 84 34" fill="#7a4b24">${b[2]}</svg><b>${b[0]}</b><small>${b[1]}</small></span></label>`).join('')}</div>`;
+    <span><svg viewBox="0 0 84 34" fill="#7a4b24">${b[2]}</svg><b>${b[0]}</b><small>${b[1]}</small></span></label>`).join('')}
+  <label class="chip"><input type="radio" name="${q.id}" data-k="${q.id}" value="0">
+    <span><svg viewBox="0 0 84 34"><text x="42" y="26" text-anchor="middle" font-size="24" font-weight="800" fill="#6b7d7c" font-family="Montserrat">?</text></svg><b>Belum pernah perhatikan</b><small>Tidak apa-apa, coba perhatikan beberapa hari ke depan ya</small></span></label></div>`;
 
 const PARQ = [
   'Pernahkah dokter mengatakan kamu punya <b>kondisi jantung</b> atau <b>tekanan darah tinggi</b>?',
@@ -340,7 +346,7 @@ const PARQ = [
 ];
 const strip = s => s.replace(/<[^>]+>/g, '');
 
-const STEPS = [
+const BASE_STEPS = [
   { title: 'Sebelum Mulai', intro: 'Halo! Sebelum mulai, baca dulu sebentar ya.', qs: [
     { id: 'infoConsent', t: 'info', html: `
       <p><b>Tentang assessment ini</b></p>
@@ -365,7 +371,8 @@ const STEPS = [
     { id: 'jk', t: 'radio', q: 'Jenis kelamin', req: true, opts: ['Laki-laki', 'Perempuan'] },
     { id: 'wa', t: 'tel', q: 'Nomor WhatsApp', req: true, ph: '08xxxxxxxxxx', help: 'Dipakai untuk menghubungkan semua hasil assessment-mu. Pastikan sama dengan nomor yang kamu pakai chat dengan coach.' },
     { id: 'email', t: 'email', q: 'Email', ph: 'opsional' },
-    { id: 'pekerjaan', t: 'text', q: 'Pekerjaan', req: true, ph: 'mis. karyawan swasta, wiraswasta, ibu rumah tangga' },
+    { id: 'pekerjaan', t: 'select', q: 'Pekerjaan', req: true,
+      opts: ['Karyawan kantor', 'Karyawan lapangan / shift', 'Wiraswasta / pengusaha', 'Profesional (dokter, pengacara, arsitek, dll.)', 'Guru / dosen', 'PNS / TNI / Polri', 'Tenaga kesehatan', 'Freelancer / pekerja kreatif', 'Ibu / bapak rumah tangga', 'Pelajar / mahasiswa', 'Pensiunan', 'Lainnya'] },
     { id: 'domisili', t: 'text', q: 'Kota domisili', ph: 'mis. Bandung' },
     { id: 'status', t: 'radio', q: 'Status', opts: ['Lajang', 'Menikah, belum punya anak', 'Menikah, punya anak', 'Lainnya'] },
     { id: 'goal', t: 'area', q: 'Apa hal utama yang ingin kamu capai lewat coaching ini?', req: true, ph: 'mis. turun 5 kg, tidak gampang capek, gula darah terkontrol' },
@@ -432,7 +439,9 @@ const STEPS = [
     { id: 'olahraga', t: 'radio', q: 'Olahraga yang disengaja per minggu', req: true, opts: ['Tidak ada', '1x', '2–3x', '4–5x', '6x atau lebih'] },
     { id: 'olahragaJenis', t: 'check', q: 'Jenis olahraganya', other: true, show: A => A.olahraga && A.olahraga !== 'Tidak ada',
       opts: ['Jalan kaki', 'Lari', 'Bersepeda', 'Renang', 'Angkat beban / gym', 'Yoga / pilates', 'Olahraga raket / tim', 'Senam / zumba', 'Bela diri'] },
-    { id: 'olahragaDurasi', t: 'text', q: 'Durasi & intensitasnya kira-kira?', ph: 'mis. 45 menit, sedang (masih bisa ngobrol)', show: A => A.olahraga && A.olahraga !== 'Tidak ada' },
+    { id: 'olahragaDurasi', t: 'radio', q: 'Biasanya berapa lama sekali olahraga?', req: true, opts: ['< 20 menit', '20–30 menit', '30–45 menit', '45–60 menit', '> 60 menit'], show: A => A.olahraga && A.olahraga !== 'Tidak ada' },
+    { id: 'olahragaIntensitas', t: 'radio', q: 'Seberapa berat biasanya?', req: true, opts: ['Ringan', 'Sedang', 'Berat', 'Campuran'], show: A => A.olahraga && A.olahraga !== 'Tidak ada',
+      help: 'Pakai <b>tes bicara</b> saat olahraga:<br>🟢 <b>Ringan</b>: masih bisa bernyanyi, napas santai.<br>🟡 <b>Sedang</b>: masih bisa ngobrol kalimat penuh, tapi napas lebih cepat & mulai berkeringat.<br>🔴 <b>Berat</b>: hanya bisa bicara beberapa kata, napas terengah.' },
     { id: 'hambatanGerak', t: 'check', q: 'Yang biasanya menghambat kamu untuk aktif bergerak', req: true, other: true,
       opts: ['Waktu', 'Energi / capek', 'Cedera / sakit', 'Malas / kurang motivasi', 'Lingkungan kurang mendukung', 'Biaya', 'Tidak tahu mulai dari mana', 'Tidak ada hambatan'], none: 'Tidak ada hambatan' },
     { id: 'motivasiGerak', t: 'check', q: 'Motivasimu untuk bergerak/olahraga', req: true, other: true,
@@ -445,13 +454,13 @@ const STEPS = [
     { id: 'camilan', t: 'radio', q: 'Ngemil/camilan per hari', req: true, opts: ['Tidak ngemil', '1x', '2x', '3x atau lebih'] },
     { id: 'camilanJam', t: 'text', q: 'Biasanya ngemil jam berapa & apa?', ph: 'mis. jam 3 sore, gorengan', show: A => A.camilan && A.camilan !== 'Tidak ngemil' },
     { id: 'jamKonsisten', t: 'radio', q: 'Jam makanmu…', req: true, opts: ['Cukup konsisten', 'Berubah-ubah'] },
-    { id: 'jamTerakhir', t: 'time', q: 'Biasanya makan terakhir jam berapa?', req: true },
+    { id: 'jamTerakhir', t: 'time24', q: 'Biasanya makan terakhir jam berapa?', req: true },
     { id: 'larut', t: 'radio', q: 'Seberapa sering makan larut malam (setelah jam 21.00)?', req: true, opts: ['Jarang', '1–2x/minggu', '3–5x/minggu', 'Hampir tiap malam'] },
     { id: 'air', t: 'radio', q: 'Minum air putih per hari', req: true, opts: ['< 1 liter', '1–1,5 liter', '1,5–2 liter', '2–3 liter', '> 3 liter'] },
     { id: 'alkohol', t: 'radio', q: 'Minum alkohol?', req: true, opts: ['Tidak', 'Jarang (≤1x/bulan)', 'Mingguan', 'Hampir tiap hari'] },
     { id: 'puasa', t: 'check', q: 'Rutin berpuasa?', req: true, none: 'Tidak', other: true, opts: ['Tidak', 'Puasa agama (Senin-Kamis, dll.)', 'Intermittent fasting'] },
     { id: 'frek', t: 'grid', q: 'Seberapa sering kamu makan/minum…', req: true, cols: ['Jarang', 'Kadang', 'Sering', 'Tiap hari'],
-      rows: ['Makanan olahan/kemasan (mi instan, sosis, nugget, snack)', 'Makanan & minuman manis (kue, boba, kopi susu, soda)', 'Gorengan', 'Sayur & buah', 'Sumber protein (daging, ikan, telur, tahu, tempe)', 'Karbo putih (nasi putih, roti putih, mi)'] },
+      rows: ['Makanan olahan/kemasan (mi instan, sosis, nugget, snack)', 'Makanan & minuman manis (kue, boba, kopi susu, soda)', 'Gorengan', 'Sayur & buah', 'Sumber protein (daging, ikan, telur, tahu, tempe)', 'Karbo olahan (nasi putih, roti putih, mi, tepung)'] },
     { id: 'makanSambil', t: 'check', q: 'Kamu sering makan sambil…', req: true, none: 'Tidak, biasanya fokus makan',
       opts: ['Nonton / scroll HP', 'Kerja', 'Berkendara', 'Buru-buru', 'Tidak, biasanya fokus makan'] },
     { id: 'pantangan', t: 'check', q: 'Ada makanan yang kamu hindari?', req: true, none: 'Tidak ada',
@@ -475,7 +484,7 @@ const STEPS = [
 
   { title: 'Tidur & Stres', intro: 'Bagian singkat. Skor tidur & stres yang lebih lengkap akan diambil dari 3 assessment lanjutan setelah ini.', qs: [
     { id: 'kopi', t: 'radio', q: 'Minum kopi / teh / minuman berkafein per hari', req: true, opts: ['Tidak', '1x', '2x', '3x atau lebih'] },
-    { id: 'kopiJam', t: 'time', q: 'Jam berapa minum kafein terakhir biasanya?', show: A => A.kopi && A.kopi !== 'Tidak' },
+    { id: 'kopiJam', t: 'time24', q: 'Jam berapa minum kafein terakhir biasanya?', show: A => A.kopi && A.kopi !== 'Tidak' },
     { id: 'tidurSiang', t: 'radio', q: 'Tidur siang?', req: true, opts: ['Tidak', 'Kadang, < 30 menit', 'Kadang, > 30 menit', 'Rutin tiap hari'] },
     { id: 'sebelumTidur', t: 'check', q: 'Yang biasanya kamu lakukan 1 jam sebelum tidur', req: true, other: true,
       opts: ['Scroll HP', 'Nonton', 'Makan / ngemil', 'Kerja / belajar', 'Membaca', 'Ibadah / doa', 'Meditasi / latihan napas', 'Mandi air hangat'] },
@@ -483,9 +492,68 @@ const STEPS = [
       opts: ['Pekerjaan', 'Keluarga', 'Finansial', 'Kesehatan', 'Relasi / pasangan', 'Tidak merasa stres'] },
     { id: 'kelolaStres', t: 'check', q: 'Cara kamu biasanya mengelola stres', req: true, other: true,
       opts: ['Cerita ke orang lain', 'Menyendiri', 'Olahraga / aktivitas fisik', 'Makan', 'Ibadah / meditasi', 'Tidur', 'Main HP / game / nonton'] },
-    { id: 'support', t: 'radio', q: 'Saat sedang down, apakah kamu punya orang yang bisa diandalkan?', req: true, opts: ['Ya, ada', 'Kadang / tidak selalu', 'Belum ada'] }
+    { id: 'support', t: 'radio', q: 'Saat sedang down, apakah kamu punya orang yang bisa diandalkan?', req: true, opts: ['Ya, ada', 'Kadang / tidak selalu', 'Belum ada'] },
+    { id: 'gNilai', t: 'group', title: 'Nilai Kondisimu Saat Ini', sub: 'Skala 1–10 · dipakai untuk melihat perkembanganmu nanti' },
+    { id: 'nilaiEnergi', t: 'scale', q: 'Energi sehari-hari', req: true, min: 1, max: 10, lo: 'Sangat lelah', hi: 'Sangat bertenaga' },
+    { id: 'nilaiTidur', t: 'scale', q: 'Kualitas tidur', req: true, min: 1, max: 10, lo: 'Sangat buruk', hi: 'Sangat nyenyak' },
+    { id: 'nilaiMood', t: 'scale', q: 'Mood / suasana hati', req: true, min: 1, max: 10, lo: 'Sangat buruk', hi: 'Sangat baik' },
+    { id: 'nilaiKontrolMakan', t: 'scale', q: 'Rasa percaya diri mengatur pola makan', req: true, min: 1, max: 10, lo: 'Tidak yakin', hi: 'Sangat yakin' }
   ]}
 ];
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MODE RE-ASSESSMENT: intake.html?mode=tengah | ?mode=akhir
+   Versi lebih pendek: ukuran tubuh, kebiasaan, makan, pencernaan, tidur/stres,
+   nilai 1–10, dan refleksi. Disimpan sebagai form "Reassessment".
+   ══════════════════════════════════════════════════════════════════════════ */
+const MODE = (new URLSearchParams(location.search).get('mode') || '').toLowerCase();
+const RE = MODE === 'tengah' || MODE === 'akhir';
+const FASE = MODE === 'tengah' ? 'Tengah' : 'Akhir';
+
+function buildReSteps() {
+  const pick = (title, ids) => {
+    const st = BASE_STEPS.find(x => x.title === title);
+    return st.qs.filter(q => ids.includes(q.id)).map(q => Object.assign({}, q));
+  };
+  const cond = pick('Tentang Kamu', ['nama', 'tglLahir', 'jk', 'wa']);
+  cond.push(
+    { id: 'kesehatanBaru', t: 'radio', q: 'Sejak awal program, ada perubahan kondisi kesehatan, cedera baru, atau obat baru?', req: true, opts: ['Tidak ada', 'Ada'] },
+    { id: 'kesehatanBaruDetail', t: 'area', q: 'Ceritakan singkat perubahannya', req: true, show: A => A.kesehatanBaru === 'Ada' }
+  );
+  const refleksi = [
+    { id: 'refPerubahan', t: 'area', q: 'Perubahan apa yang paling kamu rasakan sejak mulai coaching?', req: true },
+    { id: 'refBangga', t: 'area', q: 'Pencapaian yang paling membanggakan', ph: 'sekecil apa pun, tetap berarti' },
+    { id: 'refKebiasaan', t: 'area', q: 'Kebiasaan baru yang sekarang sudah terasa otomatis' },
+    { id: 'refHambatan', t: 'area', q: 'Hambatan terbesar selama program', req: true },
+    { id: 'yakinPertahankan', t: 'scale', q: 'Seberapa yakin kamu bisa mempertahankan kebiasaan baik ini?', req: true, min: 1, max: 10, lo: 'Tidak yakin', hi: 'Sangat yakin' }
+  ];
+  if (MODE === 'tengah') {
+    refleksi.push({ id: 'refPenyesuaian', t: 'area', q: 'Apa yang ingin disesuaikan untuk sisa program?' });
+  } else {
+    refleksi.push(
+      { id: 'refKepuasan', t: 'scale', q: 'Seberapa puas kamu dengan program coaching ini?', req: true, min: 1, max: 10, lo: 'Tidak puas', hi: 'Sangat puas' },
+      { id: 'refLanjut', t: 'radio', q: 'Rencana setelah program ini', req: true, opts: ['Ingin lanjut coaching', 'Ingin cek berkala / maintenance', 'Cukup sampai sini dulu'] },
+      { id: 'refTestimoni', t: 'area', q: 'Ada pesan / testimoni untuk coach?', ph: 'opsional' },
+      { id: 'izinTestimoni', t: 'radio', q: 'Boleh testimoni ini dibagikan?', req: true, opts: ['Boleh, dengan nama', 'Boleh, tanpa nama', 'Tidak'], show: A => !!String(A.refTestimoni || '').trim() }
+    );
+  }
+  return [
+    { title: 'Sebelum Mulai', intro: `Halo lagi! Ini <strong>re-assessment ${FASE.toLowerCase()} program</strong> untuk melihat perkembanganmu dibanding awal.`, qs: [
+      { id: 'infoConsent', t: 'info', html: `<p>Isinya lebih singkat dari assessment awal (±8 menit). Jawab sesuai kondisimu <b>sekarang</b>.</p>
+        <p style="margin-top:8px" class="muted">Data tetap hanya dipakai untuk coaching-mu, disimpan di Google Sheets milik Synthesis Coaching Lab, dan hanya bisa diakses coach-mu.</p>` },
+      { id: 'consent', t: 'consent', req: true, q: 'Saya menyetujui data saya (termasuk data kesehatan) dipakai untuk keperluan coaching.' }
+    ]},
+    { title: 'Kondisi Sekarang', intro: 'Pastikan data di bawah sama dengan yang kamu pakai di assessment awal.', qs: cond },
+    { title: 'Tubuh', intro: 'Ukur dengan cara yang sama seperti di awal supaya bisa dibandingkan.', qs: pick('Tubuh', ['perangkat', 'bb', 'tb', 'infoUkur', 'pinggang', 'perut', 'panggul', 'bf', 'rhr', 'langkah', 'tensi', 'gula', 'calc']) },
+    { title: 'Kebiasaan & Gerak', intro: 'Kebiasaan dan aktivitas fisikmu sekarang.', qs: pick('Kebiasaan & Gerak', ['rokok', 'rokokJml', 'matahari', 'sakit', 'gAkt', 'kerja', 'hariAktif', 'olahraga', 'olahragaJenis', 'olahragaDurasi', 'olahragaIntensitas', 'hambatanGerak']) },
+    { title: 'Pola Makan', intro: 'Pola makanmu sekarang.', qs: pick('Pola Makan', ['makanUtama', 'porsiBesar', 'camilan', 'camilanJam', 'jamKonsisten', 'jamTerakhir', 'larut', 'air', 'alkohol', 'frek', 'makanSambil']) },
+    { title: 'Pencernaan', intro: 'Kondisi pencernaanmu sekarang.', qs: pick('Pencernaan', ['babFreq', 'bristol', 'lega', 'mengejan', 'gejala']) },
+    { title: 'Tidur & Stres', intro: 'Setelah ini, isi ulang juga 3 assessment tidur & stres ya.', qs: pick('Tidur & Stres', ['kopi', 'kopiJam', 'tidurSiang', 'sebelumTidur', 'sumberStres', 'kelolaStres', 'support', 'gNilai', 'nilaiEnergi', 'nilaiTidur', 'nilaiMood', 'nilaiKontrolMakan']) },
+    { title: 'Refleksi', intro: 'Bagian terakhir. Luangkan waktu sebentar untuk melihat perjalananmu.', qs: refleksi }
+  ];
+}
+
+const STEPS = RE ? buildReSteps() : BASE_STEPS;
 
 const ALL_Q = STEPS.flatMap((s, si) => s.qs.map(q => Object.assign(q, { step: si })));
 const ANSWERABLE = q => !['info', 'calc', 'group'].includes(q.t);
@@ -493,7 +561,7 @@ const ANSWERABLE = q => !['info', 'calc', 'group'].includes(q.t);
 /* ══════════════════════════════════════════════════════════════════════════
    STATE
    ══════════════════════════════════════════════════════════════════════════ */
-const DRAFT_KEY = 'scl_intake_draft';
+const DRAFT_KEY = RE ? 'scl_re_' + MODE + '_draft' : 'scl_intake_draft';
 let A = {};
 let S = 0;
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -521,7 +589,14 @@ function renderQ(q) {
     case 'text': case 'tel': case 'email':
       body = `<input class="inp" type="${q.t === 'tel' ? 'tel' : q.t === 'email' ? 'email' : 'text'}" data-k="${q.id}" maxlength="300" placeholder="${esc(q.ph || '')}"${q.t === 'tel' ? ' inputmode="tel"' : ''}>`; break;
     case 'date': body = `<input class="inp" type="date" data-k="${q.id}" style="max-width:220px">`; break;
-    case 'time': body = `<input class="inp" type="time" data-k="${q.id}" style="max-width:160px">`; break;
+    case 'time24': {
+      const hh = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+      body = `<div class="time24"><select class="inp" data-t24="${q.id}" data-part="h" aria-label="Jam"><option value="">Jam</option>${hh.map(h => `<option>${h}</option>`).join('')}</select>
+        <b>:</b><select class="inp" data-t24="${q.id}" data-part="m" aria-label="Menit">${['00', '15', '30', '45'].map(m => `<option>${m}</option>`).join('')}</select><span>format 24 jam</span></div>`; break;
+    }
+    case 'select':
+      body = `<select class="inp" data-k="${q.id}" style="max-width:420px"><option value="">Pilih…</option>${q.opts.map(o => `<option>${esc(o)}</option>`).join('')}</select>
+        <input class="inp other-inp" type="text" data-k="${q.id}_other" maxlength="200" placeholder="Tulis pekerjaanmu" style="display:none">`; break;
     case 'num': body = `<div class="inp-unit"><input class="inp" type="text" inputmode="decimal" data-k="${q.id}" placeholder="${q.min}–${q.max}"><span>${q.unit}</span></div>`; break;
     case 'area': body = `<textarea class="inp" data-k="${q.id}" maxlength="1000" placeholder="${esc(q.ph || '')}"></textarea>`; break;
     case 'radio': body = chipsHtml(q, 'radio'); break;
@@ -567,10 +642,33 @@ function applyDom() {
     else if (el.type === 'checkbox') el.checked = Array.isArray(v) && v.includes(el.value);
     else el.value = v == null ? '' : v;
   });
+  document.querySelectorAll('#steps [data-t24]').forEach(el => {
+    const v = String(A[el.dataset.t24] || '');
+    const m = v.match(/^(\d{1,2}):(\d{2})/);
+    if (el.dataset.part === 'h') el.value = m ? m[1].padStart(2, '0') : '';
+    else el.value = m ? String(Math.round(+m[2] / 15) * 15 % 60).padStart(2, '0') : '00';
+  });
+  syncOther();
+}
+
+// Dropdown dengan opsi "Lainnya" → tampilkan kolom isian bebas
+function syncOther() {
+  ALL_Q.filter(q => q.t === 'select').forEach(q => {
+    const o = document.querySelector(`[data-k="${q.id}_other"]`);
+    if (o) o.style.display = A[q.id] === 'Lainnya' ? '' : 'none';
+  });
 }
 
 function onInput(e) {
-  const el = e.target, k = el.dataset.k;
+  const el = e.target;
+  if (el.dataset.t24) {
+    const id = el.dataset.t24;
+    const h = document.querySelector(`[data-t24="${id}"][data-part="h"]`).value;
+    const m = document.querySelector(`[data-t24="${id}"][data-part="m"]`).value || '00';
+    A[id] = h ? `${h}:${m}` : '';
+    return afterInput(el);
+  }
+  const k = el.dataset.k;
   if (!k) return;
   if (el.type === 'radio') A[k] = el.value;
   else if (el.type === 'checkbox' && k === 'consent') A[k] = el.checked;
@@ -584,13 +682,19 @@ function onInput(e) {
     A[k] = arr;
     document.querySelectorAll(`input[data-k="${k}"]`).forEach(c => { c.checked = arr.includes(c.value); });
   } else A[k] = el.value;
+  if (['nama', 'wa', 'tglLahir', 'jk'].includes(k)) SCL.saveIdentity({ [k]: String(A[k] || '').trim() });
+  afterInput(el);
+}
 
+function afterInput(el) {
   const item = el.closest('.q-item');
   if (item) item.classList.remove('invalid');
-  if (['nama', 'wa', 'tglLahir'].includes(k)) SCL.saveIdentity({ [k]: String(A[k] || '').trim() });
+  syncOther();
   updateVisibility();
   updateCalc();
   saveDraft();
+  // Kotak error ikut diperbarui begitu jawaban dilengkapi
+  if (document.getElementById('errorBox').style.display === 'block') validateStep(S, true);
 }
 
 function updateVisibility() {
@@ -663,11 +767,12 @@ function isEmpty(q) {
   if (q.t === 'grid') return q.rows.some((_, i) => !A[`${q.id}_${i}`]);
   const v = A[q.id];
   if (q.t === 'consent') return !v;
+  if (q.t === 'select' && v === 'Lainnya') return !String(A[q.id + '_other'] || '').trim();
   if (Array.isArray(v)) return v.length === 0 && !(q.other && String(A[q.id + '_other'] || '').trim());
   return v == null || String(v).trim() === '';
 }
 
-function validateStep(si) {
+function validateStep(si, quiet) {
   const errs = [];
   document.querySelectorAll(`.step[data-step="${si}"] .q-item.invalid`).forEach(e => e.classList.remove('invalid'));
   STEPS[si].qs.forEach(q => {
@@ -693,7 +798,7 @@ function validateStep(si) {
     box.innerHTML = '⚠️ ' + errs.slice(0, 4).map(esc).join('<br>⚠️ ') + (errs.length > 4 ? `<br>…dan ${errs.length - 4} lainnya.` : '');
     box.style.display = 'block';
     const first = document.querySelector(`.step[data-step="${si}"] .q-item.invalid`);
-    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (first && !quiet) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return false;
   }
   box.style.display = 'none';
@@ -722,7 +827,8 @@ function answerText(q) {
   if (Array.isArray(v)) v = v.join(', ');
   if (q.t === 'check' && q.other && String(A[q.id + '_other'] || '').trim()) v = (v ? v + ', ' : '') + 'Lainnya: ' + A[q.id + '_other'].trim();
   if (q.t === 'num' && v) v = `${v} ${q.unit}`;
-  if (q.t === 'bristol' && v) v = `Tipe ${v} (${BRISTOL[v - 1][1]})`;
+  if (q.t === 'select' && v === 'Lainnya' && String(A[q.id + '_other'] || '').trim()) v = A[q.id + '_other'].trim();
+  if (q.t === 'bristol' && v) v = v === '0' ? 'Belum pernah perhatikan' : `Tipe ${v} (${BRISTOL[v - 1][1]})`;
   if (q.id === 'wa' && v) v = SCL.normalizeWA(v) || v;
   return v == null ? '' : String(v).trim();
 }
@@ -742,6 +848,8 @@ function coachFlags(r) {
   const t = String(A.tensi || '').match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
   if (t && (+t[1] >= 140 || +t[2] >= 90)) f.push(`Tensi mandiri tinggi (${t[1]}/${t[2]})`);
   if (r.bmiKat && r.bmiKat[1] === 'risk') f.push(`BMI ${fmt(r.bmi)} (${r.bmiKat[0]})`);
+  if (A.kesehatanBaru === 'Ada') f.push(`Perubahan kesehatan sejak awal program: ${A.kesehatanBaruDetail || '-'}`);
+  if (RE && num(A.yakinPertahankan) != null && num(A.yakinPertahankan) <= 5) f.push(`Keyakinan mempertahankan kebiasaan rendah (${A.yakinPertahankan}/10)`);
   return f;
 }
 
@@ -791,6 +899,7 @@ function showResult() {
   ].filter(Boolean).join(' · ');
   document.getElementById('rCalc').innerHTML = calcHtml(r);
 
+  document.getElementById('rParqSec').style.display = RE ? 'none' : '';
   const parqYes = PARQ.some((_, i) => A['parq' + (i + 1)] === 'Ya');
   document.getElementById('rParq').innerHTML = parqYes
     ? `<div class="notice notice-warn"><b>Ada jawaban "Ya" di cek kesiapan aktivitas fisik.</b> Ini bukan berarti kamu tidak boleh bergerak. Sebelum mulai latihan yang lebih berat dari biasanya, sebaiknya konsultasikan dulu dengan dokter. Coach akan membahasnya bersamamu di sesi pertama supaya programnya tetap aman.</div>`
@@ -805,19 +914,27 @@ function showResult() {
   document.getElementById('resultSection').style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  SCL.send('Intake', data, { wa: A.wa, nama: A.nama, raw });
+  if (RE) data.fase = FASE;
+  SCL.send(RE ? 'Reassessment' : 'Intake', data, { wa: A.wa, nama: A.nama, raw });
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
    INIT
    ══════════════════════════════════════════════════════════════════════════ */
 function init() {
+  if (RE) {
+    document.querySelector('.header h1').innerHTML = `Re-Assessment <span>${FASE} Program</span>`;
+    document.querySelector('.header p').textContent = 'Yuk lihat perkembanganmu! Isi sesuai kondisimu sekarang. Butuh sekitar 8 menit, dan jawaban tersimpan otomatis di perangkatmu.';
+    document.querySelector('.rc-meta').textContent = `Re-Assessment ${FASE} Program · Synthesis Coaching Lab`;
+    document.title = `Re-Assessment ${FASE} — Synthesis Coaching Lab`;
+  }
   const draft = SCL.readLS(DRAFT_KEY);
   if (draft && draft.A) { A = draft.A; S = Math.min(draft.S || 0, STEPS.length - 1); }
   const id = SCL.getIdentity();
   if (!A.nama && id.nama) A.nama = id.nama;
   if (!A.wa && id.wa) A.wa = '0' + id.wa.slice(2);
   if (!A.tglLahir && id.tglLahir) A.tglLahir = id.tglLahir;
+  if (!A.jk && id.jk) A.jk = id.jk;
 
   renderSteps();
   const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];

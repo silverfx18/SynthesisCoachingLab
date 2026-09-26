@@ -14,9 +14,9 @@
  *    dan ada honeypot anti-bot.
  */
 
-const FORMS = ['Intake', 'MCTQ', 'PSQI', 'StressTidur'];
+const FORMS = ['Intake', 'MCTQ', 'PSQI', 'StressTidur', 'Reassessment'];
 const CLIENT_SHEET = 'Klien';
-const CLIENT_HEADERS = ['clientId', 'nama', 'pertamaKali', 'terakhirAktif', 'Intake', 'MCTQ', 'PSQI', 'StressTidur', 'Sesi'];
+const CLIENT_HEADERS = ['clientId', 'nama', 'pertamaKali', 'terakhirAktif', 'Intake', 'MCTQ', 'PSQI', 'StressTidur', 'Reassessment', 'Sesi', 'aiSentAt', 'aiAnalyzedAt'];
 const MAX_BODY = 200000;   // karakter
 const MAX_CELL = 5000;     // karakter per sel data
 const MAX_RAW = 45000;     // batas sel Sheets = 50.000 karakter
@@ -133,7 +133,7 @@ function appendObject_(ss, sheetName, obj) {
 function upsertClient_(ss, clientId, nama, form) {
   const sh = getSheet_(ss, CLIENT_SHEET, CLIENT_HEADERS);
   const now = new Date();
-  const headers = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
+  const headers = ensureHeaders_(sh, CLIENT_HEADERS);
   const col = name => headers.indexOf(name) + 1;
   const last = sh.getLastRow();
   const ids = last > 1 ? sh.getRange(2, col('clientId'), last - 1, 1).getValues().map(r => String(r[0])) : [];
@@ -148,4 +148,16 @@ function upsertClient_(ss, clientId, nama, form) {
     sh.getRange(r, col('terakhirAktif')).setValue(now);
     if (col(form)) sh.getRange(r, col(form)).setValue(now);
   }
+}
+
+// Tambahkan kolom yang belum ada (mis. sheet dibuat oleh versi script lama).
+function ensureHeaders_(sh, wanted) {
+  const lastCol = sh.getLastColumn();
+  const headers = lastCol ? sh.getRange(1, 1, 1, lastCol).getValues()[0].map(String) : [];
+  const missing = wanted.filter(h => headers.indexOf(h) === -1);
+  if (missing.length) {
+    sh.getRange(1, headers.length + 1, 1, missing.length).setValues([missing]);
+    headers.push(...missing);
+  }
+  return headers;
 }

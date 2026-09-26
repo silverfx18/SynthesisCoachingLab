@@ -58,6 +58,32 @@ intake / mctq / psqi / stress-tidur           Daftar klien · Ringkasan · Form 
 
 ---
 
+## Update kode (setiap ada perubahan di repo)
+
+Kode Apps Script **tidak** ikut ter-update otomatis dari GitHub. Setiap kali `Code.gs` atau `Index.html` berubah:
+
+1. Buka project Apps Script-nya → tempel ulang isi file yang berubah → Save.
+2. **Deploy → Manage deployments → ✏️ (Edit) → Version: New version → Deploy.**
+   URL tetap sama, jadi `shared.js` tidak perlu diubah.
+
+> Update terakhir (re-assessment + Claude + data klien) mengubah **kedua** project: Collector (`collector/Code.gs`) dan Coach Console (`coach/Code.gs` + `coach/Index.html`). Kolom baru di tab Klien ditambahkan otomatis.
+
+## Cara pakai fitur
+
+**Link personal klien**: di Console, buka klien → **🔗 Link untuk klien**. Tersedia link Assessment awal, Re-assessment tengah (`?mode=tengah`), Re-assessment akhir (`?mode=akhir`), MCTQ, PSQI, dan Stress-Tidur, dengan nama & WA sudah terisi. Alamat website diatur di konstanta `PUBLIC_BASE_URL` di `coach/Index.html`. Cek sudah sesuai alamat GitHub Pages kamu.
+
+**Before–After**: tab **Before–After** membandingkan intake awal dengan setiap re-assessment, semua skor PSQI/Stres/MCTQ dari waktu ke waktu, pengukuran coach sesi pertama vs terakhir, dan refleksi klien. Setelah re-assessment, minta klien mengisi ulang 3 tool tidur & stres supaya skornya ikut terbanding.
+
+**Analisis dengan Claude**
+1. Klik **🤖 Salin untuk Claude**. Prompt berisi semua data klien **tanpa nama lengkap, WA, email, tanggal lahir, dan domisili** (cukup inisial, usia, JK).
+2. Paste ke Claude (disarankan di satu Project khusus coaching), lalu salin jawabannya.
+3. Di tab Ringkasan → **Tempel hasil analisis Claude** → baca & koreksi dulu → **Simpan Analisis**. Hasil tampil di Ringkasan & Report, tersimpan di tab `AnalisisAI`.
+4. Klien yang punya data baru sejak terakhir disalin (intake, skor, sesi, re-assessment) diberi tanda **🤖 belum dianalisis** di daftar klien dan di flag.
+
+> Data kesehatan tetap terkirim ke Claude saat kamu paste. Gunakan akun Claude milikmu sendiri dan pastikan ini sesuai dengan persetujuan yang diberikan klien.
+
+**Data Klien**: kalau klien belum mengisi intake atau datanya salah, lengkapi di kartu **Data Klien** (tab Ringkasan). Isian coach dipakai di seluruh Console & prompt Claude; jawaban asli klien tetap tersimpan.
+
 ## Checklist keamanan
 
 - [ ] **Cek 2 Apps Script lama** (URL-nya dulu ada di `mctq.html` & `stress-tidur.html`). Kalau di dalamnya ada fungsi `doGet` yang mengembalikan isi sheet, data klien bisa dibaca siapa saja yang tahu URL-nya. Hapus fungsi itu atau **Archive** deployment lamanya setelah hub baru jalan.
