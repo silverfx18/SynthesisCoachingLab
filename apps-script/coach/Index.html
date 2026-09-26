@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coach Console — Synthesis Coaching Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --teal:#2F9794;--teal-light:#3db8b4;--teal-dark:#1e6b69;--cream:#faf3ea;--cream2:#e7e2da;--dark:#0e181d;--muted:#6b7d7c;--white:#fff;
+  --green:#27ae60;--green-bg:#eafaf1;--yellow:#f39c12;--yellow-bg:#fef9e7;--red:#c0392b;--red-bg:#fdedec;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dark);font-size:13px;}
+button,input,textarea,select{font-family:inherit;}
+.topbar{background:var(--dark);color:var(--cream);padding:14px 22px;display:flex;align-items:center;gap:14px;position:relative;}
+.topbar::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--teal-light),var(--teal));}
+.topbar b{font-size:16px;font-weight:800;}
+.topbar span{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:var(--teal);padding:3px 8px;border-radius:2px;}
+.layout{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 52px);}
+.side{background:var(--white);border-right:1px solid var(--cream2);padding:14px;overflow:auto;max-height:calc(100vh - 52px);position:sticky;top:0;}
+.side input{width:100%;border:1.5px solid var(--cream2);border-radius:6px;padding:9px 11px;font-size:12.5px;background:var(--cream);outline:none;margin-bottom:10px;}
+.side input:focus{border-color:var(--teal);background:#fff;}
+.cl{padding:10px 11px;border-radius:8px;cursor:pointer;border:1.5px solid transparent;margin-bottom:4px;}
+.cl:hover{background:var(--cream);}
+.cl.active{border-color:var(--teal);background:#f1faf9;}
+.cl b{display:block;font-size:12.5px;}
+.cl small{font-size:10px;color:var(--muted);}
+.dots{display:flex;gap:3px;margin-top:5px;}
+.dot{font-size:8.5px;font-weight:700;padding:1px 5px;border-radius:8px;background:var(--cream);color:var(--muted);}
+.dot.on{background:var(--teal);color:#fff;}
+.main{padding:18px 24px 90px;min-width:0;}
+.empty{color:var(--muted);text-align:center;padding:60px 20px;font-size:13px;line-height:1.7;}
+.tabs{display:flex;gap:6px;margin:14px 0 16px;border-bottom:1.5px solid var(--cream2);flex-wrap:wrap;}
+.tab{background:none;border:none;padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1.5px;}
+.tab.active{color:var(--teal-dark);border-bottom-color:var(--teal);}
+.card{background:var(--white);border:1px solid var(--cream2);border-radius:10px;padding:16px 18px;margin-bottom:14px;}
+.card-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:12px;}
+.head-name{font-size:22px;font-weight:900;}
+.head-sub{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.6;}
+.head-sub a{color:var(--teal-dark);font-weight:700;}
+.flags{list-style:none;}
+.flags li{padding:8px 12px;border-radius:7px;margin-bottom:6px;font-size:12px;line-height:1.5;background:var(--yellow-bg);border-left:4px solid var(--yellow);}
+.flags li.red{background:var(--red-bg);border-left-color:var(--red);font-weight:600;}
+.flags li.none{background:var(--green-bg);border-left-color:var(--green);}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
+.stat{border:1px solid var(--cream2);border-radius:8px;padding:10px 12px;background:#fffbf5;}
+.stat-l{font-size:8.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.stat-v{font-size:19px;font-weight:900;color:var(--teal);line-height:1.15;}
+.stat-v small{font-size:10px;color:var(--muted);font-weight:600;}
+.stat-s{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.4;}
+.none-text{color:var(--muted);font-size:12px;}
+details{border:1px solid var(--cream2);border-radius:8px;margin-bottom:8px;background:#fff;}
+summary{padding:10px 14px;font-weight:700;font-size:12px;cursor:pointer;color:var(--teal-dark);}
+.ans{padding:0 14px 10px;}
+.ans-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:6px 0;border-top:1px dashed var(--cream2);font-size:11.5px;line-height:1.45;}
+.ans-row span:first-child{color:var(--muted);}
+.ans-row span:last-child{font-weight:600;white-space:pre-wrap;}
+/* FORM SESI */
+.secnav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.secnav a{font-size:10.5px;font-weight:600;text-decoration:none;color:var(--dark);background:#fff;border:1px solid var(--cream2);border-radius:14px;padding:5px 10px;}
+.secnav a:hover{border-color:var(--teal);}
+.sec{background:#fff;border:1px solid var(--cream2);border-radius:10px;margin-bottom:14px;overflow:hidden;scroll-margin-top:12px;}
+.sec-h{display:flex;gap:10px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--cream2);background:#fffbf5;}
+.sec-n{width:28px;height:28px;border-radius:50%;background:var(--teal);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.sec-t{font-size:14px;font-weight:800;}
+.sec-s{font-size:10.5px;color:var(--muted);margin-top:1px;}
+.q{padding:13px 18px;border-bottom:1px solid var(--cream2);}
+.q:last-child{border-bottom:none;}
+.q-l{font-size:12px;font-weight:600;margin-bottom:8px;line-height:1.45;}
+.q-h{font-size:10.5px;color:var(--teal-dark);background:#f1faf9;border-radius:6px;padding:6px 9px;margin:-2px 0 8px;line-height:1.5;}
+.q-i{font-size:10.5px;color:var(--muted);margin-bottom:8px;}
+.inp{width:100%;border:1.5px solid var(--cream2);border-radius:6px;padding:8px 10px;font-size:12.5px;background:var(--cream);outline:none;}
+.inp:focus{border-color:var(--teal);background:#fff;}
+textarea.inp{min-height:58px;resize:vertical;line-height:1.5;}
+.q.note{background:#fffdf8;}
+.unit{display:flex;gap:8px;align-items:center;max-width:210px;}
+.unit span{font-size:11px;color:var(--muted);font-weight:600;}
+.meas{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:0;}
+.meas .q{border-right:1px solid var(--cream2);}
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{cursor:pointer;}
+.chip input{position:absolute;opacity:0;pointer-events:none;}
+.chip span{display:inline-block;border:1.5px solid var(--cream2);background:var(--cream);border-radius:18px;padding:6px 11px;font-size:11.5px;font-weight:500;}
+.chip input:checked+span{background:var(--teal);border-color:var(--teal);color:#fff;font-weight:600;}
+.score{display:inline-block;margin-top:8px;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:14px;}
+.s-ok{background:var(--green-bg);color:var(--green);}
+.s-risk{background:var(--red-bg);color:var(--red);}
+.guide{font-size:11px;line-height:1.6;padding:12px 18px;background:#fffbf5;}
+.guide li{margin-left:16px;margin-bottom:4px;}
+.savebar{position:fixed;left:0;right:0;bottom:0;background:var(--dark);padding:10px 22px;display:flex;gap:10px;align-items:center;justify-content:flex-end;z-index:30;}
+.savebar .msg{color:var(--muted);font-size:11px;margin-right:auto;}
+.btn{padding:10px 18px;border-radius:7px;font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:none;}
+.btn-p{background:var(--teal);color:#fff;}
+.btn-p:hover{background:var(--teal-dark);}
+.btn-s{background:transparent;color:var(--cream);border:1.5px solid var(--muted);}
+.btn-o{background:transparent;color:var(--teal);border:2px solid var(--teal);}
+.loading{position:fixed;top:12px;right:16px;background:var(--dark);color:var(--cream);font-size:11px;padding:7px 12px;border-radius:6px;z-index:50;display:none;}
+.err{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red);border-radius:8px;padding:12px 16px;margin-bottom:14px;font-size:12px;}
+/* REPORT */
+.rep{background:#fff;border:1px solid var(--cream2);border-radius:12px;overflow:hidden;}
+.rep-h{background:var(--dark);color:var(--cream);padding:22px 26px;}
+.rep-h small{display:block;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.rep-h b{font-size:21px;font-weight:900;}
+.rep-h div{font-size:10.5px;color:var(--muted);margin-top:4px;}
+.rep-s{padding:16px 26px;border-bottom:1px solid var(--cream2);}
+.tbl{width:100%;border-collapse:collapse;font-size:11.5px;}
+.tbl th{text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:6px 8px;border-bottom:1.5px solid var(--cream2);}
+.tbl td{padding:6px 8px;border-bottom:1px solid var(--cream2);vertical-align:top;}
+.tbl td:first-child{color:var(--muted);width:38%;}
+@media(max-width:800px){
+  .layout{grid-template-columns:1fr;}
+  .side{position:static;max-height:260px;border-right:none;border-bottom:1px solid var(--cream2);}
+  .main{padding:14px 12px 90px;}
+  .ans-row{grid-template-columns:1fr;gap:2px;}
+}
+@media print{
+  @page{size:A4;margin:10mm 12mm;}
+  body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .topbar,.side,.tabs,.savebar,.no-print,.loading{display:none !important;}
+  .layout{display:block;}
+  .main{padding:0;}
+  .rep{border:none;}
+  .rep-h{background:#fff;color:var(--dark);border-bottom:2px solid var(--teal);}
+  .rep-s,details{break-inside:avoid;}
+  details{border:none;}
+  details>summary{list-style:none;}
+}
+</style>
+</head>
+<body>
+<div class="topbar"><span>Synthesis Coaching Lab</span><b>Coach Console</b></div>
+<div class="loading" id="loading">Memuat…</div>
+<div class="layout">
+  <aside class="side">
+    <input id="search" placeholder="Cari nama / nomor WA…" autocomplete="off">
+    <div id="clientList"><div class="none-text">Memuat daftar klien…</div></div>
+  </aside>
+  <main class="main" id="main">
+    <div class="empty">Pilih klien di sebelah kiri.<br>Klien muncul otomatis setelah mengisi salah satu assessment.</div>
+  </main>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════
+   KONFIGURASI: kontak rujukan (isi sendiri)
+   ════════════════════════════════════════════════════════════════════════ */
+const REFERRAL_CONTACTS = 'Isi daftar kontak rujukan kamu di sini (psikolog, psikiater, dokter umum, dokter spesialis gizi klinik) — edit konstanta REFERRAL_CONTACTS di Index.html.';
+
+/* ════════════════════════════════════════════════════════════════════════
+   UTIL
+   ════════════════════════════════════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = v => { const n = parseFloat(String(v == null ? '' : v).replace(',', '.')); return isFinite(n) ? n : null; };
+const fmt = (n, d = 1) => n == null || n === '' ? '–' : Number(n).toLocaleString('id-ID', { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmtDate = s => { if (!s) return '–'; const d = new Date(s); return isNaN(d) ? String(s) : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }); };
+const strip = s => String(s).replace(/<[^>]+>/g, '');
+const FORMS = ['Intake', 'MCTQ', 'PSQI', 'StressTidur', 'Sesi'];
+const FORM_LABEL = { Intake: 'Intake', MCTQ: 'MCTQ', PSQI: 'PSQI', StressTidur: 'Stres', Sesi: 'Sesi' };
+
+function api(fn, ...args) {
+  $('loading').style.display = 'block';
+  return new Promise((res, rej) => {
+    google.script.run
+      .withSuccessHandler(v => { $('loading').style.display = 'none'; res(v); })
+      .withFailureHandler(e => { $('loading').style.display = 'none'; rej(e); })[fn](...args);
+  });
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   SKEMA FORM SESI
+   t: text | area | num | radio | check | scale | yesno | dt
+   ════════════════════════════════════════════════════════════════════════ */
+const FREQ = ['Tidak pernah', 'Jarang', 'Kadang', 'Sering', 'Hampir selalu'];
+const SCOFF = [
+  'Apakah kamu pernah memaksa diri muntah karena merasa terlalu kenyang sampai tidak nyaman?',
+  'Apakah kamu khawatir kehilangan kendali atas seberapa banyak kamu makan?',
+  'Apakah berat badanmu turun lebih dari 6 kg dalam 3 bulan terakhir?',
+  'Apakah kamu merasa gemuk padahal orang lain bilang kamu terlalu kurus?',
+  'Apakah makanan terasa mendominasi pikiran/hidupmu?'
+];
+const PHQ_OPTS = ['0 · Tidak sama sekali', '1 · Beberapa hari', '2 · Lebih dari separuh hari', '3 · Hampir setiap hari'];
+const PHQ2 = ['Kurang berminat atau tidak menikmati saat melakukan sesuatu', 'Merasa sedih, murung, atau putus asa'];
+
+const SESI = [
+  { id: 'ukur', title: 'Pengukuran Coach', sub: 'Isi yang tersedia. BB/TB terisi dari intake bila kosong.', layout: 'meas', qs: [
+    { id: 'tglUkur', t: 'dt', q: 'Tanggal & jam ukur' },
+    { id: 'bb', t: 'num', q: 'Berat badan', u: 'kg' }, { id: 'tb', t: 'num', q: 'Tinggi badan', u: 'cm' },
+    { id: 'pinggang', t: 'num', q: 'Lingkar pinggang', u: 'cm' }, { id: 'perut', t: 'num', q: 'Lingkar perut', u: 'cm' },
+    { id: 'panggul', t: 'num', q: 'Lingkar panggul', u: 'cm' }, { id: 'dada', t: 'num', q: 'Lingkar dada bawah', u: 'cm' },
+    { id: 'lengan', t: 'num', q: 'Lingkar lengan atas', u: 'cm' }, { id: 'paha', t: 'num', q: 'Lingkar paha', u: 'cm' },
+    { id: 'bf', t: 'num', q: 'Body fat', u: '%' }, { id: 'lean', t: 'num', q: 'Lean mass / otot', u: 'kg' },
+    { id: 'visceral', t: 'num', q: 'Visceral fat', u: 'level' }, { id: 'tensi', t: 'text', q: 'Tensi (sistol/diastol)', ph: '120/80' },
+    { id: 'rhr', t: 'num', q: 'Detak jantung istirahat', u: 'bpm' }, { id: 'grip', t: 'num', q: 'Grip test (terbaik)', u: 'kg' }
+  ]},
+  { id: 'hidup', title: 'Hidup Sehari-hari', qs: [
+    { id: 'jadwal', t: 'area', q: 'Ceritakan jadwal harian & pekerjaan. Ada kegiatan terjadwal?' },
+    { id: 'defSehat', t: 'area', q: 'Apa definisi sehat / bugar menurutmu?' },
+    { id: 'hobi', t: 'text', q: 'Hobi yang dijalani' },
+    { id: 'rekreasi', t: 'text', q: 'Ada jadwal rekreasi rutin?' }
+  ]},
+  { id: 'logistik', title: 'Logistik', sub: 'Supaya rencana bisa dijalankan di dunia nyata.', qs: [
+    { id: 'masak', t: 'check', q: 'Siapa yang masak / belanja makanan?', opts: ['Sendiri', 'Pasangan', 'Orang tua / keluarga', 'ART', 'Beli jadi / katering'] },
+    { id: 'makanLuar', t: 'radio', q: 'Makan di luar / pesan online per minggu', opts: ['0–2x', '3–5x', '6–10x', '> 10x'] },
+    { id: 'waktuOlahraga', t: 'text', q: 'Waktu yang realistis tersedia untuk olahraga', ph: 'mis. Sel/Kam 06.00–06.45, Sabtu pagi' },
+    { id: 'aksesAlat', t: 'check', q: 'Akses fasilitas / alat', opts: ['Gym', 'Dumbbell / kettlebell di rumah', 'Resistance band', 'Lapangan / taman', 'Kolam renang', 'Tidak ada'] },
+    { id: 'biaya', t: 'radio', q: 'Kendala biaya untuk makanan sehat?', opts: ['Tidak', 'Sedikit', 'Ya, cukup berat'] }
+  ]},
+  { id: 'hormon', title: 'Hormonal (Wanita)', show: C => C.jk === 'Perempuan', qs: [
+    { id: 'statusHormon', t: 'radio', q: 'Status', opts: ['Siklus reproduktif', 'Perimenopause', 'Menopause', 'Hamil / menyusui'] },
+    { id: 'pcos', t: 'radio', q: 'PCOS', opts: ['Tidak', 'Curiga / belum diperiksa', 'Terdiagnosis'] },
+    { id: 'kb', t: 'radio', q: 'KB hormonal', opts: ['Tidak', 'Pil', 'Suntik', 'Implan', 'IUD hormonal'] },
+    { id: 'siklus', t: 'area', q: 'Pola siklus, PMS, gejala yang mengganggu (nafsu makan, mood, tidur)' }
+  ]},
+  { id: 'pengetahuan', title: 'Pengetahuan & Keyakinan', qs: [
+    { id: 'defMakananSehat', t: 'area', q: 'Apa definisi makanan sehat yang kamu tahu?' },
+    { id: 'polaSehat', t: 'area', q: 'Apakah pola makanmu sekarang sehat menurutmu? Mengapa?' },
+    { id: 'tahuNutrisi', t: 'area', q: 'Apa yang kamu ketahui tentang nutrisi? (makro, mikro, fitonutrien, timing)' },
+    { id: 'sumberInfo', t: 'check', q: 'Info soal makanan biasanya dari mana?', opts: ['Media sosial', 'Dokter / ahli gizi', 'Keluarga / teman', 'Artikel / buku', 'Komunitas / pelatih'] },
+    { id: 'yakinInfo', t: 'scale', q: 'Seberapa yakin dengan info nutrisi yang kamu tahu?', min: 1, max: 5, lo: 'Ragu sekali', hi: 'Sangat yakin' },
+    { id: 'mitos', t: 'area', q: 'Mitos / fakta makanan yang ingin ditanyakan' },
+    { id: 'pentingGerak', t: 'area', q: 'Seberapa penting aktivitas fisik? Aktivitas fisik yang baik itu seperti apa?' },
+    { id: 'pahamBugar', t: 'scale', q: 'Pemahaman komponen kebugaran (jantung-paru, daya tahan & kekuatan otot, fleksibilitas, komposisi tubuh)', min: 1, max: 5, lo: 'Tidak paham', hi: 'Paham' },
+    { id: 'tahuOtot', t: 'radio', q: 'Tahu bahwa otot penting untuk umur panjang & pencegahan penyakit kronis?', opts: ['Belum tahu', 'Pernah dengar', 'Paham'] }
+  ]},
+  { id: 'makan', title: 'Pola Makan (Dalam)', qs: [
+    { id: 'recall', t: 'area', q: 'Food recall kemarin / hari biasa (sarapan, siang, malam, camilan, minuman)' },
+    { id: 'makanSaat', t: 'check', q: 'Lebih sering makan saat…', opts: ['Lapar fisik (lesu, pusing, lemas)', 'Bosan / emosi', 'Jam tertentu', 'Ikut lingkungan'] },
+    { id: 'mengunyah', t: 'radio', q: 'Kecepatan makan / mengunyah', opts: ['Pelan', 'Sedang', 'Cepat'] },
+    { id: 'sadarLapar', t: 'radio', q: 'Sadar sinyal lapar & kenyang?', opts: ['Ya', 'Kadang', 'Jarang'] },
+    { id: 'favorit', t: 'text', q: 'Makanan favorit / yang sering dicari' },
+    { id: 'dislike', t: 'text', q: 'Makanan yang dihindari karena trauma / tidak suka sejak kecil' }
+  ]},
+  { id: 'relasi', title: 'Hubungan dengan Makanan', sub: 'Tanyakan dengan tenang & tanpa menghakimi.', qs: [
+    { id: 'bersalah', t: 'radio', q: 'Pernah merasa bersalah setelah makan sesuatu?', opts: FREQ },
+    { id: 'stresMakan', t: 'radio', q: 'Saat stres, kamu…', opts: ['Makan lebih banyak', 'Tidak nafsu makan', 'Tidak berubah', 'Ingin ngemil terus'] },
+    { id: 'comfortFood', t: 'text', q: 'Makanan yang paling dicari saat bad mood' },
+    { id: 'binge', t: 'radio', q: 'Pernah binge eating / kehilangan kontrol saat makan?', opts: FREQ }
+  ]},
+  { id: 'emosi', title: 'Emosi & Pola Pikir', qs: [
+    { id: 'terbukaEmosi', t: 'scale', q: 'Seberapa terbuka mengenali & menerima emosi sendiri?', min: 1, max: 5, lo: 'Kurang', hi: 'Sangat' },
+    { id: 'perasaan', t: 'check', q: 'Dalam 1 bulan terakhir sering merasa…', opts: ['Tidak bersemangat', 'Tidak percaya diri', 'Overthinking', 'Mudah tersinggung', 'Sulit fokus'] },
+    { id: 'perasaanFreq', t: 'radio', q: 'Seberapa sering perasaan itu muncul?', opts: FREQ },
+    { id: 'selfBlame', t: 'radio', q: 'Seberapa sering menyalahkan diri saat tidak bisa menjalankan rencana sehat?', opts: FREQ },
+    { id: 'setback', t: 'area', q: 'Saat mengalami kegagalan / setback, apa biasanya responmu?' },
+    { id: 'tenang', t: 'area', q: 'Teknik menenangkan diri yang rutin dilakukan (ibadah, meditasi, napas, EFT, dll.)' }
+  ]},
+  { id: 'tidur', title: 'Tidur (Makna)', qs: [
+    { id: 'tidurMood', t: 'area', q: 'Apakah tidur memengaruhi mood & emosi harianmu?' },
+    { id: 'tidurSpiritual', t: 'area', q: 'Apakah tidur berkaitan dengan rasa damai / spiritualitasmu? (opsional)' },
+    { id: 'tidurCoba', t: 'area', q: 'Cara yang pernah dicoba untuk memperbaiki tidur' },
+    { id: 'tidurHarapan', t: 'area', q: 'Kalau tidurmu membaik, dampak positif apa yang diharapkan?' }
+  ]},
+  { id: 'mi', title: 'Motivational Interviewing', sub: 'Kotak hijau = panduan analisis coach.', qs: [
+    { id: 'miAlasan', t: 'area', q: '2.1 Alasan utama ingin berubah, apa yang paling dikhawatirkan?', h: 'Berasal dari tekanan luar atau motivasi internal?' },
+    { id: 'miHarapan', t: 'area', q: 'Harapan dari coaching', h: 'Realistis atau idealis? Jelaskan.' },
+    { id: 'miArtiSehat', t: 'area', q: 'Arti hidup sehat menurut klien', h: 'Fokus pada fisik, mental, spiritual, atau sosial?' },
+    { id: 'miPenting', t: 'area', q: 'Hal penting dalam hidup', h: 'Cocokkan dengan fokus perubahan (mis. keluarga → alasan kuat untuk sehat).' },
+    { id: 'miSesuai', t: 'area', q: 'Kesesuaian gaya hidup saat ini dengan nilai hidup', h: 'Ada konflik antara keinginan dan kebiasaan?' },
+    { id: 'miRiwayat', t: 'area', q: '2.2 Riwayat diet / gaya hidup', h: 'Catat jenis pendekatan (kalori, keto, IF, dll.).' },
+    { id: 'miPendukung', t: 'area', q: 'Faktor pendukung keberhasilan sebelumnya', h: 'Pola positif / strategi yang bisa diulang.' },
+    { id: 'miGagal', t: 'area', q: 'Penyebab kegagalan', h: 'Hambatan eksternal atau internal?' },
+    { id: 'miPelajaran', t: 'area', q: 'Pelajaran dari masa lalu', h: 'Klien reflektif atau belum menyadari pola gagal/sukses?' },
+    { id: 'miTantangan', t: 'area', q: '2.3 Tantangan terbesar saat ini', h: 'Mindset, lingkungan, atau fisik?' },
+    { id: 'miPemicu', t: 'area', q: 'Pemicu kegagalan terdahulu', h: 'Bisa dimitigasi sekarang?' },
+    { id: 'miReaksi', t: 'area', q: 'Reaksi saat gagal menjaga pola makan', h: 'Self-sabotage, guilt loop, atau coping maladaptif?' },
+    { id: 'miKekuatan', t: 'area', q: '2.4 Kekuatan / kualitas pribadi', h: 'Basis strategi coaching (self-talk, problem solving, dll.).' },
+    { id: 'miSupport', t: 'area', q: 'Sistem dukungan sosial', h: 'Pasangan, keluarga, teman, komunitas?' },
+    { id: 'miDampak', t: 'area', q: 'Dampak keberhasilan terhadap hidup', h: 'Gali efek ke self-worth, relasi, ibadah, dll.' },
+    { id: 'miSkor', t: 'scale', q: '2.5 Skor kesiapan berubah', min: 1, max: 10, lo: 'Belum siap', hi: 'Sangat siap', h: 'Jika rendah, lanjut ke eksplorasi ambivalensi.' },
+    { id: 'miSkorAlasan', t: 'area', q: 'Alasan memilih skor tersebut', h: 'Faktor penguat atau penghambat?' },
+    { id: 'miLangkah', t: 'area', q: 'Langkah kecil pertama', h: 'Konkret, realistis, dan dalam kontrol klien?' },
+    { id: 'miTarget', t: 'area', q: 'Target 3 bulan', h: 'Dipakai sebagai bahan monitoring jangka pendek.' }
+  ]},
+  { id: 'skrining', title: 'Skrining Rujukan', sub: 'SCOFF (gangguan makan) & PHQ-2 (suasana hati). Alat skrining, bukan diagnosis.', qs: [
+    ...SCOFF.map((q, i) => ({ id: 'scoff' + (i + 1), t: 'yesno', q: `SCOFF ${i + 1}. ${q}` })),
+    { id: 'scoffScore', t: 'out' },
+    ...PHQ2.map((q, i) => ({ id: 'phq' + (i + 1), t: 'radio', q: `PHQ-2 ${i + 1}. Dalam 2 minggu terakhir, seberapa sering terganggu oleh: <b>${q}</b>`, opts: PHQ_OPTS })),
+    { id: 'phqScore', t: 'out' },
+    { id: 'guideRujukan', t: 'guide' }
+  ]},
+  { id: 'kesimpulan', title: 'Kesimpulan Coach', qs: [
+    { id: 'prioritas', t: 'area', q: 'Prioritas intervensi (urutkan)' },
+    { id: 'rencana', t: 'area', q: 'Rencana 2 minggu pertama' },
+    { id: 'tindakLanjut', t: 'area', q: 'Perlu rujukan / tindak lanjut medis?' },
+    { id: 'catatanUmum', t: 'area', q: 'Catatan umum' }
+  ]}
+];
+SESI.forEach(s => { if (!['skrining', 'kesimpulan'].includes(s.id)) s.qs.push({ id: s.id + '_catatan', t: 'area', q: '📝 Catatan & analisis coach', note: true }); });
+const SESI_Q = SESI.flatMap(s => s.qs.map(q => Object.assign(q, { sec: s })));
+
+/* ════════════════════════════════════════════════════════════════════════
+   STATE
+   ════════════════════════════════════════════════════════════════════════ */
+let CLIENTS = [], CUR = null, CD = null, TAB = 'ringkasan', SA = {}, DIRTY = false;
+
+function intakeData() { return (CD && CD.forms.Intake && CD.forms.Intake.data) || {}; }
+function ctx() { const d = intakeData(); return { jk: d.jk }; }
+function lastSession() { return (CD && CD.sessions[0]) || null; }
+
+/* ════════════════════════════════════════════════════════════════════════
+   DAFTAR KLIEN
+   ════════════════════════════════════════════════════════════════════════ */
+async function loadClients() {
+  try { CLIENTS = await api('getClients'); renderClients(); }
+  catch (e) { $('clientList').innerHTML = `<div class="err">${esc(e.message || e)}</div>`; }
+}
+function renderClients() {
+  const q = $('search').value.trim().toLowerCase();
+  const list = CLIENTS.filter(c => !q || c.nama.toLowerCase().includes(q) || c.clientId.includes(q.replace(/^0/, '62')));
+  $('clientList').innerHTML = list.length ? list.map(c => `
+    <div class="cl ${c.clientId === CUR ? 'active' : ''}" data-id="${esc(c.clientId)}">
+      <b>${esc(c.nama || '(tanpa nama)')}</b><small>+${esc(c.clientId)} · aktif ${fmtDate(c.terakhirAktif)}</small>
+      <div class="dots">${FORMS.map(f => `<span class="dot ${c.done[f] ? 'on' : ''}">${FORM_LABEL[f]}</span>`).join('')}</div>
+    </div>`).join('') : '<div class="none-text">Belum ada klien.</div>';
+}
+$('search').addEventListener('input', renderClients);
+$('clientList').addEventListener('click', e => {
+  const el = e.target.closest('.cl'); if (!el) return;
+  if (DIRTY && !confirm('Form sesi belum disimpan. Pindah klien?')) return;
+  openClient(el.dataset.id);
+});
+
+async function openClient(id) {
+  CUR = id; renderClients();
+  try {
+    CD = await api('getClientData', id);
+    DIRTY = false;
+    initSessionState();
+    renderMain();
+  } catch (e) { $('main').innerHTML = `<div class="err">${esc(e.message || e)}</div>`; }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   MAIN + TAB
+   ════════════════════════════════════════════════════════════════════════ */
+function clientName() {
+  const c = CLIENTS.find(x => x.clientId === CUR);
+  return (c && c.nama) || intakeData().nama || '(tanpa nama)';
+}
+function renderMain() {
+  const d = intakeData();
+  const sub = [d.usia ? `${d.usia} tahun` : '', d.jk, d.pekerjaan, d.domisili].filter(Boolean).map(esc).join(' · ');
+  $('main').innerHTML = `
+    <div class="head-name">${esc(clientName())}</div>
+    <div class="head-sub">${sub ? sub + '<br>' : ''}<a href="https://wa.me/${esc(CUR)}" target="_blank" rel="noopener">WhatsApp +${esc(CUR)}</a></div>
+    <div class="tabs no-print">
+      ${[['ringkasan', 'Ringkasan'], ['sesi', 'Form Sesi'], ['report', 'Report']].map(([k, l]) => `<button class="tab ${TAB === k ? 'active' : ''}" data-tab="${k}">${l}</button>`).join('')}
+    </div>
+    <div id="tabBody"></div>`;
+  document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => { TAB = b.dataset.tab; renderMain(); }));
+  if (TAB === 'ringkasan') renderRingkasan();
+  else if (TAB === 'sesi') renderSesi();
+  else renderReport();
+}
+
+/* ── Flags ───────────────────────────────────────────────────────────── */
+function allFlags() {
+  const f = [];
+  const d = intakeData();
+  String(d.flags || '').split(' | ').filter(Boolean).forEach(x => f.push({ t: x, src: 'Intake' }));
+  const s = lastSession();
+  if (s) String(s.data.flags || '').split(' | ').filter(Boolean).forEach(x => f.push({ t: x, src: 'Sesi ' + fmtDate(s.submittedAt) }));
+  const p = CD.forms.PSQI && CD.forms.PSQI.data;
+  if (p && num(p.skorTotal) > 10) f.push({ t: `PSQI ${p.skorTotal}/21 (gangguan tidur serius): pertimbangkan rujukan`, src: 'PSQI' });
+  const st = CD.forms.StressTidur && CD.forms.StressTidur.data;
+  if (st && st.kategoriStress === 'Tinggi') f.push({ t: `Stres tinggi (skor ${st.skorStress}/40)`, src: 'Stress-Tidur' });
+  return f;
+}
+function flagsHtml() {
+  const f = allFlags();
+  if (!f.length) return '<ul class="flags"><li class="none">Tidak ada flag. Tetap cek ulang saat sesi.</li></ul>';
+  return `<ul class="flags">${f.map(x => `<li class="${/RED FLAG|PAR-Q|SCOFF|PHQ|serius/i.test(x.t) ? 'red' : ''}">${esc(x.t)} <small style="color:var(--muted)">· ${esc(x.src)}</small></li>`).join('')}</ul>`;
+}
+
+/* ── Ringkasan ───────────────────────────────────────────────────────── */
+function stat(l, v, u, s) { return `<div class="stat"><div class="stat-l">${l}</div><div class="stat-v">${v}${u ? ` <small>${u}</small>` : ''}</div>${s ? `<div class="stat-s">${s}</div>` : ''}</div>`; }
+
+function rawGroups(raw, skip) {
+  const g = {};
+  (raw || []).filter(x => x.v && !(skip || []).includes(x.s)).forEach(x => { (g[x.s] = g[x.s] || []).push(x); });
+  return g;
+}
+function rawHtml(raw, openFirst, skip) {
+  const g = rawGroups(raw, skip);
+  const keys = Object.keys(g);
+  if (!keys.length) return '<div class="none-text">Belum ada data.</div>';
+  return keys.map((s, i) => `<details ${openFirst && i === 0 ? 'open' : ''}><summary>${esc(s)} <small style="color:var(--muted);font-weight:500">(${g[s].length})</small></summary>
+    <div class="ans">${g[s].map(x => `<div class="ans-row"><span>${esc(x.q)}</span><span>${esc(x.v)}</span></div>`).join('')}</div></details>`).join('');
+}
+
+function scoresHtml() {
+  const m = CD.forms.MCTQ && CD.forms.MCTQ.data, p = CD.forms.PSQI && CD.forms.PSQI.data, s = CD.forms.StressTidur && CD.forms.StressTidur.data;
+  return `<div class="grid">
+    ${m ? stat('Chronotype (MCTQ)', esc(m.chronotype), '', `Mid-sleep ${esc(m.msfsc)} · Social jet lag ${esc(m.sjl)} · Sleep debt ${esc(m.sleepDebt)}`) : stat('MCTQ', '–', '', 'Belum diisi')}
+    ${p ? stat('PSQI', esc(p.skorTotal), '/21', esc(p.kategori)) : stat('PSQI', '–', '', 'Belum diisi')}
+    ${s ? stat('Stres (PSS-10)', esc(s.skorStress), '/40', esc(s.kategoriStress)) : stat('Stres', '–', '', 'Belum diisi')}
+    ${s ? stat('Tidur (Stress-Tidur)', esc(s.skorTidur), '', esc(s.kategoriTidur)) : ''}
+  </div>
+  ${s && (s.kendalaStress || s.kendalaTidur) ? `<p class="stat-s" style="margin-top:10px"><b>Kendala stres:</b> ${esc(s.kendalaStress)}<br><b>Kendala tidur:</b> ${esc(s.kendalaTidur)}</p>` : ''}`;
+}
+
+function bodyHtml() {
+  const d = intakeData();
+  if (!CD.forms.Intake) return '<div class="none-text">Intake belum diisi.</div>';
+  return `<div class="grid">
+    ${stat('BMI (Asia)', fmt(num(d.bmi)), '', esc(d.bmiKategori))}
+    ${stat('Lingkar pinggang', esc(d.pinggang || '–'), '', 'Mandiri')}
+    ${stat('Rasio pinggang–panggul', fmt(num(d.whr), 2), '', '')}
+    ${stat('Rasio pinggang–tinggi', fmt(num(d.whtr), 2), '', '')}
+    ${stat('BMR', fmt(num(d.bmr), 0), 'kkal', esc(d.bmrMetode))}
+    ${stat('Kesiapan berubah', esc(d.kesiapan || '–'), '/10', '')}
+  </div>`;
+}
+
+function renderRingkasan() {
+  const done = FORMS.filter(f => f !== 'Sesi').map(f => `<span class="dot ${CD.forms[f] ? 'on' : ''}" title="${CD.forms[f] ? fmtDate(CD.forms[f].submittedAt) : 'belum'}">${FORM_LABEL[f]}${CD.forms[f] ? ' · ' + fmtDate(CD.forms[f].submittedAt) : ''}</span>`).join(' ');
+  $('tabBody').innerHTML = `
+    <div class="card"><div class="card-title">Flag untuk Coach</div>${flagsHtml()}</div>
+    <div class="card"><div class="card-title">Status Assessment</div><div class="dots" style="flex-wrap:wrap;gap:6px">${done}</div>
+      <p class="stat-s" style="margin-top:8px">Goal: <b>${esc(intakeData().goal || '–')}</b></p></div>
+    <div class="card"><div class="card-title">Tubuh (data mandiri klien)</div>${bodyHtml()}</div>
+    <div class="card"><div class="card-title">Tidur & Stres</div>${scoresHtml()}</div>
+    <div class="card"><div class="card-title">Jawaban Intake</div>${rawHtml(CD.forms.Intake && CD.forms.Intake.raw, false, ['Flag untuk Coach'])}</div>
+    ${CD.sessions.length ? `<div class="card"><div class="card-title">Riwayat Sesi</div>${CD.sessions.map(s => `<div class="ans-row"><span>${fmtDate(s.submittedAt)}</span><span>${esc(s.data.prioritas || s.data.miTarget || 'Tersimpan')}</span></div>`).join('')}</div>` : ''}`;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   FORM SESI
+   ════════════════════════════════════════════════════════════════════════ */
+function initSessionState() {
+  const s = lastSession();
+  SA = s && s.state ? Object.assign({}, s.state) : {};
+  const d = intakeData();
+  if (!SA.bb && d.bb) SA.bb = String(d.bb).replace(/\s*kg$/, '');
+  if (!SA.tb && d.tb) SA.tb = String(d.tb).replace(/\s*cm$/, '');
+  if (!SA.miSkor && d.kesiapan) SA.miSkor = String(d.kesiapan);
+}
+
+function chips(q, type) {
+  return `<div class="chips">${q.opts.map(o => `<label class="chip"><input type="${type}" name="${q.id}" data-k="${q.id}" value="${esc(o)}"><span>${esc(o)}</span></label>`).join('')}</div>`;
+}
+function qHtml(q) {
+  if (q.t === 'out') return `<div class="q" id="sq_${q.id}"><div id="out_${q.id}"></div></div>`;
+  if (q.t === 'guide') return `<div class="guide" id="sq_${q.id}"><b>Panduan tindak lanjut</b><ul>
+      <li><b>SCOFF ≥ 2</b>: kemungkinan gangguan makan. Hindari diet restriktif / hitung kalori ketat, fokus ke pola makan teratur, dan rujuk ke psikolog / psikiater / dokter untuk evaluasi.</li>
+      <li><b>PHQ-2 ≥ 3</b>: skrining depresi positif. Sarankan evaluasi lanjutan (PHQ-9 / wawancara klinis) oleh profesional kesehatan jiwa.</li>
+      <li>Kalau klien menyebut pikiran menyakiti diri atau bunuh diri: hentikan agenda coaching, dengarkan, dan bantu klien segera terhubung ke layanan darurat / profesional.</li>
+      <li style="list-style:none;margin-left:0;margin-top:6px"><b>Kontak rujukan:</b> ${esc(REFERRAL_CONTACTS)}</li></ul></div>`;
+  const l = `<div class="q-l">${q.q}</div>${q.h ? `<div class="q-h">💡 ${esc(q.h)}</div>` : ''}${q.info ? `<div class="q-i">${q.info}</div>` : ''}`;
+  let b = '';
+  switch (q.t) {
+    case 'text': b = `<input class="inp" data-k="${q.id}" maxlength="500" placeholder="${esc(q.ph || '')}">`; break;
+    case 'dt': b = `<input class="inp" type="datetime-local" data-k="${q.id}">`; break;
+    case 'area': b = `<textarea class="inp" data-k="${q.id}" maxlength="4000"></textarea>`; break;
+    case 'num': b = `<div class="unit"><input class="inp" inputmode="decimal" data-k="${q.id}"><span>${q.u}</span></div>`; break;
+    case 'radio': b = chips(q, 'radio'); break;
+    case 'check': b = chips(q, 'checkbox'); break;
+    case 'yesno': b = chips(Object.assign({}, q, { opts: ['Tidak', 'Ya'] }), 'radio'); break;
+    case 'scale': { const o = []; for (let v = q.min; v <= q.max; v++) o.push(String(v));
+      b = chips(Object.assign({}, q, { opts: o }), 'radio') + `<div class="stat-s" style="display:flex;justify-content:space-between;max-width:420px"><span>${q.lo}</span><span>${q.hi}</span></div>`; break; }
+  }
+  return `<div class="q ${q.note ? 'note' : ''}" id="sq_${q.id}">${l}${b}</div>`;
+}
+
+function renderSesi() {
+  const c = ctx();
+  const secs = SESI.filter(s => !s.show || s.show(c));
+  const s = lastSession();
+  $('tabBody').innerHTML = `
+    <div class="card no-print" style="padding:12px 16px">
+      <div class="stat-s">${s ? `Melanjutkan sesi tersimpan terakhir (${fmtDate(s.submittedAt)}). Setiap simpan membuat versi baru, riwayat lama tetap ada.` : 'Belum ada sesi tersimpan untuk klien ini.'}
+      ${s ? ' <button class="btn btn-o" id="btnNewSesi" style="margin-left:8px;padding:6px 10px">Mulai sesi baru (kosong)</button>' : ''}</div>
+    </div>
+    <div class="secnav no-print">${secs.map((x, i) => `<a href="#sec_${x.id}">${i + 1}. ${esc(x.title)}</a>`).join('')}</div>
+    <div class="card" id="calcCard"><div class="card-title">Hitungan dari pengukuran coach</div><div id="sesiCalc"></div></div>
+    ${secs.map((x, i) => `<section class="sec" id="sec_${x.id}"><div class="sec-h"><div class="sec-n">${i + 1}</div><div><div class="sec-t">${esc(x.title)}</div>${x.sub ? `<div class="sec-s">${esc(x.sub)}</div>` : ''}</div></div>
+      <div class="${x.layout === 'meas' ? 'meas' : ''}">${x.qs.filter(q => !q.note).map(qHtml).join('')}</div>${x.qs.filter(q => q.note).map(qHtml).join('')}</section>`).join('')}
+    <div class="savebar no-print"><span class="msg" id="saveMsg">${DIRTY ? 'Ada perubahan belum disimpan' : ''}</span>
+      <button class="btn btn-p" id="btnSave">💾 Simpan Sesi</button></div>`;
+  applySesi();
+  updSesiOut();
+  const body = $('tabBody');
+  body.addEventListener('input', onSesiInput);
+  body.addEventListener('change', onSesiInput);
+  $('btnSave').addEventListener('click', saveSesi);
+  if ($('btnNewSesi')) $('btnNewSesi').addEventListener('click', () => {
+    if (!confirm('Kosongkan form untuk sesi baru? (sesi lama tetap tersimpan)')) return;
+    const d = intakeData(); SA = {};
+    if (d.bb) SA.bb = String(d.bb).replace(/\s*kg$/, ''); if (d.tb) SA.tb = String(d.tb).replace(/\s*cm$/, '');
+    DIRTY = true; renderMain();
+  });
+}
+
+function applySesi() {
+  document.querySelectorAll('#tabBody [data-k]').forEach(el => {
+    const v = SA[el.dataset.k];
+    if (el.type === 'radio') el.checked = v === el.value;
+    else if (el.type === 'checkbox') el.checked = Array.isArray(v) && v.includes(el.value);
+    else el.value = v == null ? '' : v;
+  });
+}
+function onSesiInput(e) {
+  const el = e.target, k = el.dataset && el.dataset.k; if (!k) return;
+  if (e.type === 'input' && (el.type === 'radio' || el.type === 'checkbox')) return;
+  if (el.type === 'radio') SA[k] = el.value;
+  else if (el.type === 'checkbox') { const a = (SA[k] || []).filter(x => x !== el.value); if (el.checked) a.push(el.value); SA[k] = a; }
+  else SA[k] = el.value;
+  DIRTY = true; $('saveMsg').textContent = 'Ada perubahan belum disimpan';
+  updSesiOut();
+}
+
+function sesiCalc() {
+  const bb = num(SA.bb), tb = num(SA.tb), pg = num(SA.pinggang), pp = num(SA.panggul), bf = num(SA.bf);
+  const d = intakeData(), L = d.jk === 'Laki-laki', usia = num(d.usia);
+  const r = {};
+  if (bb && tb) { const m = tb / 100; r.bmi = bb / (m * m); r.bmiKat = r.bmi < 18.5 ? 'Kurang' : r.bmi < 23 ? 'Normal' : r.bmi < 25 ? 'Berisiko' : r.bmi < 30 ? 'Obesitas I' : 'Obesitas II'; }
+  if (pg && pp) r.whr = pg / pp;
+  if (pg && tb) r.whtr = pg / tb;
+  if (bb && bf) { r.bmr = 370 + 21.6 * bb * (1 - bf / 100); r.bmrM = 'Katch-McArdle'; }
+  else if (bb && tb && usia && d.jk) { r.bmr = 10 * bb + 6.25 * tb - 5 * usia + (L ? 5 : -161); r.bmrM = 'Mifflin-St Jeor'; }
+  if (pg && d.jk) r.pgRisk = pg >= (L ? 90 : 80);
+  r.scoff = [1, 2, 3, 4, 5].filter(i => SA['scoff' + i] === 'Ya').length;
+  r.scoffDone = [1, 2, 3, 4, 5].every(i => SA['scoff' + i]);
+  r.phq = [1, 2].reduce((a, i) => a + (SA['phq' + i] ? parseInt(SA['phq' + i], 10) : 0), 0);
+  r.phqDone = [1, 2].every(i => SA['phq' + i]);
+  return r;
+}
+function updSesiOut() {
+  const r = sesiCalc();
+  const d = intakeData();
+  const cmp = (now, before, dd) => before != null && now != null ? ` <small>(intake ${fmt(before, dd)})</small>` : '';
+  if ($('sesiCalc')) $('sesiCalc').innerHTML = `<div class="grid">
+    ${stat('BMI', r.bmi ? fmt(r.bmi) : '–', '', (r.bmiKat || '') + cmp(r.bmi, num(d.bmi), 1))}
+    ${stat('Rasio pinggang–panggul', r.whr ? fmt(r.whr, 2) : '–', '', r.whr ? ((d.jk === 'Laki-laki' ? r.whr >= 0.9 : r.whr >= 0.85) ? 'Berisiko' : 'Baik') : '')}
+    ${stat('Rasio pinggang–tinggi', r.whtr ? fmt(r.whtr, 2) : '–', '', r.whtr ? (r.whtr >= 0.5 ? 'Berisiko' : 'Baik') : '')}
+    ${stat('BMR', r.bmr ? fmt(r.bmr, 0) : '–', 'kkal', r.bmrM || '')}
+    ${stat('Lingkar pinggang', SA.pinggang || '–', 'cm', r.pgRisk == null ? '' : r.pgRisk ? 'Di atas batas Asia' : 'Di bawah batas Asia')}
+  </div>`;
+  if ($('out_scoffScore')) $('out_scoffScore').innerHTML = `<span class="score ${r.scoff >= 2 ? 's-risk' : 's-ok'}">Skor SCOFF: ${r.scoff}/5 ${r.scoffDone ? (r.scoff >= 2 ? '· POSITIF (≥2), pertimbangkan rujukan' : '· negatif') : '· belum lengkap'}</span>`;
+  if ($('out_phqScore')) $('out_phqScore').innerHTML = `<span class="score ${r.phq >= 3 ? 's-risk' : 's-ok'}">Skor PHQ-2: ${r.phq}/6 ${r.phqDone ? (r.phq >= 3 ? '· POSITIF (≥3), sarankan evaluasi lanjut' : '· negatif') : '· belum lengkap'}</span>`;
+}
+
+function sesiAnswer(q) {
+  let v = SA[q.id];
+  if (Array.isArray(v)) v = v.join(', ');
+  if (v == null || String(v).trim() === '') return '';
+  if (q.t === 'num') return `${v} ${q.u}`;
+  return String(v).trim();
+}
+
+async function saveSesi() {
+  const c = ctx();
+  const r = sesiCalc();
+  const data = { nama: clientName() }, raw = [];
+  SESI.filter(s => !s.show || s.show(c)).forEach(s => s.qs.forEach(q => {
+    if (['out', 'guide'].includes(q.t)) return;
+    const v = sesiAnswer(q);
+    data[q.id] = v;
+    if (v) raw.push({ s: s.title, q: strip(q.q), v });
+  }));
+  const flags = [];
+  if (r.scoffDone && r.scoff >= 2) flags.push(`SCOFF positif (${r.scoff}/5): pertimbangkan rujukan gangguan makan`);
+  if (r.phqDone && r.phq >= 3) flags.push(`PHQ-2 positif (${r.phq}/6): sarankan evaluasi kesehatan jiwa`);
+  const t = String(SA.tensi || '').match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
+  if (t && (+t[1] >= 140 || +t[2] >= 90)) flags.push(`Tensi tinggi saat sesi (${t[1]}/${t[2]})`);
+  Object.assign(data, {
+    bmi: r.bmi ? +r.bmi.toFixed(1) : '', whr: r.whr ? +r.whr.toFixed(2) : '', whtr: r.whtr ? +r.whtr.toFixed(2) : '',
+    bmr: r.bmr ? Math.round(r.bmr) : '', bmrMetode: r.bmrM || '',
+    scoffSkor: r.scoffDone ? r.scoff : '', phq2Skor: r.phqDone ? r.phq : '', flags: flags.join(' | ')
+  });
+  if (data.scoffSkor !== '') raw.push({ s: 'Skrining Rujukan', q: 'Skor SCOFF', v: `${r.scoff}/5` });
+  if (data.phq2Skor !== '') raw.push({ s: 'Skrining Rujukan', q: 'Skor PHQ-2', v: `${r.phq}/6` });
+  $('btnSave').disabled = true; $('saveMsg').textContent = 'Menyimpan…';
+  try {
+    const res = await api('saveSession', CUR, { data, raw, state: SA });
+    DIRTY = false;
+    CD = await api('getClientData', CUR);
+    loadClients();
+    $('saveMsg').textContent = 'Tersimpan ✓ ' + fmtDate(res.savedAt);
+  } catch (e) {
+    $('saveMsg').textContent = 'Gagal menyimpan: ' + (e.message || e);
+  } finally { if ($('btnSave')) $('btnSave').disabled = false; }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   REPORT
+   ════════════════════════════════════════════════════════════════════════ */
+function renderReport() {
+  const d = intakeData(), s = lastSession(), sd = (s && s.data) || {};
+  const row = (l, v) => v == null || v === '' ? '' : `<tr><td>${esc(l)}</td><td>${esc(v)}</td></tr>`;
+  const bodyRow = (l, a, b) => `<tr><td>${esc(l)}</td><td>${esc(a || '–')}</td><td>${esc(b || '–')}</td></tr>`;
+  const m = CD.forms.MCTQ && CD.forms.MCTQ.data, p = CD.forms.PSQI && CD.forms.PSQI.data, st = CD.forms.StressTidur && CD.forms.StressTidur.data;
+  $('tabBody').innerHTML = `
+    <div class="no-print" style="margin-bottom:12px"><button class="btn btn-p" onclick="window.print()">🖨️ Cetak / Simpan PDF</button></div>
+    <div class="rep">
+      <div class="rep-h"><small>Laporan Assessment Awal · Synthesis Coaching Lab</small><b>${esc(clientName())}</b>
+        <div>${[d.usia ? d.usia + ' tahun' : '', d.jk, d.pekerjaan, '+' + CUR].filter(Boolean).map(esc).join(' · ')} · Dicetak ${fmtDate(new Date().toISOString())}</div></div>
+      <div class="rep-s"><div class="card-title">Tujuan</div><table class="tbl">
+        ${row('Goal klien', d.goal)}${row('Hambatan (klien)', d.hambatan)}${row('Kesiapan berubah', sd.miSkor || d.kesiapan ? (sd.miSkor || d.kesiapan) + '/10' : '')}
+        ${row('Target 3 bulan', sd.miTarget)}${row('Langkah kecil pertama', sd.miLangkah)}</table></div>
+      <div class="rep-s"><div class="card-title">Flag & Keamanan</div>${flagsHtml()}</div>
+      <div class="rep-s"><div class="card-title">Tubuh</div><table class="tbl"><tr><th></th><th>Mandiri (intake)</th><th>Coach (sesi)</th></tr>
+        ${bodyRow('Berat badan', d.bb, sd.bb)}${bodyRow('Tinggi badan', d.tb, sd.tb)}${bodyRow('Lingkar pinggang', d.pinggang, sd.pinggang)}
+        ${bodyRow('Lingkar perut', d.perut, sd.perut)}${bodyRow('Lingkar panggul', d.panggul, sd.panggul)}
+        ${bodyRow('Body fat', d.bf, sd.bf)}${bodyRow('BMI (Asia)', d.bmi ? `${fmt(num(d.bmi))} (${d.bmiKategori})` : '', sd.bmi ? fmt(num(sd.bmi)) : '')}
+        ${bodyRow('Rasio pinggang–panggul', d.whr ? fmt(num(d.whr), 2) : '', sd.whr ? fmt(num(sd.whr), 2) : '')}
+        ${bodyRow('Rasio pinggang–tinggi', d.whtr ? fmt(num(d.whtr), 2) : '', sd.whtr ? fmt(num(sd.whtr), 2) : '')}
+        ${bodyRow('BMR', d.bmr ? `${d.bmr} kkal (${d.bmrMetode})` : '', sd.bmr ? `${sd.bmr} kkal (${sd.bmrMetode})` : '')}
+        ${bodyRow('Tensi', d.tensi, sd.tensi)}${bodyRow('Detak jantung istirahat', d.rhr, sd.rhr)}
+        ${bodyRow('Lean mass / visceral / grip', '', [sd.lean, sd.visceral, sd.grip].filter(Boolean).join(' / '))}</table></div>
+      <div class="rep-s"><div class="card-title">Tidur & Stres</div>${scoresHtml()}</div>
+      ${s ? `<div class="rep-s"><div class="card-title">Rencana Coach</div><table class="tbl">
+        ${row('Prioritas intervensi', sd.prioritas)}${row('Rencana 2 minggu', sd.rencana)}${row('Tindak lanjut / rujukan', sd.tindakLanjut)}
+        ${row('Skor SCOFF', sd.scoffSkor !== '' && sd.scoffSkor != null ? sd.scoffSkor + '/5' : '')}${row('Skor PHQ-2', sd.phq2Skor !== '' && sd.phq2Skor != null ? sd.phq2Skor + '/6' : '')}
+        ${row('Catatan umum', sd.catatanUmum)}</table></div>` : ''}
+      <div class="rep-s"><div class="card-title">Lampiran A · Jawaban Intake</div>${rawHtml(CD.forms.Intake && CD.forms.Intake.raw, false, ['Flag untuk Coach', 'Sebelum Mulai'])}</div>
+      ${s ? `<div class="rep-s"><div class="card-title">Lampiran B · Catatan Sesi ${fmtDate(s.submittedAt)}</div>${rawHtml(s.raw, false)}</div>` : ''}
+    </div>`;
+  // Saat cetak, buka semua lampiran
+  window.onbeforeprint = () => document.querySelectorAll('.rep details').forEach(x => x.open = true);
+}
+
+window.addEventListener('beforeunload', e => { if (DIRTY) { e.preventDefault(); e.returnValue = ''; } });
+loadClients();
+</script>
+</body>
+</html>
