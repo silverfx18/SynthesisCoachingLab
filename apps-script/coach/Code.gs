@@ -15,6 +15,7 @@
 
 const FORMS = ['Intake', 'MCTQ', 'PSQI', 'StressTidur', 'Reassessment'];
 const AI_SHEET = 'AnalisisAI';
+const MEAS_SHEET = 'Antropometri';
 // Data diri yang bisa dilengkapi/dikoreksi coach (disimpan di tab Klien)
 const PROFILE_FIELDS = ['tglLahir', 'jk', 'pekerjaan', 'domisili', 'email', 'catatanKlien'];
 const SESSION_SHEET = 'Sesi';
@@ -36,7 +37,7 @@ function getClients() {
   const rows = readSheet_(CLIENT_SHEET);
   return rows
     .map(r => {
-      const done = FORMS.concat([SESSION_SHEET]).filter(f => r[f]).reduce((o, f) => { o[f] = iso_(r[f]); return o; }, {});
+      const done = FORMS.concat([SESSION_SHEET, MEAS_SHEET]).filter(f => r[f]).reduce((o, f) => { o[f] = iso_(r[f]); return o; }, {});
       const lastDataAt = Object.keys(done).map(f => done[f]).sort().pop() || '';
       const aiSentAt = iso_(r.aiSentAt);
       return {
@@ -62,6 +63,10 @@ function getClientData(clientId) {
       out.forms[f].count = rows.length;
     }
   });
+  out.measurements = readSheet_(MEAS_SHEET)
+    .filter(r => String(r.clientId) === clientId)
+    .map(toRecord_)
+    .sort((a, b) => String(a.data.tanggalUkur).localeCompare(String(b.data.tanggalUkur)));
   const k = readSheet_(CLIENT_SHEET).filter(r => String(r.clientId) === clientId)[0] || {};
   out.profile = { nama: String(k.nama || '') };
   PROFILE_FIELDS.forEach(f => { out.profile[f] = k['profil_' + f] instanceof Date ? iso_(k['profil_' + f]).slice(0, 10) : String(k['profil_' + f] || ''); });
@@ -102,6 +107,56 @@ function saveSession(clientId, payload) {
     lock.releaseLock();
   }
   return { ok: true, savedAt: iso_(row.submittedAt) };
+}
+
+// Satu baris pengukuran antropometri (diukur coach tiap sesi, atau diisi manual dari data lama).
+function saveMeasurement(clientId, m) {
+  assertCoach_();
+  clientId = checkId_(clientId);
+  m = m || {};
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(m.tanggalUkur || ''))) throw new Error('Tanggal ukur wajib diisi.');
+  const now = new Date();
+  const id = now.getTime().toString(36) + Math.random().toString(36).slice(2, 6);
+  const row = { submittedAt: now, clientId: "'" + clientId, nama: clean_(m.nama), id: "'" + id, tanggalUkur: "'" + m.tanggalUkur };
+  Object.keys(m)
+    .filter(k => /^[A-Za-z][A-Za-z0-9_]{0,39}$/.test(k) && !(k in row))
+    .slice(0, 80)
+    .forEach(k => { row[k] = clean_(m[k]); });
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const ss = openSS_();
+    appendObject_(ss, MEAS_SHEET, row);
+    setClientField_(ss, clientId, 'terakhirAktif', now);
+    setClientField_(ss, clientId, MEAS_SHEET, now);
+  } finally {
+    lock.releaseLock();
+  }
+  return { ok: true, id: id };
+}
+
+// Hapus satu pengukuran (mis. salah input saat mengisi data lama).
+function deleteMeasurement(clientId, id) {
+  assertCoach_();
+  clientId = checkId_(clientId);
+  id = String(id || '');
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const sh = openSS_().getSheetByName(MEAS_SHEET);
+    if (!sh || sh.getLastRow() < 2) return { ok: false };
+    const values = sh.getDataRange().getValues();
+    const h = values[0].map(String);
+    for (let r = values.length - 1; r >= 1; r--) {
+      if (String(values[r][h.indexOf('clientId')]) === clientId && String(values[r][h.indexOf('id')]) === id) {
+        sh.deleteRow(r + 1);
+        return { ok: true };
+      }
+    }
+    return { ok: false };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 // Coach melengkapi / mengoreksi data diri klien.

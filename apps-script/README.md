@@ -82,6 +82,8 @@ Kode Apps Script **tidak** ikut ter-update otomatis dari GitHub. Setiap kali `Co
 
 > Data kesehatan tetap terkirim ke Claude saat kamu paste. Gunakan akun Claude milikmu sendiri dan pastikan ini sesuai dengan persetujuan yang diberikan klien.
 
+**Antropometri (tiap sesi)**: tab **Antropometri** di Console. Isi pengukuran tiap sesi (BB, lingkar, leher, kanan/kiri, BIA, massa otot, visceral, BMR alat, tensi, grip). Otomatis dihitung BMI, rasio pinggang–panggul/tinggi, BF Navy, BF RFM, BMR, dan BB maksimal. Riwayat tampil per tanggal (seperti sheet lama) + Δ + grafik tren. Data lama bisa diisi manual dengan mengubah tanggal ukur; salah input bisa dihapus. Tersimpan di tab `Antropometri`.
+
 **Data Klien**: kalau klien belum mengisi intake atau datanya salah, lengkapi di kartu **Data Klien** (tab Ringkasan). Isian coach dipakai di seluruh Console & prompt Claude; jawaban asli klien tetap tersimpan.
 
 ## Checklist keamanan

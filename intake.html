@@ -544,7 +544,8 @@ function buildReSteps() {
       { id: 'consent', t: 'consent', req: true, q: 'Saya menyetujui data saya (termasuk data kesehatan) dipakai untuk keperluan coaching.' }
     ]},
     { title: 'Kondisi Sekarang', intro: 'Pastikan data di bawah sama dengan yang kamu pakai di assessment awal.', qs: cond },
-    { title: 'Tubuh', intro: 'Ukur dengan cara yang sama seperti di awal supaya bisa dibandingkan.', qs: pick('Tubuh', ['perangkat', 'bb', 'tb', 'infoUkur', 'pinggang', 'perut', 'panggul', 'bf', 'rhr', 'langkah', 'tensi', 'gula', 'calc']) },
+    { title: 'Tubuh', intro: '<strong>Opsional.</strong> Kalau coach mengukur langsung saat sesi, lewati saja bagian ini. Kalau mengukur sendiri, pakai cara yang sama seperti di awal.',
+      qs: pick('Tubuh', ['perangkat', 'bb', 'tb', 'infoUkur', 'pinggang', 'perut', 'panggul', 'bf', 'rhr', 'langkah', 'tensi', 'gula', 'calc']).map(q => Object.assign(q, { req: false })) },
     { title: 'Kebiasaan & Gerak', intro: 'Kebiasaan dan aktivitas fisikmu sekarang.', qs: pick('Kebiasaan & Gerak', ['rokok', 'rokokJml', 'matahari', 'sakit', 'gAkt', 'kerja', 'hariAktif', 'olahraga', 'olahragaJenis', 'olahragaDurasi', 'olahragaIntensitas', 'hambatanGerak']) },
     { title: 'Pola Makan', intro: 'Pola makanmu sekarang.', qs: pick('Pola Makan', ['makanUtama', 'porsiBesar', 'camilan', 'camilanJam', 'jamKonsisten', 'jamTerakhir', 'larut', 'air', 'alkohol', 'frek', 'makanSambil']) },
     { title: 'Pencernaan', intro: 'Kondisi pencernaanmu sekarang.', qs: pick('Pencernaan', ['babFreq', 'bristol', 'lega', 'mengejan', 'gejala']) },

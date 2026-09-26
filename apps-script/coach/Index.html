@@ -112,6 +112,24 @@ textarea.inp{min-height:58px;resize:vertical;line-height:1.5;}
 .modal-box textarea{width:100%;height:320px;font-size:11px;font-family:monospace;border:1.5px solid var(--cream2);border-radius:8px;padding:10px;}
 .ba td.up{color:var(--green);font-weight:700;}
 .ba td.down{color:var(--red);font-weight:700;}
+/* ANTROPOMETRI */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+.mgrid .stat-l{margin-bottom:5px;}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;}
+.chart{border:1px solid var(--cream2);border-radius:8px;padding:10px 12px 6px;background:#fff;}
+.chart-t{font-size:11px;font-weight:700;margin-bottom:4px;}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:10px;color:var(--muted);margin-bottom:2px;}
+.legend i{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:4px;vertical-align:middle;}
+.chart svg{width:100%;height:auto;display:block;}
+.htbl{border-collapse:collapse;font-size:11px;min-width:100%;}
+.htbl th,.htbl td{padding:5px 8px;border-bottom:1px solid var(--cream2);text-align:right;white-space:nowrap;}
+.htbl th:first-child,.htbl td:first-child{text-align:left;position:sticky;left:0;background:#fff;color:var(--muted);}
+.htbl th{font-size:9.5px;color:var(--muted);vertical-align:bottom;}
+.htbl tr.calc td{background:#fbfaf7;}
+.htbl tr.calc td:first-child{background:#fbfaf7;}
+.htbl td.up{color:var(--green);font-weight:700;}
+.htbl td.down{color:var(--red);font-weight:700;}
+.xbtn{border:none;background:none;color:var(--muted);cursor:pointer;font-size:10px;text-decoration:underline;}
 /* REPORT */
 .rep{background:#fff;border:1px solid var(--cream2);border-radius:12px;overflow:hidden;}
 .rep-h{background:var(--dark);color:var(--cream);padding:22px 26px;}
@@ -174,8 +192,8 @@ const num = v => { const n = parseFloat(String(v == null ? '' : v).replace(',', 
 const fmt = (n, d = 1) => n == null || n === '' ? '–' : Number(n).toLocaleString('id-ID', { minimumFractionDigits: d, maximumFractionDigits: d });
 const fmtDate = s => { if (!s) return '–'; const d = new Date(s); return isNaN(d) ? String(s) : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }); };
 const strip = s => String(s).replace(/<[^>]+>/g, '');
-const FORMS = ['Intake', 'MCTQ', 'PSQI', 'StressTidur', 'Reassessment', 'Sesi'];
-const FORM_LABEL = { Intake: 'Intake', MCTQ: 'MCTQ', PSQI: 'PSQI', StressTidur: 'Stres', Reassessment: 'Re-assess', Sesi: 'Sesi' };
+const FORMS = ['Intake', 'MCTQ', 'PSQI', 'StressTidur', 'Reassessment', 'Sesi', 'Antropometri'];
+const FORM_LABEL = { Intake: 'Intake', MCTQ: 'MCTQ', PSQI: 'PSQI', StressTidur: 'Stres', Reassessment: 'Re-assess', Sesi: 'Sesi', Antropometri: 'Ukur' };
 
 function api(fn, ...args) {
   $('loading').style.display = 'block';
@@ -202,16 +220,6 @@ const PHQ_OPTS = ['0 · Tidak sama sekali', '1 · Beberapa hari', '2 · Lebih da
 const PHQ2 = ['Kurang berminat atau tidak menikmati saat melakukan sesuatu', 'Merasa sedih, murung, atau putus asa'];
 
 const SESI = [
-  { id: 'ukur', title: 'Pengukuran Coach', sub: 'Isi yang tersedia. BB/TB terisi dari intake bila kosong.', layout: 'meas', qs: [
-    { id: 'tglUkur', t: 'dt', q: 'Tanggal & jam ukur' },
-    { id: 'bb', t: 'num', q: 'Berat badan', u: 'kg' }, { id: 'tb', t: 'num', q: 'Tinggi badan', u: 'cm' },
-    { id: 'pinggang', t: 'num', q: 'Lingkar pinggang', u: 'cm' }, { id: 'perut', t: 'num', q: 'Lingkar perut', u: 'cm' },
-    { id: 'panggul', t: 'num', q: 'Lingkar panggul', u: 'cm' }, { id: 'dada', t: 'num', q: 'Lingkar dada bawah', u: 'cm' },
-    { id: 'lengan', t: 'num', q: 'Lingkar lengan atas', u: 'cm' }, { id: 'paha', t: 'num', q: 'Lingkar paha', u: 'cm' },
-    { id: 'bf', t: 'num', q: 'Body fat', u: '%' }, { id: 'lean', t: 'num', q: 'Lean mass / otot', u: 'kg' },
-    { id: 'visceral', t: 'num', q: 'Visceral fat', u: 'level' }, { id: 'tensi', t: 'text', q: 'Tensi (sistol/diastol)', ph: '120/80' },
-    { id: 'rhr', t: 'num', q: 'Detak jantung istirahat', u: 'bpm' }, { id: 'grip', t: 'num', q: 'Grip test (terbaik)', u: 'kg' }
-  ]},
   { id: 'hidup', title: 'Hidup Sehari-hari', qs: [
     { id: 'jadwal', t: 'area', q: 'Ceritakan jadwal harian & pekerjaan. Ada kegiatan terjadwal?' },
     { id: 'defSehat', t: 'area', q: 'Apa definisi sehat / bugar menurutmu?' },
@@ -387,13 +395,14 @@ function renderMain() {
       <button class="btn btn-o" id="btnLinks">🔗 Link untuk klien</button>
     </div>
     <div class="tabs no-print">
-      ${[['ringkasan', 'Ringkasan'], ['sesi', 'Form Sesi'], ['ba', 'Before–After'], ['report', 'Report']].map(([k, l]) => `<button class="tab ${TAB === k ? 'active' : ''}" data-tab="${k}">${l}</button>`).join('')}
+      ${[['ringkasan', 'Ringkasan'], ['antro', 'Antropometri'], ['sesi', 'Form Sesi'], ['ba', 'Before–After'], ['report', 'Report']].map(([k, l]) => `<button class="tab ${TAB === k ? 'active' : ''}" data-tab="${k}">${l}</button>`).join('')}
     </div>
     <div id="tabBody"></div>`;
   document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => { TAB = b.dataset.tab; renderMain(); }));
   $('btnClaude').addEventListener('click', copyForClaude);
   $('btnLinks').addEventListener('click', showLinks);
   if (TAB === 'ringkasan') renderRingkasan();
+  else if (TAB === 'antro') renderAntro();
   else if (TAB === 'sesi') renderSesi();
   else if (TAB === 'ba') renderBA();
   else renderReport();
@@ -412,6 +421,8 @@ function allFlags() {
   if (st && st.kategoriStress === 'Tinggi') f.push({ t: `Stres tinggi (skor ${st.skorStress}/40)`, src: 'Stress-Tidur' });
   const re = CD.forms.Reassessment && CD.forms.Reassessment.data;
   if (re) String(re.flags || '').split(' | ').filter(Boolean).forEach(x => f.push({ t: x, src: 'Re-assessment ' + (re.fase || '') }));
+  const lm = (CD.measurements || []).slice(-1)[0];
+  if (lm && lm.data.flags) f.push({ t: lm.data.flags, src: 'Antropometri ' + fmtDate(lm.data.tanggalUkur) });
   const c = CLIENTS.find(x => x.clientId === CUR);
   if (c && c.needsAi) f.push({ t: `🤖 Ada data baru sejak ${c.aiSentAt ? 'terakhir disalin ke Claude (' + fmtDate(c.aiSentAt) + ')' : 'awal'}, belum dianalisis AI`, src: 'Sistem' });
   return f;
@@ -463,7 +474,7 @@ function bodyHtml() {
 }
 
 function renderRingkasan() {
-  const done = FORMS.filter(f => f !== 'Sesi').map(f => `<span class="dot ${CD.forms[f] ? 'on' : ''}" title="${CD.forms[f] ? fmtDate(CD.forms[f].submittedAt) : 'belum'}">${FORM_LABEL[f]}${CD.forms[f] ? ' · ' + fmtDate(CD.forms[f].submittedAt) : ''}</span>`).join(' ');
+  const done = FORMS.filter(f => f !== 'Sesi' && f !== 'Antropometri').map(f => `<span class="dot ${CD.forms[f] ? 'on' : ''}" title="${CD.forms[f] ? fmtDate(CD.forms[f].submittedAt) : 'belum'}">${FORM_LABEL[f]}${CD.forms[f] ? ' · ' + fmtDate(CD.forms[f].submittedAt) : ''}</span>`).join(' ');
   $('tabBody').innerHTML = `
     <div class="card"><div class="card-title">Flag untuk Coach</div>${flagsHtml()}</div>
     ${aiCardHtml()}
@@ -515,8 +526,6 @@ function initSessionState() {
   const s = lastSession();
   SA = s && s.state ? Object.assign({}, s.state) : {};
   const d = intakeData();
-  if (!SA.bb && d.bb) SA.bb = String(d.bb).replace(/\s*kg$/, '');
-  if (!SA.tb && d.tb) SA.tb = String(d.tb).replace(/\s*cm$/, '');
   if (!SA.miSkor && d.kesiapan) SA.miSkor = String(d.kesiapan);
 }
 
@@ -556,7 +565,7 @@ function renderSesi() {
       ${s ? ' <button class="btn btn-o" id="btnNewSesi" style="margin-left:8px;padding:6px 10px">Mulai sesi baru (kosong)</button>' : ''}</div>
     </div>
     <div class="secnav no-print">${secs.map((x, i) => `<a href="#sec_${x.id}">${i + 1}. ${esc(x.title)}</a>`).join('')}</div>
-    <div class="card" id="calcCard"><div class="card-title">Hitungan dari pengukuran coach</div><div id="sesiCalc"></div></div>
+    <p class="stat-s no-print" style="margin-bottom:12px">Semua bagian opsional. Isi yang relevan untuk sesi ini. Pengukuran tubuh ada di tab <b>Antropometri</b>.</p>
     ${secs.map((x, i) => `<section class="sec" id="sec_${x.id}"><div class="sec-h"><div class="sec-n">${i + 1}</div><div><div class="sec-t">${esc(x.title)}</div>${x.sub ? `<div class="sec-s">${esc(x.sub)}</div>` : ''}</div></div>
       <div class="${x.layout === 'meas' ? 'meas' : ''}">${x.qs.filter(q => !q.note).map(qHtml).join('')}</div>${x.qs.filter(q => q.note).map(qHtml).join('')}</section>`).join('')}
     <div class="savebar no-print"><span class="msg" id="saveMsg">${DIRTY ? 'Ada perubahan belum disimpan' : ''}</span>
@@ -569,8 +578,7 @@ function renderSesi() {
   $('btnSave').addEventListener('click', saveSesi);
   if ($('btnNewSesi')) $('btnNewSesi').addEventListener('click', () => {
     if (!confirm('Kosongkan form untuk sesi baru? (sesi lama tetap tersimpan)')) return;
-    const d = intakeData(); SA = {};
-    if (d.bb) SA.bb = String(d.bb).replace(/\s*kg$/, ''); if (d.tb) SA.tb = String(d.tb).replace(/\s*cm$/, '');
+    SA = {};
     DIRTY = true; renderMain();
   });
 }
@@ -594,15 +602,7 @@ function onSesiInput(e) {
 }
 
 function sesiCalc() {
-  const bb = num(SA.bb), tb = num(SA.tb), pg = num(SA.pinggang), pp = num(SA.panggul), bf = num(SA.bf);
-  const d = intakeData(), L = d.jk === 'Laki-laki', usia = num(d.usia);
   const r = {};
-  if (bb && tb) { const m = tb / 100; r.bmi = bb / (m * m); r.bmiKat = r.bmi < 18.5 ? 'Kurang' : r.bmi < 23 ? 'Normal' : r.bmi < 25 ? 'Berisiko' : r.bmi < 30 ? 'Obesitas I' : 'Obesitas II'; }
-  if (pg && pp) r.whr = pg / pp;
-  if (pg && tb) r.whtr = pg / tb;
-  if (bb && bf) { r.bmr = 370 + 21.6 * bb * (1 - bf / 100); r.bmrM = 'Katch-McArdle'; }
-  else if (bb && tb && usia && d.jk) { r.bmr = 10 * bb + 6.25 * tb - 5 * usia + (L ? 5 : -161); r.bmrM = 'Mifflin-St Jeor'; }
-  if (pg && d.jk) r.pgRisk = pg >= (L ? 90 : 80);
   r.scoff = [1, 2, 3, 4, 5].filter(i => SA['scoff' + i] === 'Ya').length;
   r.scoffDone = [1, 2, 3, 4, 5].every(i => SA['scoff' + i]);
   r.phq = [1, 2].reduce((a, i) => a + (SA['phq' + i] ? parseInt(SA['phq' + i], 10) : 0), 0);
@@ -611,15 +611,6 @@ function sesiCalc() {
 }
 function updSesiOut() {
   const r = sesiCalc();
-  const d = intakeData();
-  const cmp = (now, before, dd) => before != null && now != null ? ` <small>(intake ${fmt(before, dd)})</small>` : '';
-  if ($('sesiCalc')) $('sesiCalc').innerHTML = `<div class="grid">
-    ${stat('BMI', r.bmi ? fmt(r.bmi) : '–', '', (r.bmiKat || '') + cmp(r.bmi, num(d.bmi), 1))}
-    ${stat('Rasio pinggang–panggul', r.whr ? fmt(r.whr, 2) : '–', '', r.whr ? ((d.jk === 'Laki-laki' ? r.whr >= 0.9 : r.whr >= 0.85) ? 'Berisiko' : 'Baik') : '')}
-    ${stat('Rasio pinggang–tinggi', r.whtr ? fmt(r.whtr, 2) : '–', '', r.whtr ? (r.whtr >= 0.5 ? 'Berisiko' : 'Baik') : '')}
-    ${stat('BMR', r.bmr ? fmt(r.bmr, 0) : '–', 'kkal', r.bmrM || '')}
-    ${stat('Lingkar pinggang', SA.pinggang || '–', 'cm', r.pgRisk == null ? '' : r.pgRisk ? 'Di atas batas Asia' : 'Di bawah batas Asia')}
-  </div>`;
   if ($('out_scoffScore')) $('out_scoffScore').innerHTML = `<span class="score ${r.scoff >= 2 ? 's-risk' : 's-ok'}">Skor SCOFF: ${r.scoff}/5 ${r.scoffDone ? (r.scoff >= 2 ? '· POSITIF (≥2), pertimbangkan rujukan' : '· negatif') : '· belum lengkap'}</span>`;
   if ($('out_phqScore')) $('out_phqScore').innerHTML = `<span class="score ${r.phq >= 3 ? 's-risk' : 's-ok'}">Skor PHQ-2: ${r.phq}/6 ${r.phqDone ? (r.phq >= 3 ? '· POSITIF (≥3), sarankan evaluasi lanjut' : '· negatif') : '· belum lengkap'}</span>`;
 }
@@ -645,11 +636,7 @@ async function saveSesi() {
   const flags = [];
   if (r.scoffDone && r.scoff >= 2) flags.push(`SCOFF positif (${r.scoff}/5): pertimbangkan rujukan gangguan makan`);
   if (r.phqDone && r.phq >= 3) flags.push(`PHQ-2 positif (${r.phq}/6): sarankan evaluasi kesehatan jiwa`);
-  const t = String(SA.tensi || '').match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
-  if (t && (+t[1] >= 140 || +t[2] >= 90)) flags.push(`Tensi tinggi saat sesi (${t[1]}/${t[2]})`);
   Object.assign(data, {
-    bmi: r.bmi ? +r.bmi.toFixed(1) : '', whr: r.whr ? +r.whr.toFixed(2) : '', whtr: r.whtr ? +r.whtr.toFixed(2) : '',
-    bmr: r.bmr ? Math.round(r.bmr) : '', bmrMetode: r.bmrM || '',
     scoffSkor: r.scoffDone ? r.scoff : '', phq2Skor: r.phqDone ? r.phq : '', flags: flags.join(' | ')
   });
   if (data.scoffSkor !== '') raw.push({ s: 'Skrining Rujukan', q: 'Skor SCOFF', v: `${r.scoff}/5` });
@@ -692,6 +679,8 @@ function buildClaudePrompt() {
   if (CD.forms.Intake) lines.push('', `=== INTAKE (${fmtDate(CD.forms.Intake.submittedAt)}) ===`, rawText(CD.forms.Intake.raw, ['Sebelum Mulai', 'Flag untuk Coach']));
   const tools = [['MCTQ', ['chronotype', 'msfsc', 'sjl', 'sleepDebt', 'sdKerja', 'sdBebas']], ['PSQI', ['skorTotal', 'kategori', 'c1Kualitas', 'c2Latensi', 'c3Durasi', 'c4Efisiensi', 'c5Gangguan', 'c6Obat', 'c7Disfungsi', 'jamTidur', 'jamBangun', 'efisiensiPersen']], ['StressTidur', ['skorStress', 'kategoriStress', 'kendalaStress', 'skorTidur', 'kategoriTidur', 'kendalaTidur']]];
   tools.forEach(([f, keys]) => { if (H[f]) lines.push('', `=== ${f} (semua pengisian, lama → baru) ===`, H[f].map(r => `- ${fmtDate(r.submittedAt)}: ${dataText(r.data, keys)}`).join('\n')); });
+  if ((CD.measurements || []).length) lines.push('', '=== ANTROPOMETRI (diukur coach, lama → baru) ===', CD.measurements.map(r => `- ${measVal(r, 'tanggalUkur')}: ` +
+    MEAS.concat(MEAS_CALC).filter(([k]) => measVal(r, k) != null).map(([k, l, u]) => `${l} ${measVal(r, k)}${u && u !== 'level' ? ' ' + u : ''}`).join(' · ') + (measVal(r, 'catatan') ? ` (catatan: ${measVal(r, 'catatan')})` : '')).join('\n'));
   (H.Reassessment || []).forEach(r => lines.push('', `=== RE-ASSESSMENT ${String(r.data.fase || '').toUpperCase()} (${fmtDate(r.submittedAt)}) ===`, rawText(r.raw, ['Sebelum Mulai', 'Kondisi Sekarang'])));
   const s = lastSession();
   if (s) lines.push('', `=== CATATAN SESI COACH TERAKHIR (${fmtDate(s.submittedAt)}) ===`, rawText(s.raw));
@@ -796,6 +785,173 @@ function showLinks() {
 }
 
 /* ════════════════════════════════════════════════════════════════════════
+   ANTROPOMETRI: diukur coach tiap sesi (wajib), bisa diisi manual untuk data lama
+   ════════════════════════════════════════════════════════════════════════ */
+// [key, label, unit, arah baik (1 naik, -1 turun, 0 netral), tipe]
+const MEAS = [
+  ['bb', 'Berat badan', 'kg', 0], ['tb', 'Tinggi badan', 'cm', 0],
+  ['perut', 'Lingkar perut (sejajar pusar)', 'cm', 0], ['pinggang', 'Lingkar pinggang', 'cm', 0], ['panggul', 'Lingkar panggul', 'cm', 0],
+  ['dada', 'Lingkar dada bawah', 'cm', 0], ['leher', 'Lingkar leher', 'cm', 0],
+  ['lenganKa', 'Lengan atas kanan', 'cm', 0], ['lenganKi', 'Lengan atas kiri', 'cm', 0], ['pahaKa', 'Paha kanan', 'cm', 0], ['pahaKi', 'Paha kiri', 'cm', 0],
+  ['bfBia', 'Body fat BIA (alat)', '%', -1], ['otot', 'Massa otot (BIA)', 'kg', 1], ['visceral', 'Visceral fat (alat)', 'level', -1], ['bmrAlat', 'BMR (alat)', 'kkal', 0],
+  ['tensi', 'Tensi', 'mmHg', null, 'text'], ['rhr', 'Detak jantung istirahat', 'bpm', -1], ['gripKa', 'Grip kanan', 'kg', 1], ['gripKi', 'Grip kiri', 'kg', 1]
+];
+const MEAS_CALC = [
+  ['bmi', 'BMI', '', -1, 1], ['whr', 'Rasio pinggang–panggul', '', -1, 2], ['whtr', 'Rasio pinggang–tinggi', '', -1, 2],
+  ['bfNavy', 'Body fat Navy (rumus)', '%', -1, 1], ['bfRfm', 'Body fat RFM (rumus)', '%', -1, 1],
+  ['bmrHitung', 'BMR hitung', 'kkal', 0, 0], ['bbMaxAsia', 'BB maks. (BMI Asia 22,9)', 'kg', 0, 1], ['bbMaxFat', 'BB maks. (cutoff %fat)', 'kg', 0, 1]
+];
+const log10 = Math.log10;
+
+function calcMeasure(m) {
+  const d = intakeData(), L = d.jk === 'Laki-laki', P = d.jk === 'Perempuan', usia = num(d.usia);
+  const bb = num(m.bb), tb = num(m.tb), pr = num(m.perut), pg = num(m.pinggang), pp = num(m.panggul), lh = num(m.leher), bf = num(m.bfBia);
+  const r = {};
+  if (bb && tb) { r.bmi = bb / Math.pow(tb / 100, 2); r.bbMaxAsia = 22.9 * Math.pow(tb / 100, 2); }
+  if (pg && pp) r.whr = pg / pp;
+  if (pg && tb) r.whtr = pg / tb;
+  // US Navy: pria pakai lingkar perut (sejajar pusar); wanita pinggang + panggul
+  if (L && pr && lh && tb && pr > lh) r.bfNavy = 495 / (1.0324 - 0.19077 * log10(pr - lh) + 0.15456 * log10(tb)) - 450;
+  if (P && pg && pp && lh && tb) r.bfNavy = 495 / (1.29579 - 0.35004 * log10(pg + pp - lh) + 0.22100 * log10(tb)) - 450;
+  // RFM (Woolcott & Bergman 2018): 64/76 − 20 × tinggi/lingkar pinggang
+  const w = pg || pr;
+  if (tb && w && (L || P)) r.bfRfm = (L ? 64 : 76) - 20 * tb / w;
+  if (bb && bf) { r.bmrHitung = 370 + 21.6 * bb * (1 - bf / 100); r.bmrMetode = 'Katch-McArdle'; r.bbMaxFat = bb * (1 - bf / 100) / (1 - (L ? 0.25 : 0.32)); }
+  else if (bb && tb && usia && (L || P)) { r.bmrHitung = 10 * bb + 6.25 * tb - 5 * usia + (L ? 5 : -161); r.bmrMetode = 'Mifflin-St Jeor'; }
+  return r;
+}
+function measVal(rec, k) {
+  const v = rec.data ? rec.data[k] : rec[k];
+  return v === '' || v == null ? null : v;
+}
+
+let MF = {};
+function renderAntro() {
+  const list = CD.measurements || [];
+  const last = list[list.length - 1];
+  const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  if (!MF.tanggalUkur) MF = { tanggalUkur: today, tb: last ? measVal(last, 'tb') || '' : String(intakeData().tb || '').replace(/\s*cm$/, '') };
+  const d = intakeData();
+  $('tabBody').innerHTML = `
+    ${!d.jk || !d.usia ? '<div class="err">Jenis kelamin / usia klien belum ada. BF Navy, RFM & BMR tidak bisa dihitung. Lengkapi di kartu <b>Data Klien</b> (tab Ringkasan).</div>' : ''}
+    <div class="card no-print"><div class="card-title">Tambah Pengukuran</div>
+      <p class="stat-s" style="margin-bottom:10px">Isi yang diukur saja. Untuk data lama, ubah tanggalnya. Lengan/paha/grip: isi kanan & kiri terpisah.</p>
+      <div class="mgrid">
+        <div><div class="stat-l">Tanggal ukur *</div><input class="inp" type="date" data-m="tanggalUkur" max="${today}"></div>
+        ${MEAS.map(([k, l, u, , t]) => `<div><div class="stat-l">${esc(l)}</div><div class="unit" style="max-width:none"><input class="inp" data-m="${k}" ${t === 'text' ? 'placeholder="120/80"' : 'inputmode="decimal"'}><span>${u}</span></div></div>`).join('')}
+      </div>
+      <div style="margin-top:10px"><div class="stat-l">Catatan pengukuran</div><input class="inp" data-m="catatan" maxlength="500" placeholder="mis. diukur sore setelah makan, alat berbeda, dll."></div>
+      <div id="mCalc" style="margin-top:12px"></div>
+      <div style="margin-top:12px"><button class="btn btn-p" id="btnMeas">💾 Simpan Pengukuran</button> <span class="stat-s" id="mMsg"></span></div>
+    </div>
+    <div class="card"><div class="card-title">Tren (${list.length} pengukuran)</div>${list.length ? chartsHtml(list) : '<div class="none-text">Belum ada pengukuran.</div>'}</div>
+    <div class="card"><div class="card-title">Riwayat Pengukuran</div>${list.length ? historyHtml(list) : '<div class="none-text">Belum ada pengukuran.</div>'}</div>`;
+  document.querySelectorAll('[data-m]').forEach(el => { el.value = MF[el.dataset.m] || ''; });
+  updMeasCalc();
+  $('tabBody').addEventListener('input', e => { const k = e.target.dataset && e.target.dataset.m; if (!k) return; MF[k] = e.target.value; updMeasCalc(); });
+  $('btnMeas').addEventListener('click', saveMeas);
+  document.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => {
+    if (!confirm('Hapus pengukuran tanggal ' + b.dataset.tgl + '?')) return;
+    try { await api('deleteMeasurement', CUR, b.dataset.del); CD = await api('getClientData', CUR); renderMain(); }
+    catch (e) { alert('Gagal menghapus: ' + (e.message || e)); }
+  }));
+}
+
+function updMeasCalc() {
+  const r = calcMeasure(MF);
+  const f = (k, dd) => r[k] == null ? '–' : fmt(r[k], dd);
+  $('mCalc').innerHTML = `<div class="grid">
+    ${stat('BMI (Asia)', f('bmi'), '', r.bmi ? (r.bmi < 18.5 ? 'Kurang' : r.bmi < 23 ? 'Normal' : r.bmi < 25 ? 'Berisiko' : r.bmi < 30 ? 'Obesitas I' : 'Obesitas II') : '')}
+    ${stat('Pinggang–panggul', f('whr', 2), '', '')}${stat('Pinggang–tinggi', f('whtr', 2), '', '')}
+    ${stat('BF Navy', f('bfNavy'), '%', 'butuh leher')}${stat('BF RFM', f('bfRfm'), '%', 'dari pinggang & tinggi')}
+    ${stat('BMR hitung', f('bmrHitung', 0), 'kkal', r.bmrMetode || '')}
+  </div>`;
+}
+
+async function saveMeas() {
+  if (!MF.tanggalUkur) { $('mMsg').textContent = 'Tanggal ukur wajib.'; return; }
+  const filled = MEAS.some(([k]) => String(MF[k] || '').trim());
+  if (!filled) { $('mMsg').textContent = 'Belum ada angka yang diisi.'; return; }
+  const bad = MEAS.filter(([k, , , , t]) => t !== 'text' && String(MF[k] || '').trim() && num(MF[k]) == null).map(x => x[1]);
+  if (bad.length) { $('mMsg').textContent = 'Bukan angka: ' + bad.join(', '); return; }
+  const r = calcMeasure(MF);
+  const m = { nama: clientName(), tanggalUkur: MF.tanggalUkur, catatan: MF.catatan || '' };
+  MEAS.forEach(([k, , , , t]) => { const v = String(MF[k] || '').trim(); m[k] = v === '' ? '' : t === 'text' ? v : num(v); });
+  MEAS_CALC.forEach(([k, , , , dd]) => { m[k] = r[k] == null ? '' : +r[k].toFixed(dd); });
+  m.bmrMetode = r.bmrMetode || '';
+  const t = String(m.tensi || '').match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
+  m.flags = t && (+t[1] >= 140 || +t[2] >= 90) ? `Tensi tinggi saat diukur (${t[1]}/${t[2]})` : '';
+  $('btnMeas').disabled = true; $('mMsg').textContent = 'Menyimpan…';
+  try {
+    await api('saveMeasurement', CUR, m);
+    MF = {};
+    CD = await api('getClientData', CUR);
+    await loadClients();
+    renderMain();
+  } catch (e) { $('mMsg').textContent = 'Gagal: ' + (e.message || e); $('btnMeas').disabled = false; }
+}
+
+function historyHtml(list) {
+  const n = list.length;
+  const head = `<tr><th></th>${list.map(r => `<th>${fmtDate(measVal(r, 'tanggalUkur'))}<br><button class="xbtn no-print" data-del="${esc(measVal(r, 'id'))}" data-tgl="${esc(measVal(r, 'tanggalUkur'))}">hapus</button></th>`).join('')}${n > 1 ? '<th>Δ sebelumnya</th><th>Δ total</th>' : ''}</tr>`;
+  const rowsOf = (defs, cls) => defs.map(([k, l, u, dir, extra]) => {
+    const vals = list.map(r => measVal(r, k));
+    if (vals.every(v => v == null)) return '';
+    const dd = typeof extra === 'number' ? extra : 1;
+    const cell = v => v == null ? '' : (typeof v === 'number' || num(v) != null) && extra !== 'text' ? fmt(num(v), dd) : esc(v);
+    const nums = vals.map(v => extra === 'text' ? null : num(v)).filter(v => v != null);
+    const dPrev = n > 1 && extra !== 'text' ? deltaCell(vals[n - 2], vals[n - 1], dir === null ? undefined : dir) : '<td></td>';
+    const dTot = n > 1 && extra !== 'text' && nums.length > 1 ? deltaCell(vals.find(v => num(v) != null), vals[n - 1], dir === null ? undefined : dir) : '<td></td>';
+    return `<tr class="${cls}"><td>${esc(l)}${u ? ` <small>(${u})</small>` : ''}</td>${vals.map(v => `<td>${cell(v)}</td>`).join('')}${n > 1 ? dPrev + dTot : ''}</tr>`;
+  }).join('');
+  const notes = list.some(r => measVal(r, 'catatan')) ? `<tr><td>Catatan</td>${list.map(r => `<td style="white-space:normal;text-align:left;min-width:120px">${esc(measVal(r, 'catatan') || '')}</td>`).join('')}${n > 1 ? '<td></td><td></td>' : ''}</tr>` : '';
+  return `<div style="overflow-x:auto"><table class="htbl ba">${head}${rowsOf(MEAS)}${rowsOf(MEAS_CALC, 'calc')}${notes}</table></div>
+    <p class="stat-s" style="margin-top:8px">Baris berlatar abu = dihitung otomatis. Hijau = membaik, merah = memburuk (hanya untuk angka yang arah baiknya jelas). BF Navy: pria pakai lingkar perut & leher, wanita pinggang + panggul − leher. RFM pakai lingkar pinggang.</p>`;
+}
+
+/* Grafik garis kecil (SVG). Palet divalidasi (CVD-safe) di atas latar putih. */
+const SERIES_COLORS = ['#009E94', '#C2410C', '#6D28D9'];
+function lineChart(title, unit, series, list) {
+  const W = 320, H = 150, pl = 34, pr = 58, pt = 10, pb = 22;
+  const xs = list.map(r => measVal(r, 'tanggalUkur'));
+  const all = series.flatMap(s => s.vals.filter(v => v != null));
+  if (!all.length) return '';
+  let lo = Math.min(...all), hi = Math.max(...all);
+  const pad = (hi - lo) * 0.15 || Math.max(1, Math.abs(hi) * 0.05);
+  lo -= pad; hi += pad;
+  const X = i => pl + (xs.length === 1 ? (W - pl - pr) / 2 : i * (W - pl - pr) / (xs.length - 1));
+  const Y = v => pt + (hi - v) / (hi - lo) * (H - pt - pb);
+  const ticks = [lo + pad, (lo + hi) / 2, hi - pad];
+  const grid = ticks.map(t => `<line x1="${pl}" x2="${W - pr}" y1="${Y(t)}" y2="${Y(t)}" stroke="#ece8e1" stroke-width="1"/><text x="${pl - 4}" y="${Y(t) + 3}" text-anchor="end" font-size="8.5" fill="#6b7d7c">${fmt(t, 1)}</text>`).join('');
+  const xl = [0, xs.length - 1].filter((v, i, a) => a.indexOf(v) === i).map(i => `<text x="${X(i)}" y="${H - 6}" text-anchor="${i === 0 && xs.length > 1 ? 'start' : 'end'}" font-size="8.5" fill="#6b7d7c">${fmtDate(xs[i])}</text>`).join('');
+  const labels = [];
+  const lines = series.map(s => {
+    const pts = s.vals.map((v, i) => v == null ? null : [X(i), Y(v), v, i]).filter(Boolean);
+    if (!pts.length) return '';
+    const path = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join('');
+    const lastP = pts[pts.length - 1];
+    labels.push({ x: lastP[0] + 7, y: lastP[1] + 3, text: `${s.short || s.name} ${fmt(lastP[2], 1)}` });
+    return `<path d="${path}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      ${pts.map(p => `<g><circle cx="${p[0]}" cy="${p[1]}" r="4" fill="${s.color}" stroke="#fff" stroke-width="2"/><circle cx="${p[0]}" cy="${p[1]}" r="10" fill="transparent"><title>${esc(s.name)} · ${fmtDate(xs[p[3]])}: ${fmt(p[2], 1)} ${unit}</title></circle></g>`).join('')}`;
+  }).join('');
+  // Label ujung garis: geser supaya tidak saling tumpuk (jarak minimal 11px)
+  labels.sort((a, b) => a.y - b.y).forEach((l, i, arr) => { if (i && l.y - arr[i - 1].y < 11) l.y = arr[i - 1].y + 11; });
+  const labelSvg = labels.map(l => `<text x="${l.x}" y="${l.y}" font-size="9" fill="#0e181d">${esc(l.text)}</text>`).join('');
+  const legend = series.length > 1 ? `<div class="legend">${series.map(s => `<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join('')}</div>` : '';
+  return `<div class="chart"><div class="chart-t">${esc(title)} <small style="color:var(--muted);font-weight:500">(${unit})</small></div>${legend}
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)}">${grid}${xl}${lines}${labelSvg}</svg></div>`;
+}
+function chartsHtml(list) {
+  const S = (keys) => keys.map(([k, name, short], i) => ({ name, short, color: SERIES_COLORS[i], vals: list.map(r => num(measVal(r, k))) })).filter(s => s.vals.some(v => v != null));
+  const c = [
+    lineChart('Berat badan', 'kg', S([['bb', 'Berat badan', 'BB']]), list),
+    lineChart('Lingkar tubuh', 'cm', S([['perut', 'Perut', 'Perut'], ['pinggang', 'Pinggang', 'Pgg'], ['panggul', 'Panggul', 'Pgl']]), list),
+    lineChart('Body fat', '%', S([['bfBia', 'BIA (alat)', 'BIA'], ['bfNavy', 'Navy', 'Navy'], ['bfRfm', 'RFM', 'RFM']]), list)
+  ].filter(Boolean).join('');
+  return `<div class="charts">${c}</div>${list.length < 2 ? '<p class="stat-s" style="margin-top:6px">Tren mulai terlihat setelah 2 pengukuran atau lebih.</p>' : ''}`;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
    BEFORE–AFTER
    ════════════════════════════════════════════════════════════════════════ */
 const BA_ROWS = [
@@ -837,11 +993,13 @@ function renderBA() {
   }).join('');
   const mctq = (H.MCTQ || []).map(r => `${esc(r.data.chronotype)} · SJL ${esc(r.data.sjl)} <small>(${fmtDate(r.submittedAt)})</small>`).join(' → ');
 
-  const sess = CD.sessions.slice().reverse().filter(s => s.data.bb || s.data.pinggang);
-  const sessTbl = sess.length > 1 ? `<table class="tbl ba"><tr><th></th><th>Sesi pertama ${fmtDate(sess[0].submittedAt)}</th><th>Sesi terakhir ${fmtDate(sess[sess.length - 1].submittedAt)}</th><th>Δ</th></tr>
-    ${[['bb', 'Berat badan'], ['pinggang', 'Lingkar pinggang'], ['panggul', 'Lingkar panggul'], ['bf', 'Body fat', -1], ['lean', 'Lean mass', 1], ['visceral', 'Visceral fat', -1], ['grip', 'Grip', 1], ['rhr', 'Detak jantung istirahat', -1]]
-      .map(([k, l, dir = 0]) => `<tr><td>${l}</td><td>${esc(sess[0].data[k])}</td><td>${esc(sess[sess.length - 1].data[k])}</td>${deltaCell(sess[0].data[k], sess[sess.length - 1].data[k], dir)}</tr>`).join('')}</table>`
-    : '<div class="none-text">Butuh minimal 2 sesi dengan pengukuran coach.</div>';
+  const ml = CD.measurements || [];
+  const pick = ml.length > 1 ? [ml[0], ml[ml.length - 1]] : ml;
+  const sessTbl = ml.length > 1 ? `<table class="tbl ba"><tr><th></th><th>Pertama · ${fmtDate(measVal(pick[0], 'tanggalUkur'))}</th><th>Terakhir · ${fmtDate(measVal(pick[1], 'tanggalUkur'))}</th><th>Δ</th></tr>
+    ${MEAS.concat(MEAS_CALC).filter(([k, , , , t]) => t !== 'text' && (measVal(pick[0], k) != null || measVal(pick[1], k) != null))
+      .map(([k, l, u, dir, dd]) => `<tr><td>${esc(l)}${u ? ` <small>(${u})</small>` : ''}</td><td>${measVal(pick[0], k) == null ? '' : fmt(num(measVal(pick[0], k)), typeof dd === 'number' ? dd : 1)}</td><td>${measVal(pick[1], k) == null ? '' : fmt(num(measVal(pick[1], k)), typeof dd === 'number' ? dd : 1)}</td>${deltaCell(measVal(pick[0], k), measVal(pick[1], k), dir === null ? undefined : dir)}</tr>`).join('')}</table>
+    <div style="margin-top:12px">${chartsHtml(ml)}</div>`
+    : '<div class="none-text">Butuh minimal 2 pengukuran di tab Antropometri.</div>';
 
   const refl = (H.Reassessment || []).map(r => `<details open><summary>Refleksi ${esc(r.data.fase || '')} · ${fmtDate(r.submittedAt)}</summary><div class="ans">${rawGroups(r.raw)['Refleksi'] ? rawGroups(r.raw)['Refleksi'].map(x => `<div class="ans-row"><span>${esc(x.q)}</span><span>${esc(x.v)}</span></div>`).join('') : ''}</div></details>`).join('');
 
@@ -853,13 +1011,25 @@ function renderBA() {
       <p class="stat-s" style="margin-top:8px">Hijau = membaik, merah = memburuk (untuk angka yang arah baiknya jelas). Perubahan berat badan tidak dinilai karena tergantung goal klien.</p></div>
     <div class="card"><div class="card-title">Skor Tidur & Stres (semua pengisian)</div>
       <table class="tbl ba">${scores}<tr><td>MCTQ · chronotype & social jet lag</td><td colspan="2">${mctq || '<span class="none-text">belum diisi</span>'}</td></tr></table></div>
-    <div class="card"><div class="card-title">Pengukuran Coach (sesi pertama vs terakhir)</div>${sessTbl}</div>
+    <div class="card"><div class="card-title">Antropometri Coach (pertama vs terakhir)</div>${sessTbl}</div>
     ${refl ? `<div class="card"><div class="card-title">Refleksi Klien</div>${refl}</div>` : ''}`;
 }
 
 /* ════════════════════════════════════════════════════════════════════════
    REPORT
    ════════════════════════════════════════════════════════════════════════ */
+function reportBody(d) {
+  const ml = CD.measurements || [];
+  const f = ml[0] && ml[0].data, l = ml.length > 1 ? ml[ml.length - 1].data : null;
+  const v = (o, k, dd) => o && o[k] !== '' && o[k] != null ? (num(o[k]) != null && k !== 'tensi' ? fmt(num(o[k]), dd == null ? 1 : dd) : esc(o[k])) : '–';
+  const rows = [['bb', 'Berat badan (kg)'], ['tb', 'Tinggi badan (cm)'], ['perut', 'Lingkar perut (cm)'], ['pinggang', 'Lingkar pinggang (cm)'], ['panggul', 'Lingkar panggul (cm)'],
+    ['bfBia', 'Body fat BIA (%)', 'bf'], ['bfNavy', 'Body fat Navy (%)'], ['bfRfm', 'Body fat RFM (%)'], ['otot', 'Massa otot BIA (kg)'], ['visceral', 'Visceral fat'],
+    ['bmi', 'BMI'], ['whr', 'Rasio pinggang–panggul', null, 2], ['whtr', 'Rasio pinggang–tinggi', null, 2], ['tensi', 'Tensi'], ['gripKa', 'Grip kanan (kg)'], ['gripKi', 'Grip kiri (kg)']];
+  return `<table class="tbl"><tr><th></th><th>Mandiri (intake)</th><th>Coach ${f ? fmtDate(f.tanggalUkur) : ''}</th>${l ? `<th>Coach ${fmtDate(l.tanggalUkur)}</th>` : ''}</tr>
+    ${rows.map(([k, lbl, ik, dd]) => `<tr><td>${lbl}</td><td>${v(d, ik || k, dd)}</td><td>${v(f, k, dd)}</td>${l ? `<td>${v(l, k, dd)}</td>` : ''}</tr>`).join('')}</table>
+    ${ml.length > 1 ? `<div style="margin-top:10px">${chartsHtml(ml)}</div>` : ''}`;
+}
+
 function renderReport() {
   const d = intakeData(), s = lastSession(), sd = (s && s.data) || {};
   const row = (l, v) => v == null || v === '' ? '' : `<tr><td>${esc(l)}</td><td>${esc(v)}</td></tr>`;
@@ -875,15 +1045,7 @@ function renderReport() {
         ${row('Target 3 bulan', sd.miTarget)}${row('Langkah kecil pertama', sd.miLangkah)}</table></div>
       <div class="rep-s"><div class="card-title">Flag & Keamanan</div>${flagsHtml()}</div>
       ${CD.ai.length ? `<div class="rep-s"><div class="card-title">Analisis AI (${fmtDate(CD.ai[0].submittedAt)}) · ditinjau coach</div><div class="ai-text">${mdLite(CD.ai[0].data.analisis)}</div></div>` : ''}
-      <div class="rep-s"><div class="card-title">Tubuh</div><table class="tbl"><tr><th></th><th>Mandiri (intake)</th><th>Coach (sesi)</th></tr>
-        ${bodyRow('Berat badan', d.bb, sd.bb)}${bodyRow('Tinggi badan', d.tb, sd.tb)}${bodyRow('Lingkar pinggang', d.pinggang, sd.pinggang)}
-        ${bodyRow('Lingkar perut', d.perut, sd.perut)}${bodyRow('Lingkar panggul', d.panggul, sd.panggul)}
-        ${bodyRow('Body fat', d.bf, sd.bf)}${bodyRow('BMI (Asia)', d.bmi ? `${fmt(num(d.bmi))} (${d.bmiKategori})` : '', sd.bmi ? fmt(num(sd.bmi)) : '')}
-        ${bodyRow('Rasio pinggang–panggul', d.whr ? fmt(num(d.whr), 2) : '', sd.whr ? fmt(num(sd.whr), 2) : '')}
-        ${bodyRow('Rasio pinggang–tinggi', d.whtr ? fmt(num(d.whtr), 2) : '', sd.whtr ? fmt(num(sd.whtr), 2) : '')}
-        ${bodyRow('BMR', d.bmr ? `${d.bmr} kkal (${d.bmrMetode})` : '', sd.bmr ? `${sd.bmr} kkal (${sd.bmrMetode})` : '')}
-        ${bodyRow('Tensi', d.tensi, sd.tensi)}${bodyRow('Detak jantung istirahat', d.rhr, sd.rhr)}
-        ${bodyRow('Lean mass / visceral / grip', '', [sd.lean, sd.visceral, sd.grip].filter(Boolean).join(' / '))}</table></div>
+      <div class="rep-s"><div class="card-title">Tubuh</div>${reportBody(d)}</div>
       <div class="rep-s"><div class="card-title">Tidur & Stres</div>${scoresHtml()}</div>
       ${s ? `<div class="rep-s"><div class="card-title">Rencana Coach</div><table class="tbl">
         ${row('Prioritas intervensi', sd.prioritas)}${row('Rencana 2 minggu', sd.rencana)}${row('Tindak lanjut / rujukan', sd.tindakLanjut)}
