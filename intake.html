@@ -242,8 +242,8 @@ textarea.inp{min-height:70px;resize:vertical;line-height:1.5;}
       <div class="rc-name" id="rNama"></div>
       <div class="rc-sub" id="rSub"></div>
     </div>
-    <div class="rc-sec">
-      <div class="rc-sec-title">Gambaran Tubuhmu Saat Ini</div>
+    <div class="rc-sec" id="rCalcSec">
+      <div class="rc-sec-title" id="rCalcTitle">Gambaran Tubuhmu Saat Ini</div>
       <div id="rCalc"></div>
     </div>
     <div class="rc-sec" id="rParqSec">
@@ -562,6 +562,8 @@ const ANSWERABLE = q => !['info', 'calc', 'group'].includes(q.t);
 /* ══════════════════════════════════════════════════════════════════════════
    STATE
    ══════════════════════════════════════════════════════════════════════════ */
+// Mode klien (link personal dari coach): analisis tidak ditampilkan, dibahas saat sesi
+const CLIENT = SCL.isClientMode();
 const DRAFT_KEY = RE ? 'scl_re_' + MODE + '_draft' : 'scl_intake_draft';
 let A = {};
 let S = 0;
@@ -757,6 +759,7 @@ function calcHtml(r) {
 }
 
 function updateCalc() {
+  if (CLIENT) { const q = document.getElementById('q_calc'); if (q) q.style.display = 'none'; return; }
   const box = document.getElementById('calcBox');
   if (box) box.innerHTML = calcHtml(calcBody());
 }
@@ -898,7 +901,10 @@ function showResult() {
   document.getElementById('rSub').textContent = [
     r.usia != null ? `Usia ${r.usia} tahun` : '', A.jk, A.wa ? 'WA ' + (SCL.normalizeWA(A.wa) || A.wa) : '', 'Diisi ' + tglFmt
   ].filter(Boolean).join(' · ');
-  document.getElementById('rCalc').innerHTML = calcHtml(r);
+  if (CLIENT) {
+    document.getElementById('rCalcTitle').textContent = 'Terima Kasih';
+    document.getElementById('rCalc').innerHTML = `<div class="notice notice-ok"><b>Jawabanmu sudah diterima ✓</b> Hasil dan analisisnya akan dibahas bersama coach saat sesi, supaya kamu mendapat penjelasan yang utuh dan sesuai kondisimu.</div>`;
+  } else document.getElementById('rCalc').innerHTML = calcHtml(r);
 
   document.getElementById('rParqSec').style.display = RE ? 'none' : '';
   const parqYes = PARQ.some((_, i) => A['parq' + (i + 1)] === 'Ya');

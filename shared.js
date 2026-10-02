@@ -50,6 +50,49 @@
     } catch (e) { /* abaikan */ }
   }
 
+  /* ── Mode klien: analisis disembunyikan, dibahas coach saat sesi ──────────
+     - Link personal dari Console (ada ?wa=) → mode klien aktif & diingat di perangkat ini.
+     - ?hasil=0 → paksa sembunyikan · ?hasil=1 → paksa tampilkan (tidak diingat).
+     - Pengunjung umum (tanpa link personal) tetap melihat hasil analisis. */
+  const MODE_KEY = "scl_mode_klien";
+  function isClientMode() {
+    try {
+      const p = new URLSearchParams(location.search);
+      if (p.get("hasil") === "1") return false;
+      if (p.get("hasil") === "0") return true;
+      if (p.get("wa")) writeLS(MODE_KEY, true);
+    } catch (e) { /* abaikan */ }
+    return readLS(MODE_KEY) === true;
+  }
+
+  // Kartu "terima kasih" + ringkasan jawaban (pengganti hasil analisis di mode klien)
+  function clientThanksHtml(items, extraHtml) {
+    const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const rows = (items || []).filter(x => x && x.v !== "" && x.v != null)
+      .map(x => `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:6px 0;border-bottom:1px dashed #e7e2da;font-size:11.5px;line-height:1.45"><span style="color:#6b7d7c">${esc(x.q)}</span><span style="font-weight:600">${esc(x.v)}</span></div>`).join("");
+    return `<div class="scl-thanks" style="background:#fff;border:1px solid #e7e2da;border-radius:14px;overflow:hidden;font-family:Montserrat,sans-serif;color:#0e181d">
+      <div style="background:#eafaf1;border-bottom:1px solid #e7e2da;padding:20px 24px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#1e6b69;margin-bottom:6px">Synthesis Coaching Lab</div>
+        <div style="font-size:18px;font-weight:800;margin-bottom:6px">Terima kasih, jawabanmu sudah diterima ✓</div>
+        <div style="font-size:12px;line-height:1.7;color:#33433f">Hasil dan analisisnya akan dibahas bersama coach saat sesi, supaya kamu mendapat penjelasan yang utuh dan sesuai kondisimu. Kamu bisa menyimpan salinan jawaban lewat tombol PDF.</div>
+      </div>
+      ${extraHtml || ""}
+      ${rows ? `<div style="padding:16px 24px 20px"><div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#2F9794;margin-bottom:8px">Ringkasan Jawabanmu</div>${rows}</div>` : ""}
+    </div>`;
+  }
+
+  // Sembunyikan kartu hasil asli & tampilkan kartu terima kasih di posisinya (bisa dipanggil berulang)
+  function showClientThanks(resultCardId, items, extraHtml) {
+    const card = document.getElementById(resultCardId);
+    if (!card) return;
+    card.style.display = "none";
+    let box = document.getElementById("sclThanks");
+    if (!box) { box = document.createElement("div"); box.id = "sclThanks"; card.parentNode.insertBefore(box, card.nextSibling); }
+    box.className = card.className.replace(/\bno-print\b/, "");
+    box.style.padding = "0"; box.style.border = "none"; box.style.boxShadow = "none"; box.style.background = "transparent";
+    box.innerHTML = clientThanksHtml(items, extraHtml);
+  }
+
   function hitungUsia(tgl) {
     if (!tgl) return "";
     const t = new Date(), b = new Date(tgl);
@@ -150,5 +193,5 @@
 
   prefillFromURL();
 
-  window.SCL = { normalizeWA, getIdentity, saveIdentity, bindIdentity, hitungUsia, send, toast, readLS, writeLS };
+  window.SCL = { normalizeWA, getIdentity, saveIdentity, bindIdentity, hitungUsia, send, toast, readLS, writeLS, isClientMode, clientThanksHtml, showClientThanks };
 })();

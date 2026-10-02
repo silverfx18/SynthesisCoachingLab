@@ -767,6 +767,20 @@ function hitungMCTQ() {
   SCL.send('MCTQ', payload, { wa: document.getElementById('wa').value, nama: namaInput });
   // ── AKHIR INTEGRASI ──────────────────────────────────────────────────────
 
+  // Mode klien: analisis chronotype dibahas coach saat sesi
+  if (SCL.isClientMode()) {
+    const t = (h, m) => String(document.getElementById(h).value).padStart(2, '0') + ':' + String(document.getElementById(m).value).padStart(2, '0');
+    const sel = id => { const el = document.getElementById(id); return el.options[el.selectedIndex].text; };
+    SCL.showClientThanks('resultCard', [
+      { q: 'Nama', v: namaInput },
+      { q: 'Hari kerja: mulai tidur', v: t('soW_h', 'soW_m') },
+      { q: 'Hari kerja: bangun', v: t('seW_h', 'seW_m') },
+      { q: 'Pakai alarm di hari kerja', v: sel('alarmW') },
+      { q: 'Hari bebas: mulai tidur', v: t('soF_h', 'soF_m') },
+      { q: 'Hari bebas: bangun', v: t('seF_h', 'seF_m') },
+      { q: 'Jumlah hari bebas per minggu', v: sel('freeDays') }
+    ]);
+  }
   document.getElementById('resultSection').style.display = 'block';
   setTimeout(()=> document.getElementById('resultSection').scrollIntoView({behavior:'smooth'}), 100);
 }
@@ -816,6 +830,7 @@ function resetForm() {
 // Jalankan sistem tanggal otomatis pertama kali saat halaman dibuka
 initTanggalOtomatis();
 SCL.bindIdentity({ nama: 'nama', wa: 'wa', tglLahir: 'tglLahir' });
+if (SCL.isClientMode()) document.querySelector('button[onclick="hitungMCTQ()"]').textContent = 'Kirim Jawaban';
 </script>
 </body>
 </html>

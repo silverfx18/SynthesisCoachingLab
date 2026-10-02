@@ -28,6 +28,10 @@
     padding: 0 0 60px 0;
   }
 
+  /* MODE KLIEN: skor & interpretasi dibahas coach saat sesi */
+  body.klien .score-grid, body.klien .total-score-row, body.klien .guide { display: none !important; }
+  body.klien .print-summary-card.show { display: block; }
+
   /* KONTROL EDIT PRINT OUT KHUSUS */
   @media print {
     /* Sembunyikan header, info box, identitas form, komponen soal, dan tombol utama saat dicetak */
@@ -1054,6 +1058,11 @@ function hitungSkor() {
     jamTidur: document.getElementById('q4a').value, jamBangun: document.getElementById('q4b').value,
     latensiMenit: menit, durasiJam: durasi, efisiensiPersen: efisiensiPersen
   }, { wa: document.getElementById('wa').value, nama: nama });
+
+  if (document.body.classList.contains('klien')) {
+    targetInterpretation.innerHTML = '<strong>Terima kasih, jawabanmu sudah diterima ✓</strong><br>Hasil dan analisisnya akan dibahas bersama coach saat sesi, supaya kamu mendapat penjelasan yang utuh dan sesuai kondisimu. Ringkasan jawabanmu ada di bawah dan bisa disimpan lewat tombol Cetak / PDF.';
+    document.getElementById('summaryPrintBlock').classList.add('show');
+  }
 }
 
 // 4. Reset form & event handler initialisasi
@@ -1080,6 +1089,15 @@ document.getElementById('tanggal').valueAsDate = new Date();
   document.getElementById(id).addEventListener('change', updateEfficiencyAlert);
 });
 SCL.bindIdentity({ nama: 'nama', wa: 'wa', usia: 'usia' });
+if (SCL.isClientMode()) {
+  document.body.classList.add('klien');
+  document.querySelector('#scorePanel h3').textContent = 'Status Pengisian';
+  document.querySelector('button[onclick="hitungSkor()"]').textContent = 'Kirim Jawaban';
+  document.getElementById('interpretation').innerHTML = 'Isi seluruh pertanyaan lalu klik <strong>Hitung Skor</strong> untuk mengirim jawabanmu ke coach.';
+  // Jawaban klien tampil di bawah panel ini setelah dikirim
+  const sp = document.getElementById('scorePanel'), sm = document.getElementById('summaryPrintBlock');
+  sp.parentNode.insertBefore(sm, sp.nextSibling);
+}
 </script>
 </body>
 </html>
