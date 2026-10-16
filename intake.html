@@ -562,8 +562,8 @@ const ANSWERABLE = q => !['info', 'calc', 'group'].includes(q.t);
 /* ══════════════════════════════════════════════════════════════════════════
    STATE
    ══════════════════════════════════════════════════════════════════════════ */
-// Mode klien (link personal dari coach): analisis tidak ditampilkan, dibahas saat sesi
-const CLIENT = SCL.isClientMode();
+// Hitungan tubuh (BMI, rasio, BMR) hanya untuk coach (?hasil=1); semua pengisi lain tidak melihatnya
+const HIDE_CALC = !SCL.showFullResult();
 const DRAFT_KEY = RE ? 'scl_re_' + MODE + '_draft' : 'scl_intake_draft';
 let A = {};
 let S = 0;
@@ -759,7 +759,7 @@ function calcHtml(r) {
 }
 
 function updateCalc() {
-  if (CLIENT) { const q = document.getElementById('q_calc'); if (q) q.style.display = 'none'; return; }
+  if (HIDE_CALC) { const q = document.getElementById('q_calc'); if (q) q.style.display = 'none'; return; }
   const box = document.getElementById('calcBox');
   if (box) box.innerHTML = calcHtml(calcBody());
 }
@@ -901,9 +901,9 @@ function showResult() {
   document.getElementById('rSub').textContent = [
     r.usia != null ? `Usia ${r.usia} tahun` : '', A.jk, A.wa ? 'WA ' + (SCL.normalizeWA(A.wa) || A.wa) : '', 'Diisi ' + tglFmt
   ].filter(Boolean).join(' · ');
-  if (CLIENT) {
+  if (HIDE_CALC) {
     document.getElementById('rCalcTitle').textContent = 'Terima Kasih';
-    document.getElementById('rCalc').innerHTML = `<div class="notice notice-ok"><b>Jawabanmu sudah diterima ✓</b> Hasil dan analisisnya akan dibahas bersama coach saat sesi, supaya kamu mendapat penjelasan yang utuh dan sesuai kondisimu.</div>`;
+    document.getElementById('rCalc').innerHTML = `<div class="notice notice-ok"><b>Jawabanmu sudah diterima ✓</b> ${esc(SCL.closingText())}${SCL.consultButtonHtml() ? '<br>' + SCL.consultButtonHtml() : ''}</div>`;
   } else document.getElementById('rCalc').innerHTML = calcHtml(r);
 
   document.getElementById('rParqSec').style.display = RE ? 'none' : '';

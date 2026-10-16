@@ -9,6 +9,10 @@
   // — halaman tetap berfungsi dan hasil tetap bisa di-export PDF.
   const HUB_URL = "https://script.google.com/macros/s/AKfycbzA0Emi9UU9LOjSyMeJjcAzz4rkK27ajq7Om7RPjmasZj65PlSGCBoghh8ox9PJ-w6D/exec";
 
+  // Nomor WhatsApp coach untuk tombol "Konsultasi" di halaman hasil publik (format 62xxx).
+  // Kosongkan kalau tidak ingin menampilkan tombol.
+  const COACH_WA = "";
+
   const ID_KEY = "scl_identity";
 
   // ── Storage aman (bisa gagal di private mode / storage diblokir) ──────────
@@ -50,31 +54,54 @@
     } catch (e) { /* abaikan */ }
   }
 
-  /* ── Mode klien: analisis disembunyikan, dibahas coach saat sesi ──────────
-     - Link personal dari Console (ada ?wa=) → mode klien aktif & diingat di perangkat ini.
-     - ?hasil=0 → paksa sembunyikan · ?hasil=1 → paksa tampilkan (tidak diingat).
-     - Pengunjung umum (tanpa link personal) tetap melihat hasil analisis. */
+  /* ── Tampilan hasil ────────────────────────────────────────────────────────
+     Semua pengisi (klien & publik) hanya melihat HASIL SINGKAT: label + deskripsi.
+     Hasil lengkap (angka, saran, analisis) hanya untuk coach: tambahkan ?hasil=1.
+     Mode klien = dibuka lewat link personal (?wa=), diingat di perangkat ini;
+     dipakai untuk teks penutup ("dibahas saat sesi") dan autofill identitas. */
   const MODE_KEY = "scl_mode_klien";
   function isClientMode() {
-    try {
-      const p = new URLSearchParams(location.search);
-      if (p.get("hasil") === "1") return false;
-      if (p.get("hasil") === "0") return true;
-      if (p.get("wa")) writeLS(MODE_KEY, true);
-    } catch (e) { /* abaikan */ }
+    try { if (new URLSearchParams(location.search).get("wa")) writeLS(MODE_KEY, true); } catch (e) { /* abaikan */ }
     return readLS(MODE_KEY) === true;
   }
+  function showFullResult() {
+    try { return new URLSearchParams(location.search).get("hasil") === "1"; } catch (e) { return false; }
+  }
+  function escH(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
 
-  // Kartu "terima kasih" + ringkasan jawaban (pengganti hasil analisis di mode klien)
+  // Blok "Hasil singkat": judul + deskripsi pendek (tanpa angka & saran)
+  function briefHtml(title, desc) {
+    return `<div style="padding:16px 24px;border-bottom:1px solid #e7e2da">
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#2F9794;margin-bottom:6px">Hasil Singkat</div>
+      <div style="font-size:16px;font-weight:800;margin-bottom:4px;color:#1e6b69">${escH(title)}</div>
+      ${desc ? `<div style="font-size:12px;line-height:1.7;color:#33433f">${escH(desc)}</div>` : ""}
+    </div>`;
+  }
+
+  // Teks penutup: klien → dibahas saat sesi; publik → gambaran awal + ajakan konsultasi
+  function closingText() {
+    return isClientMode()
+      ? "Penjelasan lengkap dan saran yang sesuai kondisimu akan dibahas bersama coach saat sesi."
+      : "Hasil ini hanya gambaran awal, bukan diagnosis. Untuk penjelasan lengkap dan saran yang sesuai kondisimu, konsultasikan dengan coach.";
+  }
+  function consultButtonHtml() {
+    if (isClientMode() || !COACH_WA) return "";
+    const msg = encodeURIComponent("Halo coach, saya baru mengisi assessment di Synthesis Coaching Lab dan ingin konsultasi hasilnya.");
+    return `<a href="https://wa.me/${COACH_WA}?text=${msg}" target="_blank" rel="noopener" style="display:inline-block;margin-top:10px;background:#2F9794;color:#fff;text-decoration:none;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 16px;border-radius:8px">💬 Konsultasi dengan Coach</a>`;
+  }
+
+  // Kartu "terima kasih" + hasil singkat + ringkasan jawaban
   function clientThanksHtml(items, extraHtml) {
-    const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
     const rows = (items || []).filter(x => x && x.v !== "" && x.v != null)
-      .map(x => `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:6px 0;border-bottom:1px dashed #e7e2da;font-size:11.5px;line-height:1.45"><span style="color:#6b7d7c">${esc(x.q)}</span><span style="font-weight:600">${esc(x.v)}</span></div>`).join("");
+      .map(x => `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:6px 0;border-bottom:1px dashed #e7e2da;font-size:11.5px;line-height:1.45"><span style="color:#6b7d7c">${escH(x.q)}</span><span style="font-weight:600">${escH(x.v)}</span></div>`).join("");
     return `<div class="scl-thanks" style="background:#fff;border:1px solid #e7e2da;border-radius:14px;overflow:hidden;font-family:Montserrat,sans-serif;color:#0e181d">
       <div style="background:#eafaf1;border-bottom:1px solid #e7e2da;padding:20px 24px">
         <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#1e6b69;margin-bottom:6px">Synthesis Coaching Lab</div>
         <div style="font-size:18px;font-weight:800;margin-bottom:6px">Terima kasih, jawabanmu sudah diterima ✓</div>
-        <div style="font-size:12px;line-height:1.7;color:#33433f">Hasil dan analisisnya akan dibahas bersama coach saat sesi, supaya kamu mendapat penjelasan yang utuh dan sesuai kondisimu. Kamu bisa menyimpan salinan jawaban lewat tombol PDF.</div>
+        <div style="font-size:12px;line-height:1.7;color:#33433f">${escH(closingText())} Kamu bisa menyimpan salinan jawaban lewat tombol PDF.</div>
+        ${consultButtonHtml()}
       </div>
       ${extraHtml || ""}
       ${rows ? `<div style="padding:16px 24px 20px"><div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#2F9794;margin-bottom:8px">Ringkasan Jawabanmu</div>${rows}</div>` : ""}
@@ -193,5 +220,5 @@
 
   prefillFromURL();
 
-  window.SCL = { normalizeWA, getIdentity, saveIdentity, bindIdentity, hitungUsia, send, toast, readLS, writeLS, isClientMode, clientThanksHtml, showClientThanks };
+  window.SCL = { normalizeWA, getIdentity, saveIdentity, bindIdentity, hitungUsia, send, toast, readLS, writeLS, isClientMode, showFullResult, briefHtml, closingText, consultButtonHtml, clientThanksHtml, showClientThanks };
 })();

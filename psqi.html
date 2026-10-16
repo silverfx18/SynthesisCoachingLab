@@ -1060,7 +1060,9 @@ function hitungSkor() {
   }, { wa: document.getElementById('wa').value, nama: nama });
 
   if (document.body.classList.contains('klien')) {
-    targetInterpretation.innerHTML = '<strong>Terima kasih, jawabanmu sudah diterima ✓</strong><br>Hasil dan analisisnya akan dibahas bersama coach saat sesi, supaya kamu mendapat penjelasan yang utuh dan sesuai kondisimu. Ringkasan jawabanmu ada di bawah dan bisa disimpan lewat tombol Cetak / PDF.';
+    // Label lembut tanpa angka & rekomendasi klinis
+    const singkat = total <= 5 ? 'Kualitas tidurmu tergolong baik.' : total <= 10 ? 'Kualitas tidurmu perlu perhatian.' : 'Kualitas tidurmu perlu perhatian lebih.';
+    targetInterpretation.innerHTML = `<strong>${singkat}</strong><br>${SCL.closingText()} Ringkasan jawabanmu ada di bawah dan bisa disimpan lewat tombol Cetak / PDF.${SCL.consultButtonHtml() ? '<br>' + SCL.consultButtonHtml() : ''}`;
     document.getElementById('summaryPrintBlock').classList.add('show');
   }
 }
@@ -1089,11 +1091,14 @@ document.getElementById('tanggal').valueAsDate = new Date();
   document.getElementById(id).addEventListener('change', updateEfficiencyAlert);
 });
 SCL.bindIdentity({ nama: 'nama', wa: 'wa', usia: 'usia' });
-if (SCL.isClientMode()) {
+// Hasil singkat untuk semua pengisi; skor komponen, total & panduan hanya dengan ?hasil=1 (coach)
+if (!SCL.showFullResult()) {
+  const klien = SCL.isClientMode();
   document.body.classList.add('klien');
-  document.querySelector('#scorePanel h3').textContent = 'Status Pengisian';
-  document.querySelector('button[onclick="hitungSkor()"]').textContent = 'Kirim Jawaban';
-  document.getElementById('interpretation').innerHTML = 'Isi seluruh pertanyaan lalu klik <strong>Hitung Skor</strong> untuk mengirim jawabanmu ke coach.';
+  document.querySelector('#scorePanel h3').textContent = 'Hasil Singkat';
+  const btn = document.querySelector('button[onclick="hitungSkor()"]');
+  if (klien) btn.textContent = 'Kirim Jawaban';
+  document.getElementById('interpretation').innerHTML = `Isi seluruh pertanyaan lalu klik <strong>${btn.textContent}</strong> untuk ${klien ? 'mengirim jawabanmu ke coach' : 'melihat hasil singkat'}.`;
   // Jawaban klien tampil di bawah panel ini setelah dikirim
   const sp = document.getElementById('scorePanel'), sm = document.getElementById('summaryPrintBlock');
   sp.parentNode.insertBefore(sm, sp.nextSibling);

@@ -767,8 +767,9 @@ function hitungMCTQ() {
   SCL.send('MCTQ', payload, { wa: document.getElementById('wa').value, nama: namaInput });
   // ── AKHIR INTEGRASI ──────────────────────────────────────────────────────
 
-  // Mode klien: analisis chronotype dibahas coach saat sesi
-  if (SCL.isClientMode()) {
+  // Hasil singkat untuk semua pengisi; hasil lengkap hanya dengan ?hasil=1 (coach)
+  if (!SCL.showFullResult()) {
+    const hewan = { lion: 'Lion', bear: 'Bear', wolf: 'Wolf' }[cd.animal] || '';
     const t = (h, m) => String(document.getElementById(h).value).padStart(2, '0') + ':' + String(document.getElementById(m).value).padStart(2, '0');
     const sel = id => { const el = document.getElementById(id); return el.options[el.selectedIndex].text; };
     SCL.showClientThanks('resultCard', [
@@ -779,7 +780,7 @@ function hitungMCTQ() {
       { q: 'Hari bebas: mulai tidur', v: t('soF_h', 'soF_m') },
       { q: 'Hari bebas: bangun', v: t('seF_h', 'seF_m') },
       { q: 'Jumlah hari bebas per minggu', v: sel('freeDays') }
-    ]);
+    ], SCL.briefHtml(`Chronotype: ${hewan ? hewan + ' · ' : ''}${cd.name.charAt(0) + cd.name.slice(1).toLowerCase()}`, cd.about));
   }
   document.getElementById('resultSection').style.display = 'block';
   setTimeout(()=> document.getElementById('resultSection').scrollIntoView({behavior:'smooth'}), 100);

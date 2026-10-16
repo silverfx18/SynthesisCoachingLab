@@ -797,15 +797,16 @@ function hitung() {
   SCL.send('StressTidur', payload, { wa: document.getElementById('wa').value, nama: nama })
     .finally(() => kembalikanTombol(btnHitung, originalText));
 
-  // Mode klien: peta kondisi & narasi dibahas coach saat sesi
-  if (SCL.isClientMode()) {
+  // Hasil singkat untuk semua pengisi; peta kondisi, narasi lengkap & kendala hanya dengan ?hasil=1 (coach)
+  if (!SCL.showFullResult()) {
     const items = [{ q: 'Nama', v: nama }];
     document.querySelectorAll('#stressQ .q-item, #tidurQ .q-item').forEach(it => {
       const inp = it.querySelector('input:checked');
       const lbl = inp && inp.parentElement.querySelector('.scale-lbl, .dur-jam');
       items.push({ q: it.querySelector('.q-text').textContent.trim(), v: lbl ? lbl.textContent.replace(/\s+/g, ' ').trim() : '' });
     });
-    SCL.showClientThanks('resultCard', items);
+    const kalimat1 = (data.narasi.match(/^[^.!?]+[.!?]/) || [data.narasi])[0];
+    SCL.showClientThanks('resultCard', items, SCL.briefHtml(data.title, kalimat1));
   }
 
   tampilkanHasilUI();
