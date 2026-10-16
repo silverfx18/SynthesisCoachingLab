@@ -16,6 +16,7 @@
 const FORMS = ['Intake', 'MCTQ', 'PSQI', 'StressTidur', 'Reassessment'];
 const AI_SHEET = 'AnalisisAI';
 const MEAS_SHEET = 'Antropometri';
+const REPORT_SHEET = 'ReportKlien';
 // Data diri yang bisa dilengkapi/dikoreksi coach (disimpan di tab Klien)
 const PROFILE_FIELDS = ['tglLahir', 'jk', 'pekerjaan', 'domisili', 'email', 'catatanKlien'];
 const SESSION_SHEET = 'Sesi';
@@ -67,6 +68,11 @@ function getClientData(clientId) {
     .filter(r => String(r.clientId) === clientId)
     .map(toRecord_)
     .sort((a, b) => String(a.data.tanggalUkur).localeCompare(String(b.data.tanggalUkur)));
+  out.reports = readSheet_(REPORT_SHEET)
+    .filter(r => String(r.clientId) === clientId)
+    .map(toRecord_)
+    .reverse()
+    .slice(0, 5);
   const k = readSheet_(CLIENT_SHEET).filter(r => String(r.clientId) === clientId)[0] || {};
   out.profile = { nama: String(k.nama || '') };
   PROFILE_FIELDS.forEach(f => { out.profile[f] = k['profil_' + f] instanceof Date ? iso_(k['profil_' + f]).slice(0, 10) : String(k['profil_' + f] || ''); });
@@ -133,6 +139,34 @@ function saveMeasurement(clientId, m) {
     lock.releaseLock();
   }
   return { ok: true, id: id };
+}
+
+// Report untuk klien (laporan setelah sesi). Setiap simpan = versi baru; isi lengkap di _state.
+function saveReport(clientId, payload) {
+  assertCoach_();
+  clientId = checkId_(clientId);
+  payload = payload || {};
+  const st = payload.state || {};
+  const json = JSON.stringify(st);
+  if (json.length > MAX_RAW) throw new Error('Report terlalu panjang (maks. ±45.000 karakter).');
+  const now = new Date();
+  const row = {
+    submittedAt: now, clientId: "'" + clientId, nama: clean_(payload.nama),
+    tanggalReport: "'" + String(st.tanggalReport || '').slice(0, 10),
+    ukurTanggal: "'" + String(st.ukurTanggal || '').slice(0, 10),
+    coreProblem: clean_(String(st.coreProblem || '').slice(0, 1000)),
+    _state: "'" + json
+  };
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const ss = openSS_();
+    appendObject_(ss, REPORT_SHEET, row);
+    setClientField_(ss, clientId, 'reportAt', now);
+  } finally {
+    lock.releaseLock();
+  }
+  return { ok: true, savedAt: iso_(now) };
 }
 
 // Hapus satu pengukuran (mis. salah input saat mengisi data lama).

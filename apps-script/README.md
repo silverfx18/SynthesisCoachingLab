@@ -84,6 +84,12 @@ Kode Apps Script **tidak** ikut ter-update otomatis dari GitHub. Setiap kali `Co
 
 **Antropometri (tiap sesi)**: tab **Antropometri** di Console. Isi pengukuran tiap sesi (BB, lingkar, leher, kanan/kiri, BIA, massa otot, visceral, BMR alat, tensi, grip). Otomatis dihitung BMI, rasio pinggang–panggul/tinggi, BF Navy, BF RFM, BMR, dan BB maksimal. Riwayat tampil per tanggal (seperti sheet lama) + Δ + grafik tren. Data lama bisa diisi manual dengan mengubah tanggal ukur; salah input bisa dihapus. Tersimpan di tab `Antropometri`.
 
+**Report Klien (laporan setelah sesi)**: tab **Report Klien**. Strukturnya mengikuti laporan coach: Antropometri (otomatis dari pengukuran yang dipilih + catatan) → Kendala Client (rutinitas, tidur, stres, aktivitas, nutrisi, gut) → Analisa Permasalahan (core problem, goals, saran, langkah praktis) → Suplementasi → opsional → penutup + tanda tangan. Tombol ＋ di kotak Tidur/Stres menyisipkan ringkasan skor MCTQ/PSQI/Stres. Setiap simpan = versi baru (tab `ReportKlien`). **Cetak / PDF**: header "[RAHASIA]" dan footer "BUKAN REKOMENDASI MEDIS" di tiap halaman; flag internal, SCOFF/PHQ-2, dan catatan MI tidak ikut. Tanda tangan default diatur di `COACH_SIGN` (`coach/Index.html`). Tab **Report Internal** tetap untuk catatan coach.
+
+**Batas body fat**: `BF_TARGET` (20% pria / 28% wanita, target coach) dan `BF_OBESITAS` (25% / 35%, definisi obesitas yang lazim di penelitian) di `coach/Index.html`. Referensi jurnal tampil di bawah tabel Antropometri.
+
+**Hasil untuk pengisi**: semua orang (klien & publik) hanya melihat hasil singkat. Hasil lengkap hanya dengan `?hasil=1`. Isi `COACH_WA` di `shared.js` untuk menampilkan tombol "Konsultasi dengan Coach" di halaman publik.
+
 **Data Klien**: kalau klien belum mengisi intake atau datanya salah, lengkapi di kartu **Data Klien** (tab Ringkasan). Isian coach dipakai di seluruh Console & prompt Claude; jawaban asli klien tetap tersimpan.
 
 ## Checklist keamanan

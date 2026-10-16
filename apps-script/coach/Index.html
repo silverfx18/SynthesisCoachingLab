@@ -130,6 +130,37 @@ textarea.inp{min-height:58px;resize:vertical;line-height:1.5;}
 .htbl td.up{color:var(--green);font-weight:700;}
 .htbl td.down{color:var(--red);font-weight:700;}
 .xbtn{border:none;background:none;color:var(--muted);cursor:pointer;font-size:10px;text-decoration:underline;}
+/* REPORT KLIEN */
+.rk-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;}
+.rk-bar select,.rk-bar input{width:auto;}
+.rk-ed .q-l{margin-bottom:6px;}
+.rk-ed textarea.inp{min-height:84px;}
+.rk-chips{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 8px;}
+.rk-chip{border:1px dashed var(--teal);background:#f1faf9;color:var(--teal-dark);font-size:10.5px;font-weight:600;border-radius:14px;padding:4px 9px;cursor:pointer;}
+.rkdoc{background:#fff;border:1px solid var(--cream2);border-radius:10px;padding:28px 34px;font-size:12px;line-height:1.7;color:var(--dark);}
+.rkdoc h1{font-size:19px;font-weight:900;letter-spacing:.5px;margin:10px 0 4px;}
+.rkdoc .client{font-size:13px;margin-bottom:14px;}
+.rkdoc h2{font-size:12.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal-dark);border-bottom:2px solid var(--teal);padding-bottom:3px;margin:20px 0 10px;}
+.rkdoc h3{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin:12px 0 4px;}
+.rkdoc table.rk-antro{border-collapse:collapse;width:100%;max-width:520px;}
+.rk-antro td{padding:3px 6px;border-bottom:1px solid var(--cream2);}
+.rk-antro td:first-child{color:var(--muted);width:58%;}
+.rkdoc .note{font-size:10px;color:var(--muted);font-style:italic;}
+.rkdoc .quote{margin-top:18px;font-style:italic;border-left:3px solid var(--teal);padding-left:10px;}
+.rkdoc .sign{margin-top:18px;}
+.rkdoc ul{margin:2px 0 6px 18px;}
+.rkdoc p{margin:0 0 6px;}
+.rkwrap{width:100%;border-collapse:collapse;}
+.rkwrap>thead td,.rkwrap>tfoot td{padding:0;border:none;}
+.rkwrap .hdr{font-size:9.5px;font-weight:700;letter-spacing:1.5px;color:var(--red);text-transform:uppercase;padding-bottom:8px;}
+.rkwrap .ftr{font-size:9.5px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-align:center;text-transform:uppercase;padding-top:14px;}
+.rkwrap>tbody>tr>td{padding:0;border:none;}
+@media print{
+  body.rk-print .rkdoc{border:none;padding:0;}
+  body.rk-print .head-name,body.rk-print .head-sub,body.rk-print .toolbar{display:none !important;}
+  body.rk-print .rkdoc h2,body.rk-print .rkdoc h3{break-after:avoid;}
+  body.rk-print .rkdoc .chart,body.rk-print .rk-antro{break-inside:avoid;}
+}
 /* REPORT */
 .rep{background:#fff;border:1px solid var(--cream2);border-radius:12px;overflow:hidden;}
 .rep-h{background:var(--dark);color:var(--cream);padding:22px 26px;}
@@ -182,6 +213,20 @@ textarea.inp{min-height:58px;resize:vertical;line-height:1.5;}
 const REFERRAL_CONTACTS = 'Isi daftar kontak rujukan kamu di sini (psikolog, psikiater, dokter umum, dokter spesialis gizi klinik) — edit konstanta REFERRAL_CONTACTS di Index.html.';
 // Alamat website assessment (GitHub Pages), dipakai untuk membuat link personal klien.
 const PUBLIC_BASE_URL = 'https://silverfx18.github.io/SynthesisCoachingLab/';
+// Batas body fat (%) untuk estimasi berat badan maksimal.
+// BF_TARGET = target yang biasa dipakai coach di laporan (bukan dari satu jurnal tertentu, boleh diubah).
+// BF_OBESITAS = definisi obesitas berbasis %BF yang lazim dipakai di penelitian (lihat BF_REFS).
+const COACH_SIGN = 'Felix, S.T., CSN.';
+const RK_QUOTE = 'You are what you digest. Diet itu bukan dengan makan sedikit. Tapi makan sesuai yang tubuh butuhkan dengan tujuan membantu tubuh berfungsi secara optimal mendukung aktifitas harian.';
+const BF_TARGET = { L: 20, P: 28 };
+const BF_OBESITAS = { L: 25, P: 35 };
+const BF_REFS = [
+  ['Gallagher D, dkk. Healthy percentage body fat ranges: an approach for developing guidelines based on body mass index. Am J Clin Nutr. 2000;72(3):694–701.', 'https://doi.org/10.1093/ajcn/72.3.694'],
+  ['Deurenberg P, Deurenberg-Yap M, Guricci S. Asians are different from Caucasians and from each other in their body mass index/body fat per cent relationship. Obes Rev. 2002;3(3):141–6. (Orang Asia, termasuk Indonesia, rata-rata punya %BF 3–5 poin lebih tinggi pada BMI yang sama.)', 'https://doi.org/10.1046/j.1467-789x.2002.00065.x'],
+  ['Pongchaiyakul C, dkk. Association between waist circumference and percentage body fat among rural Thais. J Med Assoc Thai. 2006;89(10):1592–600. (Obesitas: %BF ≥25 pria, ≥35 wanita; DXA.)', 'https://pubmed.ncbi.nlm.nih.gov/17128832/'],
+  ['Fielding RA, dkk. Characterizing sarcopenia and sarcopenic obesity in patients aged 65 years and over (SARA-OBS). BMC Geriatr. 2025;25:590. (Obesitas: %BF >25 pria, >35 wanita.)', 'https://doi.org/10.1186/s12877-025-05895-9']
+];
+const bfRefsHtml = () => `<div class="stat-s" style="margin-top:8px;line-height:1.6"><b>Referensi batas body fat:</b><ol style="margin:4px 0 0 18px">${BF_REFS.map(([t, u]) => `<li>${esc(t)} <a href="${u}" target="_blank" rel="noopener">${esc(u.replace('https://', ''))}</a></li>`).join('')}</ol></div>`;
 
 /* ════════════════════════════════════════════════════════════════════════
    UTIL
@@ -372,6 +417,7 @@ async function openClient(id) {
   try {
     CD = await api('getClientData', id);
     DIRTY = false;
+    RK = null;
     initSessionState();
     renderMain();
   } catch (e) { $('main').innerHTML = `<div class="err">${esc(e.message || e)}</div>`; }
@@ -395,16 +441,18 @@ function renderMain() {
       <button class="btn btn-o" id="btnLinks">🔗 Link untuk klien</button>
     </div>
     <div class="tabs no-print">
-      ${[['ringkasan', 'Ringkasan'], ['antro', 'Antropometri'], ['sesi', 'Form Sesi'], ['ba', 'Before–After'], ['report', 'Report']].map(([k, l]) => `<button class="tab ${TAB === k ? 'active' : ''}" data-tab="${k}">${l}</button>`).join('')}
+      ${[['ringkasan', 'Ringkasan'], ['antro', 'Antropometri'], ['sesi', 'Form Sesi'], ['ba', 'Before–After'], ['rk', 'Report Klien'], ['report', 'Report Internal']].map(([k, l]) => `<button class="tab ${TAB === k ? 'active' : ''}" data-tab="${k}">${l}</button>`).join('')}
     </div>
     <div id="tabBody"></div>`;
   document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => { TAB = b.dataset.tab; renderMain(); }));
+  document.body.classList.toggle('rk-print', TAB === 'rk');
   $('btnClaude').addEventListener('click', copyForClaude);
   $('btnLinks').addEventListener('click', showLinks);
   if (TAB === 'ringkasan') renderRingkasan();
   else if (TAB === 'antro') renderAntro();
   else if (TAB === 'sesi') renderSesi();
   else if (TAB === 'ba') renderBA();
+  else if (TAB === 'rk') renderRK();
   else renderReport();
 }
 
@@ -799,7 +847,7 @@ const MEAS = [
 const MEAS_CALC = [
   ['bmi', 'BMI', '', -1, 1], ['whr', 'Rasio pinggang–panggul', '', -1, 2], ['whtr', 'Rasio pinggang–tinggi', '', -1, 2],
   ['bfNavy', 'Body fat Navy (rumus)', '%', -1, 1], ['bfRfm', 'Body fat RFM (rumus)', '%', -1, 1],
-  ['bmrHitung', 'BMR hitung', 'kkal', 0, 0], ['bbMaxAsia', 'BB maks. (BMI Asia 22,9)', 'kg', 0, 1], ['bbMaxFat', 'BB maks. (cutoff %fat)', 'kg', 0, 1]
+  ['bmrHitung', 'BMR hitung', 'kkal', 0, 0], ['bbMaxAsia', 'BB maks. (BMI Asia 22,9)', 'kg', 0, 1], ['bbMaxFat', `BB maks. (target BF ${BF_TARGET.L}%/${BF_TARGET.P}%)`, 'kg', 0, 1], ['bbObesFat', `BB batas obesitas (BF ${BF_OBESITAS.L}%/${BF_OBESITAS.P}%)`, 'kg', 0, 1]
 ];
 const log10 = Math.log10;
 
@@ -816,7 +864,10 @@ function calcMeasure(m) {
   // RFM (Woolcott & Bergman 2018): 64/76 − 20 × tinggi/lingkar pinggang
   const w = pg || pr;
   if (tb && w && (L || P)) r.bfRfm = (L ? 64 : 76) - 20 * tb / w;
-  if (bb && bf) { r.bmrHitung = 370 + 21.6 * bb * (1 - bf / 100); r.bmrMetode = 'Katch-McArdle'; r.bbMaxFat = bb * (1 - bf / 100) / (1 - (L ? 0.25 : 0.32)); }
+  if (bb && bf) { r.bmrHitung = 370 + 21.6 * bb * (1 - bf / 100); r.bmrMetode = 'Katch-McArdle'; 
+    const ffm = bb * (1 - bf / 100); // massa bebas lemak
+    r.bbMaxFat = ffm / (1 - (L ? BF_TARGET.L : BF_TARGET.P) / 100);
+    r.bbObesFat = ffm / (1 - (L ? BF_OBESITAS.L : BF_OBESITAS.P) / 100); }
   else if (bb && tb && usia && (L || P)) { r.bmrHitung = 10 * bb + 6.25 * tb - 5 * usia + (L ? 5 : -161); r.bmrMetode = 'Mifflin-St Jeor'; }
   return r;
 }
@@ -906,7 +957,7 @@ function historyHtml(list) {
   }).join('');
   const notes = list.some(r => measVal(r, 'catatan')) ? `<tr><td>Catatan</td>${list.map(r => `<td style="white-space:normal;text-align:left;min-width:120px">${esc(measVal(r, 'catatan') || '')}</td>`).join('')}${n > 1 ? '<td></td><td></td>' : ''}</tr>` : '';
   return `<div style="overflow-x:auto"><table class="htbl ba">${head}${rowsOf(MEAS)}${rowsOf(MEAS_CALC, 'calc')}${notes}</table></div>
-    <p class="stat-s" style="margin-top:8px">Baris berlatar abu = dihitung otomatis. Hijau = membaik, merah = memburuk (hanya untuk angka yang arah baiknya jelas). BF Navy: pria pakai lingkar perut & leher, wanita pinggang + panggul − leher. RFM pakai lingkar pinggang.</p>`;
+    <p class="stat-s" style="margin-top:8px">Baris berlatar abu = dihitung otomatis. Hijau = membaik, merah = memburuk (hanya untuk angka yang arah baiknya jelas). BF Navy: pria pakai lingkar perut & leher, wanita pinggang + panggul − leher. RFM pakai lingkar pinggang. BB maks. %BF = massa bebas lemak ÷ (1 − batas BF), memakai BF BIA.</p>${bfRefsHtml()}`;
 }
 
 /* Grafik garis kecil (SVG). Palet divalidasi (CVD-safe) di atas latar putih. */
@@ -949,6 +1000,166 @@ function chartsHtml(list) {
     lineChart('Body fat', '%', S([['bfBia', 'BIA (alat)', 'BIA'], ['bfNavy', 'Navy', 'Navy'], ['bfRfm', 'RFM', 'RFM']]), list)
   ].filter(Boolean).join('');
   return `<div class="charts">${c}</div>${list.length < 2 ? '<p class="stat-s" style="margin-top:6px">Tren mulai terlihat setelah 2 pengukuran atau lebih.</p>' : ''}`;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   REPORT KLIEN (mengikuti struktur laporan coach)
+   ════════════════════════════════════════════════════════════════════════ */
+const RK_FIELDS = [
+  ['Antropometri', [['antroCatatan', 'Catatan antropometri', 'mis. tensi, hand grip, hasil tes darah, kekuatan/kelebihan klien']]],
+  ['Kendala Client', [['rutinitas', 'Rutinitas Harian'], ['tidur', 'Tidur', '', 'tidur'], ['stres', 'Stress Management', '', 'stres'],
+    ['aktivitas', 'Aktivitas Fisik'], ['nutrisi', 'Nutrisi dan Pola Makan'], ['gut', 'Gut Health']]],
+  ['Analisa Permasalahan', [['coreProblem', 'Core Problem'], ['goals', 'Goals', 'satu goal per baris, awali dengan "-"'],
+    ['saran', 'Saran Penyelesaian Masalah Tahap Pertama'], ['langkah', 'Langkah Praktis Awal']]],
+  ['Suplementasi', [['suplementasi', 'Suplementasi', 'awali tiap poin dengan "-"']]],
+  ['Opsional', [['saranPersonal', 'Saran Personal (opsional)'], ['contohPola', 'Contoh Pola Makan / Lampiran (opsional)']]],
+  ['Penutup', [['penutup', 'Kutipan penutup']]]
+];
+let RK = null, RK_DIRTY = false;
+
+function rkInit() {
+  const last = CD.reports && CD.reports[0];
+  const ml = CD.measurements || [];
+  const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  RK = last && last.state ? Object.assign({}, last.state) : { tanggalReport: today, penutup: RK_QUOTE, coach: COACH_SIGN };
+  if (!RK.ukurTanggal && ml.length) RK.ukurTanggal = measVal(ml[ml.length - 1], 'tanggalUkur');
+  RK_DIRTY = false;
+}
+
+// Kalimat referensi dari hasil tool (bisa disisipkan ke kotak Tidur / Stres)
+function rkRefs(kind) {
+  const H = CD.history || {}, out = [];
+  const last = f => (H[f] || []).slice(-1)[0];
+  if (kind === 'tidur') {
+    const m = last('MCTQ'), p = last('PSQI'), st = last('StressTidur');
+    if (m) out.push(`Chronotype ${m.data.chronotype}, social jet lag ${m.data.sjl}, sleep debt ${m.data.sleepDebt}.`);
+    if (p) out.push(`Skor PSQI ${p.data.skorTotal}/21 (${p.data.kategori}).`);
+    if (st) out.push(`Kualitas tidur (Stress-Tidur): ${st.data.kategoriTidur}.`);
+  } else {
+    const st = last('StressTidur');
+    if (st) out.push(`Tingkat stres (PSS-10) ${st.data.skorStress}/40 (${st.data.kategoriStress}).`);
+    const s = (CD.sessions || [])[0];
+    if (s && s.data.tenang) out.push(`Teknik menenangkan diri: ${s.data.tenang}.`);
+  }
+  return out;
+}
+
+function renderRK() {
+  if (!RK) rkInit();
+  const ml = CD.measurements || [];
+  const reps = CD.reports || [];
+  $('tabBody').innerHTML = `
+    <div class="card no-print">
+      <div class="rk-bar">
+        <span class="stat-l" style="margin:0">Tanggal report</span><input class="inp" type="date" data-rk="tanggalReport" style="max-width:160px">
+        <span class="stat-l" style="margin:0 0 0 8px">Data antropometri</span>
+        <select class="inp" data-rk="ukurTanggal" style="max-width:190px">${ml.length ? ml.map(r => measVal(r, 'tanggalUkur')).reverse().map(t => `<option value="${esc(t)}">${fmtDate(t)}</option>`).join('') : '<option value="">(belum ada pengukuran)</option>'}</select>
+        <span class="stat-l" style="margin:0 0 0 8px">Tanda tangan</span><input class="inp" data-rk="coach" style="max-width:180px">
+      </div>
+      <div class="rk-bar">
+        <button class="btn btn-p" id="rkSave">💾 Simpan versi</button>
+        <button class="btn btn-o" id="rkPrint">🖨️ Cetak / PDF</button>
+        ${reps.length ? `<select class="inp" id="rkVer" style="max-width:240px"><option value="">Buka versi tersimpan…</option>${reps.map((r, i) => `<option value="${i}">${fmtDate(r.submittedAt)} · ${esc(String(r.data.coreProblem || '').slice(0, 30))}</option>`).join('')}</select>` : ''}
+        <button class="btn btn-o" id="rkNew" style="padding:8px 10px">Report baru (kosong)</button>
+        <span class="stat-s" id="rkMsg">${reps.length ? 'Versi terakhir: ' + fmtDate(reps[0].submittedAt) : 'Belum ada report tersimpan.'}</span>
+      </div>
+      <p class="stat-s">Tulis dengan bahasa untuk klien. Baris yang diawali "-" jadi poin, <b>**teks**</b> jadi tebal. Flag internal, SCOFF/PHQ-2, dan catatan MI <b>tidak</b> ikut ke report ini.</p>
+    </div>
+    <div class="card no-print rk-ed">
+      ${RK_FIELDS.map(([grp, fields]) => `<div class="card-title" style="margin-top:6px">${esc(grp)}</div>
+        ${fields.map(([k, l, ph, ref]) => {
+          const refs = ref ? rkRefs(ref) : [];
+          return `<div style="margin-bottom:12px"><div class="q-l">${esc(l)}</div>
+            ${refs.length ? `<div class="rk-chips">${refs.map(t => `<button type="button" class="rk-chip" data-ins="${k}" data-txt="${esc(t)}">＋ ${esc(t)}</button>`).join('')}</div>` : ''}
+            <textarea class="inp" data-rk="${k}" placeholder="${esc(ph || '')}"></textarea></div>`;
+        }).join('')}`).join('')}
+    </div>
+    <div class="card-title no-print" style="margin:4px 0 8px">Pratinjau (yang akan dicetak)</div>
+    <div id="rkDoc"></div>`;
+  document.querySelectorAll('[data-rk]').forEach(el => { el.value = RK[el.dataset.rk] || ''; });
+  rkPreview();
+  const body = $('tabBody');
+  body.addEventListener('input', e => { const k = e.target.dataset && e.target.dataset.rk; if (!k) return; RK[k] = e.target.value; RK_DIRTY = true; $('rkMsg').textContent = 'Ada perubahan belum disimpan'; rkPreview(); });
+  body.addEventListener('change', e => { if (e.target.dataset && e.target.dataset.rk === 'ukurTanggal') { RK.ukurTanggal = e.target.value; RK_DIRTY = true; rkPreview(); } });
+  body.addEventListener('click', e => {
+    const b = e.target.closest('.rk-chip'); if (!b) return;
+    const ta = document.querySelector(`[data-rk="${b.dataset.ins}"]`);
+    ta.value = (ta.value ? ta.value.replace(/\s+$/, '') + '\n' : '') + b.dataset.txt;
+    RK[b.dataset.ins] = ta.value; RK_DIRTY = true; rkPreview();
+  });
+  $('rkSave').addEventListener('click', rkSave);
+  $('rkPrint').addEventListener('click', () => window.print());
+  $('rkNew').addEventListener('click', () => {
+    if (!confirm('Mulai report baru yang kosong? Versi tersimpan tetap ada.')) return;
+    const keep = { ukurTanggal: RK.ukurTanggal, coach: RK.coach || COACH_SIGN };
+    RK = Object.assign({ tanggalReport: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10), penutup: RK_QUOTE }, keep);
+    RK_DIRTY = true; renderRK();
+  });
+  if ($('rkVer')) $('rkVer').addEventListener('change', e => {
+    if (e.target.value === '') return;
+    if (RK_DIRTY && !confirm('Perubahan yang belum disimpan akan hilang. Lanjut?')) { e.target.value = ''; return; }
+    RK = Object.assign({}, reps[+e.target.value].state || {}); RK_DIRTY = false; renderRK();
+  });
+}
+
+function rkBmiKat(b) { return b < 18.5 ? 'UNDERWEIGHT' : b < 23 ? 'NORMAL' : b < 25 ? 'OVERWEIGHT' : b < 30 ? 'OBESITAS I' : 'OBESITAS II'; }
+
+function rkAntroHtml() {
+  const ml = CD.measurements || [];
+  const idx = ml.findIndex(r => measVal(r, 'tanggalUkur') === RK.ukurTanggal);
+  if (idx === -1) return '<p class="note">Belum ada data antropometri. Isi dulu di tab Antropometri.</p>';
+  const m = ml[idx].data, d = intakeData(), L = d.jk === 'Laki-laki';
+  const v = (k, u, dd) => m[k] === '' || m[k] == null ? null : (num(m[k]) != null && k !== 'tensi' ? fmt(num(m[k]), dd == null ? 1 : dd) : esc(m[k])) + (u ? ' ' + u : '');
+  const pair = (a, b, u) => (m[a] !== '' && m[a] != null) || (m[b] !== '' && m[b] != null) ? `${m[a] === '' || m[a] == null ? '–' : fmt(num(m[a]), 1)} / ${m[b] === '' || m[b] == null ? '–' : fmt(num(m[b]), 1)} ${u}` : null;
+  const rows = [['Tanggal pengukuran', fmtDate(m.tanggalUkur)], ['Berat badan', v('bb', 'kg')], ['Tinggi badan', v('tb', 'cm')], ['Lingkar perut', v('perut', 'cm')],
+    ['Lingkar pinggang', v('pinggang', 'cm')], ['Lingkar panggul', v('panggul', 'cm')], ['Lingkar dada / dada bawah', v('dada', 'cm')],
+    ['Lingkar lengan atas (ka/ki)', pair('lenganKa', 'lenganKi', 'cm')], ['Lingkar paha (ka/ki)', pair('pahaKa', 'pahaKi', 'cm')],
+    ['Body fat percentage (% lemak)', v('bfBia', '%')], ['Lean mass / otot', v('otot', 'kg')], ['Visceral fat / lemak perut dalam', v('visceral')],
+    ['Tensi', v('tensi', 'mmHg')], ['Grip test (ka/ki)', pair('gripKa', 'gripKi', 'kg')], ['BMI', v('bmi', 'kg/m²')],
+    ['Klasifikasi BMI (Asia)', num(m.bmi) ? rkBmiKat(num(m.bmi)) : null]].filter(r => r[1]);
+  const est = [];
+  if (num(m.bbMaxAsia)) est.push(`BMI normal Asia: 22,9. Estimasi berat badan maksimal di BMI normal: <b>${fmt(num(m.bbMaxAsia), 1)} kg</b>.`);
+  if (num(m.bbMaxFat)) est.push(`Estimasi berat badan dengan body fat ${L ? 'pria' : 'wanita'} di ${L ? BF_TARGET.L : BF_TARGET.P}% maksimal: <b>${fmt(num(m.bbMaxFat), 1)} kg</b>.`);
+  const trend = idx > 0 ? `<h3>Perkembangan</h3>${chartsHtml(ml.slice(0, idx + 1))}` : '';
+  return `<table class="rk-antro">${rows.map(([a, b]) => `<tr><td>${a}</td><td><b>${b}</b></td></tr>`).join('')}</table>
+    ${est.length ? `<p style="margin-top:8px">${est.join('<br>')}</p>` : ''}
+    ${RK.antroCatatan ? `<div style="margin-top:6px">${mdLite(RK.antroCatatan)}</div>` : ''}
+    ${trend}
+    <p class="note" style="margin-top:6px">Hasil hitung hanyalah gambaran, bukan untuk dijadikan referensi mutlak.</p>`;
+}
+
+function rkPreview() {
+  const sec = (title, inner) => inner ? `<h2>${title}</h2>${inner}` : '';
+  const sub = (title, k) => RK[k] ? `<h3>${title}</h3>${mdLite(RK[k])}` : '';
+  const kendala = ['rutinitas', 'tidur', 'stres', 'aktivitas', 'nutrisi', 'gut'].map((k, i) => sub(['Rutinitas Harian', 'Tidur', 'Stress Management', 'Aktivitas Fisik', 'Nutrisi dan Pola Makan', 'Gut Health'][i], k)).join('');
+  const analisa = sub('Core Problem', 'coreProblem') + sub('Goals', 'goals') + sub('Saran Penyelesaian Masalah Tahap Pertama', 'saran') + sub('Langkah Praktis Awal', 'langkah');
+  $('rkDoc').innerHTML = `<div class="rkdoc"><table class="rkwrap">
+    <thead><tr><td><div class="hdr">[Rahasia] Jangan disebarluaskan</div></td></tr></thead>
+    <tfoot><tr><td><div class="ftr">Bukan rekomendasi medis</div></td></tr></tfoot>
+    <tbody><tr><td>
+    <h1>HASIL ASSESSMENT NUTRISI DAN POLA HIDUP SEHAT</h1>
+    <div class="client">Client: <b>${esc(clientName())}</b>${RK.tanggalReport ? ` · ${fmtDate(RK.tanggalReport)}` : ''}</div>
+    ${sec('Antropometri', rkAntroHtml())}
+    ${sec('Kendala Client', kendala)}
+    ${sec('Analisa Permasalahan', analisa)}
+    ${sec('Suplementasi', RK.suplementasi ? mdLite(RK.suplementasi) : '')}
+    ${RK.saranPersonal ? `<h2>Saran Personal</h2>${mdLite(RK.saranPersonal)}` : ''}
+    ${RK.contohPola ? `<h2>Contoh Pola Makan</h2>${mdLite(RK.contohPola)}` : ''}
+    ${RK.penutup ? `<div class="quote">${mdLite(RK.penutup)}</div>` : ''}
+    <div class="sign">Salam Hangat,<br><br><b>${esc(RK.coach || COACH_SIGN)}</b></div>
+    </td></tr></tbody></table>
+  </div>`;
+}
+
+async function rkSave() {
+  $('rkSave').disabled = true; $('rkMsg').textContent = 'Menyimpan…';
+  try {
+    const r = await api('saveReport', CUR, { nama: clientName(), state: RK });
+    CD = await api('getClientData', CUR);
+    RK_DIRTY = false;
+    renderRK();
+    $('rkMsg').textContent = 'Tersimpan ✓ ' + fmtDate(r.savedAt);
+  } catch (e) { $('rkMsg').textContent = 'Gagal: ' + (e.message || e); $('rkSave').disabled = false; }
 }
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -1058,7 +1269,7 @@ function renderReport() {
   window.onbeforeprint = () => document.querySelectorAll('.rep details').forEach(x => x.open = true);
 }
 
-window.addEventListener('beforeunload', e => { if (DIRTY) { e.preventDefault(); e.returnValue = ''; } });
+window.addEventListener('beforeunload', e => { if (DIRTY || RK_DIRTY) { e.preventDefault(); e.returnValue = ''; } });
 loadClients();
 </script>
 </body>
