@@ -211,6 +211,18 @@
      form : 'Intake' | 'MCTQ' | 'PSQI' | 'StressTidur'
      data : objek datar {kolom: nilai}
      opts : { wa, nama, raw: [{s, q, v}] }  → raw = jawaban berlabel untuk Coach Console */
+  /* Penanda acara (mis. corporate training): ?event=nama-acara di link.
+     Diingat selama tab terbuka (sessionStorage), jadi ikut terbawa saat pindah dari quick.html ke tool. */
+  const EVENT_KEY = "scl_event";
+  function currentEvent() {
+    try {
+      const q = new URLSearchParams(location.search).get("event");
+      if (q) sessionStorage.setItem(EVENT_KEY, q);
+      return String(sessionStorage.getItem(EVENT_KEY) || "").replace(/[^\w\s.-]/g, "").trim().slice(0, 60);
+    } catch (e) { return ""; }
+  }
+  currentEvent();
+
   async function send(form, data, opts) {
     opts = opts || {};
     const clientId = normalizeWA(opts.wa || getIdentity().wa);
@@ -219,7 +231,7 @@
       clientId: clientId,
       submittedAt: new Date().toISOString(),
       hp: "", // honeypot: harus kosong
-      data: Object.assign({ nama: opts.nama || getIdentity().nama || "" }, data),
+      data: Object.assign({ nama: opts.nama || getIdentity().nama || "" }, currentEvent() ? { event: currentEvent() } : {}, data),
       raw: opts.raw || null
     };
 

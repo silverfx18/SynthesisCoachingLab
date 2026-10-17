@@ -184,7 +184,11 @@ body {
   color: var(--muted);
   border-top: 1px solid rgba(255,255,255,0.05);
 }
+.footer { position: relative; }
 .footer p strong { color: var(--cream); }
+/* Tautan kecil & redup: Quick Tools dibagikan langsung oleh coach (mis. saat training) */
+.quick-link { position: absolute; right: 14px; bottom: 8px; font-size: 10px; color: rgba(255,255,255,0.28); text-decoration: none; }
+.quick-link:hover { color: var(--teal-light); }
 
 @media (max-width: 640px) {
   .header { padding: 40px 20px; }
@@ -210,7 +214,7 @@ body {
     <div class="hub-card">
       <div class="card-banner">
         <div class="card-icon">📋</div>
-        <h2>1 · Assessment Awal Klien</h2>
+        <h2>1 · Assessment Awal</h2>
       </div>
       <div class="card-body">
         <p>Mulai dari sini. Kenalan dengan coach lewat data diri, riwayat kesehatan, ukuran tubuh, kebiasaan, pola makan, pencernaan, serta tidur & stres. Jawaban tersimpan otomatis, bisa dilanjutkan kapan saja.</p>
@@ -258,15 +262,15 @@ body {
     <div class="hub-card">
       <div class="card-banner">
         <div class="card-icon">🧠</div>
-        <h2>4 · Assessment Stress & Kualitas Tidur</h2>
+        <h2>4 · Assessment Stres</h2>
       </div>
       <div class="card-body">
-        <p>Petakan hubungan timbal balik antara tingkat tekanan psikologis (perceived stress) dengan restorasi tidur Anda. Menampilkan visualisasi matriks 9-kotak Peta Kondisi untuk intervensi praktis.</p>
+        <p>Ukur seberapa besar tekanan yang kamu rasakan dalam 1 bulan terakhir dengan Perceived Stress Scale (PSS-10), kuesioner stres yang paling banyak dipakai di penelitian.</p>
         <div class="card-meta">
-          <div class="meta-item">Metode: <strong>Simple PSS dan PSQI</strong></div>
-          <div class="meta-item">Waktu: <strong>~10 Menit</strong></div>
+          <div class="meta-item">Metode: <strong>PSS-10</strong></div>
+          <div class="meta-item">Waktu: <strong>~3 Menit</strong></div>
         </div>
-        <a href="stress-tidur.html" class="btn-launch" target="_blank">Buka Assessment</a>
+        <a href="stress-tidur.html?versi=stres" class="btn-launch" target="_blank">Buka Assessment</a>
       </div>
     </div>
 
@@ -275,7 +279,8 @@ body {
 
 <!-- FOOTER -->
 <div class="footer">
-  <p>&copy; 2026 <strong>Synthesis Coaching Lab</strong> &middot; Dirancang untuk Pendekatan Restoratif dan Wellness Berbasis Data ilmiah.</p>
+  <p>&copy; 2026 <strong>Synthesis Coaching Lab</strong> &middot; Coaching nutrisi, tidur &amp; gaya hidup sehat.</p>
+  <a class="quick-link" href="quick.html">Quick Tools ›</a>
 </div>
 
 <script src="shared.js"></script>
