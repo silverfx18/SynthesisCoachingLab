@@ -780,7 +780,7 @@ function hitungMCTQ() {
       { q: 'Hari bebas: mulai tidur', v: t('soF_h', 'soF_m') },
       { q: 'Hari bebas: bangun', v: t('seF_h', 'seF_m') },
       { q: 'Jumlah hari bebas per minggu', v: sel('freeDays') }
-    ], SCL.briefHtml(`Chronotype: ${hewan ? hewan + ' · ' : ''}${cd.name.charAt(0) + cd.name.slice(1).toLowerCase()}`, cd.about));
+    ], SCL.briefHtml(`Chronotype: ${hewan ? hewan + ' · ' : ''}${cd.name.charAt(0) + cd.name.slice(1).toLowerCase()}`, cd.about, animals[cd.animal]));
   }
   document.getElementById('resultSection').style.display = 'block';
   setTimeout(()=> document.getElementById('resultSection').scrollIntoView({behavior:'smooth'}), 100);

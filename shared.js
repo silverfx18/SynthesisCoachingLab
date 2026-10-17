@@ -72,11 +72,14 @@
   }
 
   // Blok "Hasil singkat": judul + deskripsi pendek (tanpa angka & saran)
-  function briefHtml(title, desc) {
-    return `<div style="padding:16px 24px;border-bottom:1px solid #e7e2da">
-      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#2F9794;margin-bottom:6px">Hasil Singkat</div>
-      <div style="font-size:16px;font-weight:800;margin-bottom:4px;color:#1e6b69">${escH(title)}</div>
-      ${desc ? `<div style="font-size:12px;line-height:1.7;color:#33433f">${escH(desc)}</div>` : ""}
+  function briefHtml(title, desc, img) {
+    return `<div style="padding:16px 24px;border-bottom:1px solid #e7e2da;display:flex;gap:16px;align-items:center">
+      ${img ? `<img src="${escH(img)}" alt="${escH(title)}" style="width:96px;height:96px;object-fit:contain;flex-shrink:0">` : ""}
+      <div style="min-width:0">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#2F9794;margin-bottom:6px">Hasil Singkat</div>
+        <div style="font-size:16px;font-weight:800;margin-bottom:4px;color:#1e6b69">${escH(title)}</div>
+        ${desc ? `<div style="font-size:12px;line-height:1.7;color:#33433f">${escH(desc)}</div>` : ""}
+      </div>
     </div>`;
   }
 
