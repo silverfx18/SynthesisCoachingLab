@@ -27,8 +27,8 @@ button,input,textarea,select{font-family:inherit;}
 .cl.active{border-color:var(--teal);background:#f1faf9;}
 .cl b{display:block;font-size:12.5px;}
 .cl small{font-size:10px;color:var(--muted);}
-.dots{display:flex;gap:3px;margin-top:5px;}
-.dot{font-size:8.5px;font-weight:700;padding:1px 5px;border-radius:8px;background:var(--cream);color:var(--muted);}
+.dots{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px;}
+.dot{font-size:8.5px;font-weight:700;padding:1px 5px;border-radius:8px;background:var(--cream);color:var(--muted);white-space:nowrap;}
 .dot.on{background:var(--teal);color:#fff;}
 .main{padding:18px 24px 90px;min-width:0;}
 .empty{color:var(--muted);text-align:center;padding:60px 20px;font-size:13px;line-height:1.7;}
@@ -51,6 +51,16 @@ button,input,textarea,select{font-family:inherit;}
 .stat-v small{font-size:10px;color:var(--muted);font-weight:600;}
 .stat-s{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.4;}
 .none-text{color:var(--muted);font-size:12px;}
+.full-tool{padding:12px 0;border-bottom:1px dashed var(--cream2);font-size:12px;line-height:1.6;}
+.full-tool:last-of-type{border-bottom:none;}
+.full-tool h4{font-size:12px;font-weight:800;margin:0 0 6px;}
+.full-tool p{margin:4px 0 8px;}
+.full-tool ul{margin:4px 0 0 18px;padding:0;}
+.full-head{font-size:14px;font-weight:700;color:var(--teal);}
+.peta{display:grid;grid-template-columns:auto repeat(3,1fr);gap:3px;max-width:340px;margin:10px 0 4px;font-size:10px;}
+.peta-h{color:var(--muted);font-weight:600;text-align:center;align-self:center;padding:2px 4px;}
+.peta-c{height:26px;border-radius:4px;background:var(--cream2);display:flex;align-items:center;justify-content:center;font-size:14px;}
+.peta-c.on{background:var(--teal);color:#fff;}
 details{border:1px solid var(--cream2);border-radius:8px;margin-bottom:8px;background:#fff;}
 summary{padding:10px 14px;font-weight:700;font-size:12px;cursor:pointer;color:var(--teal-dark);}
 .ans{padding:0 14px 10px;}
@@ -466,7 +476,7 @@ function allFlags() {
   const p = CD.forms.PSQI && CD.forms.PSQI.data;
   if (p && num(p.skorTotal) > 10) f.push({ t: `PSQI ${p.skorTotal}/21 (gangguan tidur serius): pertimbangkan rujukan`, src: 'PSQI' });
   const st = CD.forms.StressTidur && CD.forms.StressTidur.data;
-  if (st && st.kategoriStress === 'Tinggi') f.push({ t: `Stres tinggi (skor ${st.skorStress}/40)`, src: 'Stress-Tidur' });
+  if (st && stresKategori(st) === 'Tinggi') f.push({ t: `Stres tinggi (skor ${st.skorStress}/40)`, src: 'Stres' });
   const re = CD.forms.Reassessment && CD.forms.Reassessment.data;
   if (re) String(re.flags || '').split(' | ').filter(Boolean).forEach(x => f.push({ t: x, src: 'Re-assessment ' + (re.fase || '') }));
   const lm = (CD.measurements || []).slice(-1)[0];
@@ -497,15 +507,116 @@ function rawHtml(raw, openFirst, skip) {
     <div class="ans">${g[s].map(x => `<div class="ans-row"><span>${esc(x.q)}</span><span>${esc(x.v)}</span></div>`).join('')}</div></details>`).join('');
 }
 
+// ── Hasil lengkap tools ─────────────────────────────────────────────────────
+// Teks di bawah SALINAN dari halaman tool (chronoData & SJL di mctq.html, interpretasi di psqi.html,
+// interpretasi & batas kategori di stress-tidur.html). Kalau teks di tool diubah, ubah juga di sini.
+const CHRONO = {
+  'EXTREMELY EARLY': { hewan: 'Lion', sub: 'Extreme Morningness', about: 'Kamu berada di area singa paling awal. Titik tengah tidurmu jatuh sebelum tengah malam, sehingga ritme biologismu sangat pagi dan rasa kantuk biasanya datang lebih cepat dari jadwal sosial umum.', tidur: '19:30–21:00', fokus: '07:00–11:00', olahraga: '06:00–08:00' },
+  'EARLY': { hewan: 'Lion', sub: 'Morningness', about: 'Kamu berada di area singa. Chronotype kamu condong pagi, biasanya lebih nyaman memulai aktivitas lebih awal dan performa terbaik cenderung muncul pada pagi hingga menjelang siang.', tidur: '21:00–22:30', fokus: '08:00–13:00', olahraga: '07:00–10:00' },
+  'EARLY INTERMEDIATE': { hewan: 'Bear', sub: 'Slight Morningness', about: 'Ritme biologismu sedikit condong pagi, tetapi masih dekat dengan rentang intermediate. Kamu umumnya cukup adaptif, dengan performa yang mulai stabil dari pagi menuju pertengahan hari.', tidur: '22:00–23:00', fokus: '09:00–13:00', olahraga: '08:00–11:00' },
+  'INTERMEDIATE': { hewan: 'Bear', sub: 'Intermediate', about: 'Ritme biologismu berada di area tengah spektrum chronotype. Kamu cenderung paling mudah menyesuaikan diri dengan jadwal sosial umum, terutama jika jam tidur dan bangun konsisten.', tidur: '23:00–00:00', fokus: '10:00–14:00', olahraga: '10:00–12:00' },
+  'LATE INTERMEDIATE': { hewan: 'Bear', sub: 'Slight Eveningness', about: 'Chronotype kamu sedikit condong malam. Energi terbaik sering muncul lebih lambat dibanding jadwal pagi standar, tetapi kamu masih berada dekat area tengah spektrum.', tidur: '00:00–01:00', fokus: '11:00–16:00', olahraga: '15:00–18:00' },
+  'LATE': { hewan: 'Wolf', sub: 'Eveningness', about: 'Kamu mulai masuk area wolf. Jam biologismu condong malam, sehingga kamu mungkin butuh waktu lebih lama untuk aktif penuh di pagi hari, sementara fokus sering lebih kuat pada sore hingga malam.', tidur: '01:00–02:00', fokus: '13:00–18:00', olahraga: '17:00–20:00' },
+  'EXTREMELY LATE': { hewan: 'Wolf', sub: 'Extreme Eveningness', about: 'Kamu berada di ujung paling malam spektrum chronotype. Ritme biologismu jauh lebih lambat dari jadwal sosial umum, sehingga strategi penyesuaian jadwal dan paparan cahaya perlu dibuat bertahap.', tidur: '02:30–04:00', fokus: '15:00–20:00', olahraga: '18:00–21:00' }
+};
+const SJL_TXT = [
+  [1, 'Rendah', 'Seperti tetap di kota yang sama setiap hari, tidak ada jet lag.', 'Jam biologis dan jadwal sosialmu selaras. Kondisi ideal, tubuhmu tidak perlu "menyesuaikan diri" setiap awal minggu.'],
+  [2, 'Sedang', 'Ibarat pindah timezone WIB → WITA setiap Senin, balik lagi setiap Jumat.', 'Ada misalignment antara jam biologis dan jadwal sosial. Ini bisa mempengaruhi metabolisme, mood, dan energi awal minggu.'],
+  [3, 'Tinggi', 'Ibarat pindah timezone WIB → WIT (Jakarta → Jayapura) setiap Senin pagi.', 'Social jet lag signifikan. Riset menunjukkan SJL >2 jam berkorelasi dengan peningkatan risiko metabolik, mood tidak stabil, dan penurunan performa kognitif.'],
+  [Infinity, 'Sangat tinggi', 'Ibarat terbang Jakarta → Tokyo setiap Senin pagi, balik setiap Jumat.', 'Social jet lag ekstrem. Level misalignment yang sangat serius. Perlu strategi penyesuaian bertahap.']
+];
+// Teks durasi dari mctq (durFmt): "2 jam", "1j 30m", "0 jam (natural)" → jam desimal
+function parseDur(t) {
+  const s = String(t || ''), h = s.match(/(\d+)\s*(?:jam|j)\b/), m = s.match(/(\d+)\s*m\b/);
+  return h || m ? (h ? +h[1] : 0) + (m ? +m[1] / 60 : 0) : null;
+}
+const PSQI_COMP = [['c1Kualitas', 'C1 Kualitas tidur subjektif'], ['c2Latensi', 'C2 Latensi (waktu untuk terlelap)'], ['c3Durasi', 'C3 Durasi tidur'], ['c4Efisiensi', 'C4 Efisiensi tidur'], ['c5Gangguan', 'C5 Gangguan saat tidur'], ['c6Obat', 'C6 Penggunaan obat tidur'], ['c7Disfungsi', 'C7 Disfungsi siang hari']];
+function psqiTxt(total) {
+  return total <= 5 ? ['Kualitas Tidur Baik (Good Sleeper)', 'Pola tidur berada dalam rentang adaptif yang sehat.', 'Pertahankan jadwal jam sirkadian ini secara konsisten.']
+    : total <= 10 ? ['Kualitas Tidur Buruk (Poor Sleeper)', 'Terindikasi adanya kendala istirahat yang signifikan.', 'Evaluasi komponen dengan skor tertinggi (2 atau 3) sebagai fokus utama intervensi sleep hygiene.']
+      : ['Gangguan Tidur Serius', 'Skor global menunjukkan hambatan tidur yang berat.', 'Sangat direkomendasikan konsultasi klinis lanjutan bersama profesional kesehatan atau spesialis tidur.'];
+}
+// Stres: pembagian PSS-10 yang lazim dipakai (0–13 / 14–26 / 27–40). Tidur: skala buatan sendiri (7–35).
+const ST_STRES = ['Rendah', 'Sedang', 'Tinggi'], ST_TIDUR = ['Perlu Perhatian', 'Bisa Lebih Optimal', 'Restoratif'];
+// Salinan matriks interpretasi stress-tidur.html: [tidur 0=Perlu Perhatian, 1=Bisa Lebih Optimal, 2=Restoratif][stres 0..2]
+const ST_MATRIX = [
+  [['Fokus Perbaiki Tidur', 'Stresmu masih terkendali, tapi tidurmu belum pulih dengan baik. Ini bisa karena kebiasaan tidur yang kurang konsisten, lingkungan kamar, atau ritme tubuhmu yang belum ketemu. Perlu dieksplorasi lebih dalam bersama tenaga profesional.'],
+   ['Dua Masalah, Satu Loop', 'Stres mulai menanjak dan kualitas tidurmu juga terganggu. Keduanya punya cara memperparah satu sama lain — stres bikin susah tidur, kurang tidur bikin stres makin berat. Pilih satu yang paling terasa mengganggu, dan mulai dari situ.'],
+   ['Perlu Perhatian Sekarang', 'Stres tinggi dan tidur yang buruk adalah kombinasi yang berat. Tubuhmu tidak punya ruang untuk pulih. Kondisi ini sulit diputus sendiri karena keduanya terus saling memperkuat. Sangat disarankan untuk segera berkonsultasi dengan tenaga profesional.']],
+  [['Ada Ruang untuk Lebih Baik', 'Kondisi cukup baik. Stresmu rendah dan tidur masih oke. Tapi ada ruang untuk ditingkatkan — terutama di konsistensi jam tidur. Kualitas tidur yang benar-benar restoratif itu beda rasanya.'],
+   ['Mulai Perhatikan Sebelum Terlambat', 'Stres dan tidur keduanya ada di zona tengah. Belum darurat, tapi kalau salah satunya memburuk, yang lain biasanya ikut. Cari tahu mana yang lebih mengganggu dan tangani duluan.'],
+   ['Stres Tinggi, Tidur Masih Bertahan', 'Stresmu tinggi, tapi tidurmu masih cukup — untuk sekarang. Ini sinyal yang perlu direspons, bukan ditunggu. Tanpa intervensi, tidurmu kemungkinan besar akan ikut terdampak dalam waktu dekat.']],
+  [['Kondisi Bagus, Pertahankan', 'Stres terkendali dan tidurmu restoratif. Ini kondisi yang bagus — dan bukan kebetulan. Ada sesuatu yang kamu lakukan dengan benar. Identifikasi kebiasaan itu dan jaga konsistensinya.'],
+   ['Tidur Oke, Tapi Stres Mulai Naik', 'Tidurmu masih bagus dan itu modal besar. Tapi stres mulai meningkat dan kalau dibiarkan, tidurmu yang jadi korban pertama. Cari sumber stres utamamu sekarang sebelum mulai mengganggu hidupmu.'],
+   ['Stres Tinggi — Jangan Tunggu Tidurmu Ikut Rusak', 'Tidurmu masih terjaga meski stresmu tinggi. Itu baik. Tapi ini bukan kondisi yang bisa terus dipertahankan tanpa aksi. Stres yang tidak ditangani cepat atau lambat akan menggerus kualitas tidurmu. Prioritaskan manajemen stres sekarang.']]
+];
+const stresIdx = s => s <= 13 ? 0 : s <= 26 ? 1 : 2;
+const tidurIdx = t => t <= 12 ? 2 : t <= 21 ? 1 : 0;
+function stresKategori(st) { return st && st.skorStress !== '' && st.skorStress != null ? ST_STRES[stresIdx(num(st.skorStress))] : (st && st.kategoriStress) || ''; }
+
+function toolsFullHtml() {
+  const f = CD.forms, m = f.MCTQ && f.MCTQ.data, p = f.PSQI && f.PSQI.data, st = f.StressTidur && f.StressTidur.data;
+  if (!m && !p && !st) return '<div class="none-text">Belum ada tool yang diisi.</div>';
+  const when = k => `<span class="stat-s" style="font-weight:400">· ${fmtDate(f[k].submittedAt)}</span>`;
+  const row = (l, v) => v === '' || v == null ? '' : `<tr><td>${l}</td><td>${v}</td></tr>`;
+  const out = [];
+  if (m) {
+    const c = CHRONO[String(m.chronotype || '').toUpperCase()] || {}, sjl = parseDur(m.sjl), sj = sjl == null ? null : SJL_TXT.find(x => sjl < x[0]);
+    out.push(`<div class="full-tool"><h4>MCTQ · Chronotype ${when('MCTQ')}</h4>
+      <div class="full-head">${esc(c.hewan || '')} · ${esc(m.chronotype)} <small>(${esc(c.sub || '')})</small></div>
+      ${c.about ? `<p>${esc(c.about)}</p>` : ''}
+      <table class="tbl">${row('Jam ideal tidur', esc(c.tidur))}${row('Jam ideal fokus', esc(c.fokus))}${row('Jam ideal olahraga', esc(c.olahraga))}
+        ${row('Mid-sleep hari bebas (MSFsc)', esc(m.msfsc))}${row('Durasi tidur hari kerja / bebas', `${esc(m.sdKerja)} / ${esc(m.sdBebas)}`)}${row('Sleep debt', esc(m.sleepDebt))}
+        ${row('Social jet lag', `${esc(m.sjl)}${sj ? ` · <b>${sj[1]}</b><br><small>${esc(sj[2])} ${esc(sj[3])}</small>` : ''}`)}</table></div>`);
+  }
+  if (p) {
+    const total = num(p.skorTotal), t = psqiTxt(total);
+    out.push(`<div class="full-tool"><h4>PSQI · Kualitas Tidur ${when('PSQI')}</h4>
+      <div class="full-head">${esc(t[0])} · ${esc(p.skorTotal)}/21</div>
+      <p>${esc(t[1])} <b>Rekomendasi:</b> ${esc(t[2])}</p>
+      <table class="tbl">${PSQI_COMP.map(([k, l]) => row(l, num(p[k]) >= 2 ? `<b style="color:var(--red,#b03a2e)">${esc(p[k])} / 3</b>` : `${esc(p[k])} / 3`)).join('')}
+        ${row('Jam tidur → bangun', p.jamTidur ? `${esc(p.jamTidur)} → ${esc(p.jamBangun)}` : '')}${row('Latensi', p.latensiMenit !== '' && p.latensiMenit != null ? `${esc(p.latensiMenit)} menit` : '')}
+        ${row('Durasi tidur', p.durasiJam !== '' && p.durasiJam != null ? `${esc(p.durasiJam)} jam` : '')}${row('Efisiensi tidur', p.efisiensiPersen !== '' && p.efisiensiPersen != null ? `${esc(p.efisiensiPersen)}%` : '')}</table></div>`);
+  }
+  // Peta 3×3 (baris = kualitas tidur, kolom = stres) dengan posisi ti/si
+  const petaHtml = (ti, si, rowLabels, note) => `<div class="peta"><div></div>${ST_STRES.map(x => `<div class="peta-h">${x}</div>`).join('')}
+    ${[2, 1, 0].map(r => `<div class="peta-h">${rowLabels[r]}</div>${[0, 1, 2].map(c => `<div class="peta-c${r === ti && c === si ? ' on' : ''}">${r === ti && c === si ? '★' : ''}</div>`).join('')}`).join('')}</div>
+    <div class="stat-s">${note}</div>`;
+  if (st) {
+    const si = stresIdx(num(st.skorStress)), kat = ST_STRES[si];
+    const gabung = num(st.skorTidur) != null; // versi gabungan (Quick Tools) / data lama punya skor tidur sendiri
+    const ti = gabung ? tidurIdx(num(st.skorTidur)) : null;
+    const beda = st.kategoriStress && st.kategoriStress !== kat ? ` <small>(tersimpan: ${esc(st.kategoriStress)}, batas lama)</small>` : '';
+    const kend = s => String(s || '').split(' | ').filter(x => x && x !== 'Aman');
+    const list = (l, arr) => `<div style="margin-top:8px"><b style="font-size:11px">${l}</b>${arr.length ? `<ul>${arr.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ' <span class="none-text">tidak ada yang dominan</span>'}</div>`;
+    const ksl = String(st.kesimpulan || ''), cut = ksl.indexOf(' - ');
+    out.push(`<div class="full-tool"><h4>${gabung ? 'Stres & Tidur <small>(versi gabungan)</small>' : 'Stres (PSS-10)'} ${when('StressTidur')}</h4>
+      <div class="full-head">${cut > 0 ? esc(ksl.slice(0, cut)) : esc(ksl)}</div>
+      ${cut > 0 ? `<p>${esc(ksl.slice(cut + 3))}</p>` : ''}
+      <table class="tbl">${row('Stres (PSS-10)', `${esc(st.skorStress)}/40 · <b>${kat}</b>${beda}`)}${gabung ? row('Kualitas tidur (skala Stress-Tidur)', `${esc(st.skorTidur)}/35 · <b>${ST_TIDUR[ti]}</b>`) : ''}${row('Acara', esc(st.event))}</table>
+      ${gabung ? petaHtml(ti, si, ST_TIDUR, 'Baris: kualitas tidur (skala Stress-Tidur) · Kolom: tingkat stres') : ''}
+      ${list('Kendala stres dominan', kend(st.kendalaStress))}${gabung ? list('Kendala tidur dominan', kend(st.kendalaTidur)) : ''}
+      <div class="stat-s" style="margin-top:6px">Kategori stres: 0–13 / 14–26 / 27–40, pembagian yang lazim dipakai di penelitian (skala asli Cohen dkk. 1983 tidak menetapkan cutoff), mis. Rajpoot dkk. 2025, <a href="https://doi.org/10.7759/cureus.83358" target="_blank" rel="noopener">doi:10.7759/cureus.83358</a>.</div></div>`);
+    if (p) {
+      // Sumbu tidur dari PSQI: ≤5 → baris "Restoratif", 6–10 → "Bisa Lebih Optimal", >10 → "Perlu Perhatian"
+      const total = num(p.skorTotal), pi = total <= 5 ? 2 : total <= 10 ? 1 : 0, q = ST_MATRIX[pi][si];
+      out.push(`<div class="full-tool"><h4>Kombinasi Stres × Tidur (PSQI) <span class="stat-s" style="font-weight:400">· PSQI ${fmtDate(f.PSQI.submittedAt)}, Stres ${fmtDate(f.StressTidur.submittedAt)}</span></h4>
+        <div class="full-head">${esc(q[0])}</div><p>${esc(q[1])}</p>
+        ${petaHtml(pi, si, ['PSQI >10', 'PSQI 6–10', 'PSQI ≤5'], 'Baris: kualitas tidur dari PSQI · Kolom: tingkat stres (PSS-10)')}</div>`);
+    }
+  }
+  return out.join('') + '<div class="stat-s" style="margin-top:10px">Ini hasil lengkap versi coach. Pengisi hanya melihat gambaran umum. Teks di sini salinan dari halaman tool; kalau teks di tool diubah, ubah juga konstanta <code>CHRONO</code>, <code>SJL_TXT</code>, <code>psqiTxt</code> di Console.</div>';
+}
+
 function scoresHtml() {
   const m = CD.forms.MCTQ && CD.forms.MCTQ.data, p = CD.forms.PSQI && CD.forms.PSQI.data, s = CD.forms.StressTidur && CD.forms.StressTidur.data;
   return `<div class="grid">
     ${m ? stat('Chronotype (MCTQ)', esc(m.chronotype), '', `Mid-sleep ${esc(m.msfsc)} · Social jet lag ${esc(m.sjl)} · Sleep debt ${esc(m.sleepDebt)}`) : stat('MCTQ', '–', '', 'Belum diisi')}
     ${p ? stat('PSQI', esc(p.skorTotal), '/21', esc(p.kategori)) : stat('PSQI', '–', '', 'Belum diisi')}
-    ${s ? stat('Stres (PSS-10)', esc(s.skorStress), '/40', esc(s.kategoriStress)) : stat('Stres', '–', '', 'Belum diisi')}
-    ${s ? stat('Tidur (Stress-Tidur)', esc(s.skorTidur), '', esc(s.kategoriTidur)) : ''}
+    ${s ? stat('Stres (PSS-10)', esc(s.skorStress), '/40', esc(stresKategori(s))) : stat('Stres', '–', '', 'Belum diisi')}
+    ${s && num(s.skorTidur) != null ? stat('Tidur (Stress-Tidur)', esc(s.skorTidur), '/35', esc(s.kategoriTidur)) : ''}
   </div>
-  ${s && (s.kendalaStress || s.kendalaTidur) ? `<p class="stat-s" style="margin-top:10px"><b>Kendala stres:</b> ${esc(s.kendalaStress)}<br><b>Kendala tidur:</b> ${esc(s.kendalaTidur)}</p>` : ''}`;
+  ${s && (s.kendalaStress || s.kendalaTidur) ? `<p class="stat-s" style="margin-top:10px"><b>Kendala stres:</b> ${esc(s.kendalaStress)}${s.kendalaTidur ? `<br><b>Kendala tidur:</b> ${esc(s.kendalaTidur)}` : ''}</p>` : ''}`;
 }
 
 function bodyHtml() {
@@ -531,6 +642,7 @@ function renderRingkasan() {
       <p class="stat-s" style="margin-top:8px">Goal: <b>${esc(intakeData().goal || '–')}</b></p></div>
     <div class="card"><div class="card-title">Tubuh (data mandiri klien)</div>${bodyHtml()}</div>
     <div class="card"><div class="card-title">Tidur & Stres</div>${scoresHtml()}</div>
+    <div class="card"><div class="card-title">Hasil Lengkap Tools</div>${toolsFullHtml()}</div>
     <div class="card"><div class="card-title">Jawaban Intake</div>${rawHtml(CD.forms.Intake && CD.forms.Intake.raw, false, ['Flag untuk Coach'])}</div>
     ${CD.sessions.length ? `<div class="card"><div class="card-title">Riwayat Sesi</div>${CD.sessions.map(s => `<div class="ans-row"><span>${fmtDate(s.submittedAt)}</span><span>${esc(s.data.prioritas || s.data.miTarget || 'Tersimpan')}</span></div>`).join('')}</div>` : ''}`;
   bindAiCard();
@@ -817,12 +929,12 @@ function showLinks() {
     ['Assessment awal', `${PUBLIC_BASE_URL}intake.html?${q}`],
     ['Re-assessment tengah', `${PUBLIC_BASE_URL}intake.html?mode=tengah&${q}`],
     ['Re-assessment akhir', `${PUBLIC_BASE_URL}intake.html?mode=akhir&${q}`],
-    ['MCTQ', `${PUBLIC_BASE_URL}mctq.html?${q}`], ['PSQI', `${PUBLIC_BASE_URL}psqi.html?${q}`], ['Stress & Tidur', `${PUBLIC_BASE_URL}stress-tidur.html?${q}`]
+    ['MCTQ', `${PUBLIC_BASE_URL}mctq.html?${q}`], ['PSQI', `${PUBLIC_BASE_URL}psqi.html?${q}`], ['Stres', `${PUBLIC_BASE_URL}stress-tidur.html?versi=stres&${q}`]
   ];
   const m = document.createElement('div');
   m.className = 'modal';
   m.innerHTML = `<div class="modal-box"><div class="card-title">Link personal untuk ${esc(clientName())}</div>
-    <p class="stat-s" style="margin-bottom:8px">Nama & WA klien otomatis terisi di halaman. Setelah re-assessment, minta klien mengisi ulang MCTQ, PSQI, dan Stress-Tidur.</p>
+    <p class="stat-s" style="margin-bottom:8px">Nama & WA klien otomatis terisi di halaman. Setelah re-assessment, minta klien mengisi ulang MCTQ, PSQI, dan Stres.</p>
     ${links.map(([l, u]) => `<div class="linkrow"><b>${l}</b><code>${esc(u)}</code><button class="btn btn-o" data-u="${esc(u)}" style="padding:6px 10px">Salin</button></div>`).join('')}
     <div style="text-align:right;margin-top:12px"><button class="btn btn-p" id="lnClose">Tutup</button></div></div>`;
   document.body.appendChild(m);
@@ -1034,10 +1146,10 @@ function rkRefs(kind) {
     const m = last('MCTQ'), p = last('PSQI'), st = last('StressTidur');
     if (m) out.push(`Chronotype ${m.data.chronotype}, social jet lag ${m.data.sjl}, sleep debt ${m.data.sleepDebt}.`);
     if (p) out.push(`Skor PSQI ${p.data.skorTotal}/21 (${p.data.kategori}).`);
-    if (st) out.push(`Kualitas tidur (Stress-Tidur): ${st.data.kategoriTidur}.`);
+    if (st && st.data.kategoriTidur) out.push(`Kualitas tidur (Stress-Tidur): ${st.data.kategoriTidur}.`);
   } else {
     const st = last('StressTidur');
-    if (st) out.push(`Tingkat stres (PSS-10) ${st.data.skorStress}/40 (${st.data.kategoriStress}).`);
+    if (st) out.push(`Tingkat stres (PSS-10) ${st.data.skorStress}/40 (${stresKategori(st.data)}).`);
     const s = (CD.sessions || [])[0];
     if (s && s.data.tenang) out.push(`Teknik menenangkan diri: ${s.data.tenang}.`);
   }

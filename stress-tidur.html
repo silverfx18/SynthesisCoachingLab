@@ -227,6 +227,8 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
 
 /* SKOR ROW */
 .skor-row{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--cream2);}
+body.versi-stres .only-gabung{display:none !important;}
+body.versi-stres .skor-row{grid-template-columns:1fr;}
 .skor-box{padding:18px 24px;text-align:center;}
 .skor-box:first-child{border-right:1px solid var(--cream2);}
 .skor-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:6px;}
@@ -358,7 +360,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
 
 <div class="questions no-print" id="stressQ"></div>
 
-<div class="section-head no-print">
+<div class="section-head no-print only-gabung">
   <div class="section-num">B</div>
   <div>
     <div class="section-title">Kualitas Tidur</div>
@@ -366,7 +368,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
   </div>
 </div>
 
-<div class="questions no-print" id="tidurQ"></div>
+<div class="questions no-print only-gabung" id="tidurQ"></div>
 
 <div class="error-box" id="errorBox">⚠️ <span id="errorMsg"></span></div>
 
@@ -404,10 +406,10 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
       <div class="skor-box">
         <div class="skor-label">Stress</div>
         <div class="skor-val" id="rStressVal">—</div>
-        <div class="skor-max">dari 50</div>
+        <div class="skor-max">dari 40</div>
         <div class="skor-cat" id="rStressCat">—</div>
       </div>
-      <div class="skor-box">
+      <div class="skor-box only-gabung">
         <div class="skor-label">Kualitas Tidur</div>
         <div class="skor-val" id="rTidurVal">—</div>
         <div class="skor-max">dari 35</div>
@@ -415,7 +417,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
       </div>
     </div>
 
-    <div class="plot-section">
+    <div class="plot-section only-gabung">
       <div class="plot-title">Peta Kondisi</div>
       <div class="plot-outer">
         <div class="plot-y-axis">
@@ -460,7 +462,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
         <div class="kendala-title">⚠️ Faktor Stress Dominan:</div>
         <ul class="kendala-list" id="stressKendalaList"></ul>
       </div>
-      <div class="kendala-sec">
+      <div class="kendala-sec only-gabung">
         <div class="kendala-title">🌙 Faktor Gangguan Tidur Dominan:</div>
         <ul class="kendala-list" id="tidurKendalaList"></ul>
       </div>
@@ -471,7 +473,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
     </div>
 
     <div class="ref">
-      <p><strong>Referensi:</strong> Cohen S, Kamarck T, Mermelstein R. (1983). A Global Measure of Perceived Stress. <em>Journal of Health and Social Behavior</em>, 24(4):385–396 &nbsp;·&nbsp; Buysse DJ, et al. (1989). Pittsburgh Sleep Quality Index. <em>Psychiatry Research</em>, 28(2):193–213 &nbsp;·&nbsp; Materi Pelatihan AIFO</p>
+      <p><strong>Referensi:</strong> Cohen S, Kamarck T, Mermelstein R. (1983). A Global Measure of Perceived Stress. <em>Journal of Health and Social Behavior</em>, 24(4):385–396 (skala asli, tanpa cutoff resmi; kategori stres memakai pembagian 0–13 / 14–26 / 27–40 yang lazim dipakai di penelitian, mis. Rajpoot NN, et al. (2025). <em>Cureus</em> 17(5):e83358, doi:10.7759/cureus.83358) &nbsp;·&nbsp; Buysse DJ, et al. (1989). Pittsburgh Sleep Quality Index. <em>Psychiatry Research</em>, 28(2):193–213 &nbsp;·&nbsp; Materi Pelatihan AIFO</p>
     </div>
 
   </div>
@@ -522,7 +524,7 @@ const categoryConfig = {
     labels: ['Rendah','Sedang','Tinggi'],
     colors: ['var(--green)','var(--yellow)','var(--red)'],
     backgrounds: ['#eafaf1','#fef9e7','#fdedec'],
-    compute: s => s <= 23 ? 0 : s <= 36 ? 1 : 2
+    compute: s => s <= 13 ? 0 : s <= 26 ? 1 : 2 // pembagian PSS-10 yang lazim dipakai: 0–13 / 14–26 / 27–40
   },
   tidur: {
     labels: ['Perlu Perhatian','Bisa Lebih Optimal','Restoratif'],
@@ -607,6 +609,15 @@ function buildTidur() {
 const stressCat = s => categoryConfig.stress.compute(s);
 const tidurCat  = t => categoryConfig.tidur.compute(t);
 
+// VERSI: default gabungan (Quick Tools: stres + tidur + peta). ?versi=stres = PSS-10 saja
+// (jalur assessment utama; kualitas tidur diambil dari PSQI supaya tidak dobel).
+const VERSI_STRES = new URLSearchParams(location.search).get('versi') === 'stres';
+const STRES_TXT = [
+  { title:'Stres Terkendali', warna:'var(--green)', narasi:'Stresmu saat ini terkendali. Kamu punya cara yang cukup baik untuk menghadapi tekanan sehari-hari. Kenali apa yang membantumu tetap tenang, lalu jaga kebiasaan itu.' },
+  { title:'Stres Mulai Terasa', warna:'var(--yellow)', narasi:'Stresmu ada di level menengah. Belum darurat, tapi biasanya sudah cukup untuk mulai terasa di tidur, pola makan, atau energi. Ini saat yang baik untuk mulai memperhatikan sumbernya.' },
+  { title:'Stres Sedang Tinggi', warna:'var(--red)', narasi:'Stresmu sedang tinggi. Kondisi seperti ini biasanya ikut mempengaruhi tidur, nafsu makan, dan energi. Jangan ditanggung sendiri: bicarakan dengan orang yang kamu percaya, dan bila terasa berat, dengan tenaga profesional.' }
+];
+
 // INTERPRETASI MATRIX (3x3 = tidur × stress)
 const interpretasi = [
   [
@@ -654,7 +665,7 @@ function hitung() {
 
   let sTidur = 0;
   let arrTidurVal = [];
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < (VERSI_STRES ? 0 : 7); i++) {
     const v = document.querySelector(`input[name="t${i}"]:checked`);
     if (!v) { kembalikanTombol(btnHitung, originalText); showError(`Pertanyaan B${i+1} belum diisi.`); return; }
     let val = parseInt(v.value);
@@ -664,7 +675,7 @@ function hitung() {
 
   const sc = stressCat(sStress); 
   const tc = tidurCat(sTidur);   
-  const data = interpretasi[tc][sc];
+  const data = VERSI_STRES ? STRES_TXT[sc] : interpretasi[tc][sc];
 
   const plotRow = tc === 0 ? 0 : tc === 1 ? 1 : 2;
   const plotCol = sc;
@@ -773,7 +784,7 @@ function hitung() {
   hBox.style.background = categoryConfig.stress.backgrounds.includes(data.warna.replace('var(--', '').replace(')', '')) 
     ? categoryConfig.stress.backgrounds[categoryConfig.stress.colors.indexOf(data.warna)]
     : categoryConfig.tidur.backgrounds[categoryConfig.tidur.colors.indexOf(data.warna)];
-  document.getElementById('hasilLabel').textContent  = categoryConfig.stress.labels[sc] + ' · ' + categoryConfig.tidur.labels[tc];
+  document.getElementById('hasilLabel').textContent  = VERSI_STRES ? 'Stres ' + categoryConfig.stress.labels[sc] : categoryConfig.stress.labels[sc] + ' · ' + categoryConfig.tidur.labels[tc];
   document.getElementById('hasilLabel').style.color  = data.warna;
   document.getElementById('hasilTitle').textContent  = data.title;
   document.getElementById('hasilTitle').style.color  = data.warna;
@@ -792,21 +803,30 @@ function hitung() {
     skorTidur: sTidur,
     kategoriTidur: categoryConfig.tidur.labels[tc],
     kendalaTidur: kendalaTidur.length > 0 ? kendalaTidur.map(stripHtml).join(" | ") : "Aman",
-    kesimpulan: data.title + " - " + data.narasi
+    kesimpulan: data.title + " - " + data.narasi,
+    versi: VERSI_STRES ? 'stres' : 'gabung'
   };
+  if (VERSI_STRES) { delete payload.skorTidur; delete payload.kategoriTidur; delete payload.kendalaTidur; }
   SCL.send('StressTidur', payload, { wa: document.getElementById('wa').value, nama: nama })
     .finally(() => kembalikanTombol(btnHitung, originalText));
 
   // Hasil singkat untuk semua pengisi; peta kondisi, narasi lengkap & kendala hanya dengan ?hasil=1 (coach)
   if (!SCL.showFullResult()) {
     const items = [{ q: 'Nama', v: nama }];
+    // <br> di label & nomor soal tidak menghasilkan spasi di textContent, jadi ganti dulu dengan spasi
+    const txt = el => { const c = el.cloneNode(true); c.querySelectorAll('br').forEach(b => b.replaceWith(' ')); c.querySelectorAll('.q-num').forEach(n => n.append(' ')); return c.textContent.replace(/\s+/g, ' ').trim(); };
     document.querySelectorAll('#stressQ .q-item, #tidurQ .q-item').forEach(it => {
       const inp = it.querySelector('input:checked');
       const lbl = inp && inp.parentElement.querySelector('.scale-lbl, .dur-jam');
-      items.push({ q: it.querySelector('.q-text').textContent.trim(), v: lbl ? lbl.textContent.replace(/\s+/g, ' ').trim() : '' });
+      items.push({ q: txt(it.querySelector('.q-text')), v: lbl ? txt(lbl) : '' });
     });
-    const kalimat1 = (data.narasi.match(/^[^.!?]+[.!?]/) || [data.narasi])[0];
-    SCL.showClientThanks('resultCard', items, SCL.briefHtml(data.title, kalimat1));
+    // Nama area kendala saja (tanpa penjelasan & istilah teknis dalam kurung)
+    const area = kendalaStress.concat(kendalaTidur).map(k => ((k.match(/<strong>(.*?)<\/strong>/) || [])[1] || '').replace(/:$/, '').replace(/\s*\(.*?\)/, '').trim()).filter(Boolean);
+    SCL.showClientThanks('resultCard', items, SCL.briefHtml(data.title, data.narasi, null,
+      (VERSI_STRES
+        ? SCL.briefBlock('Tingkat stres', '', { t: categoryConfig.stress.labels[sc], tone: ['baik', 'sedang', 'perhatian'][sc] })
+        : SCL.briefBlock('Kondisimu saat ini', `Stres: ${categoryConfig.stress.labels[sc]} · Kualitas tidur: ${categoryConfig.tidur.labels[tc]}`)) +
+      SCL.briefTags('Area yang paling terasa', area)));
   }
 
   tampilkanHasilUI();
@@ -851,8 +871,15 @@ function initDates() {
 
 // Jalankan semua fungsi setup saat halaman dimuat
 try {
+  if (VERSI_STRES) {
+    document.body.classList.add('versi-stres');
+    document.title = 'Assessment Stres — Synthesis Coaching Lab';
+    document.querySelector('.header h1').innerHTML = 'Assessment <span>Stres</span>';
+    document.querySelector('.header p').textContent = 'Isi untuk mendapatkan gambaran tingkat stres kamu saat ini (PSS-10, 10 pertanyaan). Bukan diagnosis klinis.';
+    document.querySelector('.rc-meta').textContent = 'Synthesis Coaching Lab · Hasil Self Assessment Stres';
+  }
   buildStress();
-  buildTidur();
+  if (!VERSI_STRES) buildTidur();
   initDates();
   SCL.bindIdentity({ nama: 'nama', wa: 'wa', tglLahir: 'tglLahir' });
   if (SCL.isClientMode()) document.querySelector('button[onclick="hitung()"]').textContent = 'Kirim Jawaban';

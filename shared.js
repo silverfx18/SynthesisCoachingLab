@@ -71,25 +71,64 @@
     return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 
-  // Blok "Hasil singkat": judul + deskripsi pendek (tanpa angka & saran)
-  function briefHtml(title, desc) {
-    return `<div style="padding:16px 24px;border-bottom:1px solid #e7e2da">
-      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#2F9794;margin-bottom:6px">Hasil Singkat</div>
-      <div style="font-size:16px;font-weight:800;margin-bottom:4px;color:#1e6b69">${escH(title)}</div>
-      ${desc ? `<div style="font-size:12px;line-height:1.7;color:#33433f">${escH(desc)}</div>` : ""}
+  // Blok "Hasil singkat": gambaran umum tanpa angka mentah & saran spesifik.
+  // moreHtml = blok tambahan dari briefBlock / briefTags / briefSpectrum (sudah di-escape).
+  function briefHtml(title, desc, img, moreHtml) {
+    return `<div style="padding:18px 24px;border-bottom:1px solid #e7e2da">
+      <div style="display:flex;gap:14px;align-items:center;margin-bottom:${desc ? 10 : 0}px">
+        ${img ? `<img src="${escH(img)}" alt="${escH(title)}" style="width:84px;height:84px;object-fit:contain;flex-shrink:0;border-radius:10px">` : ""}
+        <div style="min-width:0">
+          <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#2F9794;margin-bottom:6px">Gambaran Hasilmu</div>
+          <div style="font-size:17px;font-weight:800;line-height:1.3;color:#1e6b69">${escH(title)}</div>
+        </div>
+      </div>
+      ${desc ? `<div style="font-size:12.5px;line-height:1.7;color:#33433f">${escH(desc)}</div>` : ""}
+      ${moreHtml || ""}
+    </div>`;
+  }
+  const TONE = { baik: ["#1e8449", "#eafaf1"], sedang: ["#9a6b00", "#fef5e0"], perhatian: ["#b03a2e", "#fdedec"] };
+  function briefLabel(label) {
+    return `<div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#2F9794;margin-bottom:6px">${escH(label)}</div>`;
+  }
+  // chip = { t: 'Sedang', tone: 'baik' | 'sedang' | 'perhatian' } (opsional)
+  function briefBlock(label, text, chip) {
+    const c = chip && (TONE[chip.tone] || TONE.sedang);
+    return `<div style="margin-top:14px;padding-top:12px;border-top:1px dashed #e7e2da">
+      ${briefLabel(label)}
+      ${c ? `<span style="display:inline-block;font-size:11px;font-weight:700;color:${c[0]};background:${c[1]};padding:3px 10px;border-radius:20px;margin-bottom:6px">${escH(chip.t)}</span>` : ""}
+      ${text ? `<div style="font-size:12px;line-height:1.7;color:#33433f">${escH(text)}</div>` : ""}
+    </div>`;
+  }
+  function briefTags(label, arr, note) {
+    if (!arr || !arr.length) return "";
+    return `<div style="margin-top:14px;padding-top:12px;border-top:1px dashed #e7e2da">
+      ${briefLabel(label)}
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${arr.map(t => `<span style="font-size:11.5px;font-weight:600;color:#1e6b69;background:#e8f5f4;padding:4px 10px;border-radius:20px">${escH(t)}</span>`).join("")}</div>
+      ${note ? `<div style="font-size:11px;line-height:1.6;color:#6b7d7c;margin-top:6px">${escH(note)}</div>` : ""}
+    </div>`;
+  }
+  // Bar spektrum dengan penanda posisi (pct 0–100), tanpa angka
+  function briefSpectrum(label, pct, ends) {
+    const p = Math.min(Math.max(Number(pct) || 50, 3), 97);
+    return `<div style="margin-top:14px;padding-top:12px;border-top:1px dashed #e7e2da">
+      ${briefLabel(label)}
+      <div style="position:relative;height:10px;border-radius:6px;background:linear-gradient(90deg,#f5b041,#7fb3a8,#5b4e8c);margin:10px 0 6px">
+        <div style="position:absolute;top:50%;left:${p}%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#fff;border:3px solid #0e181d"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10.5px;font-weight:600;color:#6b7d7c">${(ends || []).map(e => `<span>${escH(e)}</span>`).join("")}</div>
     </div>`;
   }
 
-  // Teks penutup: klien → dibahas saat sesi; publik → gambaran awal + ajakan konsultasi
+  // Teks penutup: klien → dibahas saat sesi; publik → gambaran umum + ajakan ngobrol (tanpa nada jualan)
   function closingText() {
     return isClientMode()
-      ? "Penjelasan lengkap dan saran yang sesuai kondisimu akan dibahas bersama coach saat sesi."
-      : "Hasil ini hanya gambaran awal, bukan diagnosis. Untuk penjelasan lengkap dan saran yang sesuai kondisimu, konsultasikan dengan coach.";
+      ? "Langkah yang pas untuk kondisimu akan kita bahas bersama saat sesi."
+      : "Ini gambaran umum, bukan diagnosis. Kalau ingin tahu langkah yang pas untuk kondisimu, kamu bisa ngobrol dengan coach.";
   }
   function consultButtonHtml() {
     if (isClientMode() || !COACH_WA) return "";
-    const msg = encodeURIComponent("Halo coach, saya baru mengisi assessment di Synthesis Coaching Lab dan ingin konsultasi hasilnya.");
-    return `<a href="https://wa.me/${COACH_WA}?text=${msg}" target="_blank" rel="noopener" style="display:inline-block;margin-top:10px;background:#2F9794;color:#fff;text-decoration:none;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 16px;border-radius:8px">💬 Konsultasi dengan Coach</a>`;
+    const msg = encodeURIComponent("Halo coach, saya baru mengisi assessment di Synthesis Coaching Lab dan ingin ngobrol soal hasilnya.");
+    return `<a href="https://wa.me/${COACH_WA}?text=${msg}" target="_blank" rel="noopener" style="display:inline-block;margin-top:10px;background:#2F9794;color:#fff;text-decoration:none;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 16px;border-radius:8px">💬 Ngobrol dengan Coach</a>`;
   }
 
   // Kartu "terima kasih" + hasil singkat + ringkasan jawaban
@@ -172,6 +211,18 @@
      form : 'Intake' | 'MCTQ' | 'PSQI' | 'StressTidur'
      data : objek datar {kolom: nilai}
      opts : { wa, nama, raw: [{s, q, v}] }  → raw = jawaban berlabel untuk Coach Console */
+  /* Penanda acara (mis. corporate training): ?event=nama-acara di link.
+     Diingat selama tab terbuka (sessionStorage), jadi ikut terbawa saat pindah dari quick.html ke tool. */
+  const EVENT_KEY = "scl_event";
+  function currentEvent() {
+    try {
+      const q = new URLSearchParams(location.search).get("event");
+      if (q) sessionStorage.setItem(EVENT_KEY, q);
+      return String(sessionStorage.getItem(EVENT_KEY) || "").replace(/[^\w\s.-]/g, "").trim().slice(0, 60);
+    } catch (e) { return ""; }
+  }
+  currentEvent();
+
   async function send(form, data, opts) {
     opts = opts || {};
     const clientId = normalizeWA(opts.wa || getIdentity().wa);
@@ -180,7 +231,7 @@
       clientId: clientId,
       submittedAt: new Date().toISOString(),
       hp: "", // honeypot: harus kosong
-      data: Object.assign({ nama: opts.nama || getIdentity().nama || "" }, data),
+      data: Object.assign({ nama: opts.nama || getIdentity().nama || "" }, currentEvent() ? { event: currentEvent() } : {}, data),
       raw: opts.raw || null
     };
 
@@ -220,5 +271,5 @@
 
   prefillFromURL();
 
-  window.SCL = { normalizeWA, getIdentity, saveIdentity, bindIdentity, hitungUsia, send, toast, readLS, writeLS, isClientMode, showFullResult, briefHtml, closingText, consultButtonHtml, clientThanksHtml, showClientThanks };
+  window.SCL = { normalizeWA, getIdentity, saveIdentity, bindIdentity, hitungUsia, send, toast, readLS, writeLS, isClientMode, showFullResult, briefHtml, briefBlock, briefTags, briefSpectrum, closingText, consultButtonHtml, clientThanksHtml, showClientThanks };
 })();

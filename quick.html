@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quick Tools — Synthesis Coaching Lab</title>
+<link rel="icon" type="image/png" href="Logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal: #2F9794;
+  --teal-light: #3db8b4;
+  --teal-dark: #1e6b69;
+  --cream: #faf3ea;
+  --cream2: #e7e2da;
+  --dark: #0e181d;
+  --muted: #6b7d7c;
+  --white: #ffffff;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--dark);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* HEADER */
+.header {
+  background: var(--dark);
+  padding: 60px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--teal), var(--teal-light), var(--teal));
+}
+.header-badge {
+  display: inline-block;
+  background: var(--teal);
+  color: var(--white);
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Montserrat', sans-serif;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 2px;
+  margin-bottom: 16px;
+}
+.header h1 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: clamp(28px, 5vw, 42px);
+  font-weight: 800;
+  color: var(--cream);
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  margin-bottom: 12px;
+}
+.header h1 span { color: var(--teal-light); }
+.header p {
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 300;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* GRID CONTAINER */
+.container {
+  max-width: 1100px;
+  width: 100%;
+  margin: 50px auto;
+  padding: 0 20px;
+  flex: 1;
+}
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+/* HUB CARD */
+.hub-card {
+  background: var(--white);
+  border-radius: 16px;
+  border: 1px solid var(--cream2);
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(14,24,29,0.05);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.hub-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(47,151,148,0.15);
+}
+.card-banner {
+  background: var(--dark);
+  padding: 30px 24px;
+  position: relative;
+}
+.card-banner::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--teal);
+}
+.card-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+.hub-card h2 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--cream);
+  line-height: 1.3;
+}
+.card-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.card-body p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 24px;
+  flex: 1;
+}
+.card-meta {
+  border-top: 1px solid var(--cream2);
+  padding-top: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.meta-item strong {
+  color: var(--dark);
+}
+
+/* BUTTON */
+.btn-launch {
+  display: block;
+  text-align: center;
+  background: var(--teal);
+  color: var(--white);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  transition: background 0.2s ease;
+}
+.btn-launch:hover {
+  background: var(--teal-dark);
+}
+
+/* FOOTER */
+.footer {
+  background: var(--dark);
+  padding: 30px 20px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.footer { position: relative; }
+.footer p strong { color: var(--cream); }
+/* Tautan kecil & redup: Quick Tools dibagikan langsung oleh coach (mis. saat training) */
+.quick-link { position: absolute; right: 14px; bottom: 8px; font-size: 10px; color: rgba(255,255,255,0.28); text-decoration: none; }
+.quick-link:hover { color: var(--teal-light); }
+
+@media (max-width: 640px) {
+  .header { padding: 40px 20px; }
+  .container { margin: 30px auto; }
+  .hub-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-badge">Synthesis Coaching Lab</div>
+  <h1>Quick <span>Tools</span></h1>
+  <p>Cek singkat kondisi tidur dan stres kamu. Masing-masing hanya butuh beberapa menit, hasilnya langsung keluar.</p>
+</div>
+
+<!-- HUB CONTAINER -->
+<div class="container">
+  <div class="hub-grid">
+
+    <div class="hub-card">
+      <div class="card-banner">
+        <div class="card-icon">🧠</div>
+        <h2>Cek Stres &amp; Tidur</h2>
+      </div>
+      <div class="card-body">
+        <p>Lihat posisi kondisimu di peta stres dan kualitas tidur, beserta area yang paling terasa mengganggu.</p>
+        <div class="card-meta">
+          <div class="meta-item">Pertanyaan: <strong>17</strong></div>
+          <div class="meta-item">Waktu: <strong>~5 Menit</strong></div>
+        </div>
+        <a href="stress-tidur.html" class="btn-launch">Mulai</a>
+      </div>
+    </div>
+
+    <div class="hub-card">
+      <div class="card-banner">
+        <div class="card-icon">⏰</div>
+        <h2>Chronotype</h2>
+      </div>
+      <div class="card-body">
+        <p>Kamu tipe pagi, tengah, atau malam? Kenali jam biologismu dan seberapa jauh jadwal harianmu bergeser darinya.</p>
+        <div class="card-meta">
+          <div class="meta-item">Metode: <strong>MCTQ</strong></div>
+          <div class="meta-item">Waktu: <strong>~3 Menit</strong></div>
+        </div>
+        <a href="mctq.html" class="btn-launch">Mulai</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p>&copy; 2026 <strong>Synthesis Coaching Lab</strong> &middot; Coaching nutrisi, tidur &amp; gaya hidup sehat.</p>
+</div>
+
+<!-- shared.js mengingat ?event=nama-acara selama tab terbuka, lalu ikut tersimpan bersama jawaban -->
+<script src="shared.js"></script>
+</body>
+</html>
