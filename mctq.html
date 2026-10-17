@@ -780,7 +780,10 @@ function hitungMCTQ() {
       { q: 'Hari bebas: mulai tidur', v: t('soF_h', 'soF_m') },
       { q: 'Hari bebas: bangun', v: t('seF_h', 'seF_m') },
       { q: 'Jumlah hari bebas per minggu', v: sel('freeDays') }
-    ], SCL.briefHtml(`Chronotype: ${hewan ? hewan + ' · ' : ''}${cd.name.charAt(0) + cd.name.slice(1).toLowerCase()}`, cd.about, animals[cd.animal]));
+    ], SCL.briefHtml(`Chronotype: ${hewan ? hewan + ' · ' : ''}${cd.name.charAt(0) + cd.name.slice(1).toLowerCase()}`, cd.about, animals[cd.animal],
+      SCL.briefSpectrum('Posisimu di spektrum chronotype', specPct, ['🦁 Lion · pagi', '🐻 Bear', '🐺 Wolf · malam']) +
+      SCL.briefBlock('Social jet lag', 'Selisih ritme tidur hari kerja dan hari bebas. ' + sjlAnalogy,
+        { t: sjlStatusTxt.replace(/[^A-Za-z ]/g, '').trim().toLowerCase().replace(/^./, c => c.toUpperCase()), tone: sjl < 1 ? 'baik' : sjl < 2 ? 'sedang' : 'perhatian' })));
   }
   document.getElementById('resultSection').style.display = 'block';
   setTimeout(()=> document.getElementById('resultSection').scrollIntoView({behavior:'smooth'}), 100);

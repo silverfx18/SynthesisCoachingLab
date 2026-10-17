@@ -88,7 +88,16 @@ Kode Apps Script **tidak** ikut ter-update otomatis dari GitHub. Setiap kali `Co
 
 **Batas body fat**: `BF_TARGET` (20% pria / 28% wanita, target coach) dan `BF_OBESITAS` (25% / 35%, definisi obesitas yang lazim di penelitian) di `coach/Index.html`. Referensi jurnal tampil di bawah tabel Antropometri.
 
-**Hasil untuk pengisi**: semua orang (klien & publik) hanya melihat hasil singkat. Hasil lengkap hanya dengan `?hasil=1`. Isi `COACH_WA` di `shared.js` untuk menampilkan tombol "Konsultasi dengan Coach" di halaman publik.
+**Hasil untuk pengisi**: semua orang (klien & publik) melihat **gambaran umum** tanpa angka mentah dan saran spesifik.
+- MCTQ: chronotype + deskripsi, posisi di spektrum, status social jet lag.
+- PSQI: kategori + arti umum + area yang paling berpengaruh.
+- Stress-Tidur: judul + narasi, kategori stres/tidur, nama area kendala.
+
+Hasil lengkap hanya dengan `?hasil=1`. Isi `COACH_WA` di `shared.js` untuk menampilkan tombol "Ngobrol dengan Coach" di halaman publik.
+
+**Hasil Lengkap Tools**: kartu di tab Ringkasan Console berisi hasil versi coach dari MCTQ (jam ideal tidur/fokus/olahraga, SJL), PSQI (7 komponen + rekomendasi), dan Stress-Tidur (skor, peta 3×3, kendala). Teksnya salinan dari halaman tool. Kalau teks di tool diubah, ubah juga konstanta `CHRONO`, `SJL_TXT`, `psqiTxt` di `coach/Index.html`.
+
+**Kategori stres (PSS-10)**: 0–13 Rendah, 14–26 Sedang, 27–40 Tinggi. Ini pembagian yang lazim dipakai di penelitian; skala asli Cohen dkk. 1983 tidak menetapkan cutoff. Pengisian lama yang tersimpan dengan batas lama otomatis dihitung ulang di Console (kategori lama ditandai "tersimpan: …").
 
 **Data Klien**: kalau klien belum mengisi intake atau datanya salah, lengkapi di kartu **Data Klien** (tab Ringkasan). Isian coach dipakai di seluruh Console & prompt Claude; jawaban asli klien tetap tersimpan.
 

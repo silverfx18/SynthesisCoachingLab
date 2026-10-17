@@ -30,6 +30,7 @@
 
   /* MODE KLIEN: skor & interpretasi dibahas coach saat sesi */
   body.klien .score-grid, body.klien .total-score-row, body.klien .guide { display: none !important; }
+  body.klien .interpretation { padding: 0; background: none; border-left: none; }
   body.klien .print-summary-card.show { display: block; }
 
   /* KONTROL EDIT PRINT OUT KHUSUS */
@@ -1060,9 +1061,19 @@ function hitungSkor() {
   }, { wa: document.getElementById('wa').value, nama: nama });
 
   if (document.body.classList.contains('klien')) {
-    // Label lembut tanpa angka & rekomendasi klinis
-    const singkat = total <= 5 ? 'Kualitas tidurmu tergolong baik.' : total <= 10 ? 'Kualitas tidurmu perlu perhatian.' : 'Kualitas tidurmu perlu perhatian lebih.';
-    targetInterpretation.innerHTML = `<strong>${singkat}</strong><br>${SCL.closingText()} Ringkasan jawabanmu ada di bawah dan bisa disimpan lewat tombol Cetak / PDF.${SCL.consultButtonHtml() ? '<br>' + SCL.consultButtonHtml() : ''}`;
+    // Gambaran umum: kategori lembut + arti umum + area yang paling berpengaruh (tanpa angka & rekomendasi klinis)
+    const singkat = total <= 5 ? 'Kualitas tidurmu tergolong baik' : total <= 10 ? 'Kualitas tidurmu perlu perhatian' : 'Kualitas tidurmu perlu perhatian lebih';
+    const arti = total <= 5
+      ? 'Secara umum pola tidurmu sudah mendukung pemulihan tubuh. Yang perlu dijaga adalah konsistensinya, terutama saat sedang sibuk atau stres.'
+      : total <= 10
+        ? 'Ada beberapa bagian dari tidurmu yang belum optimal. Kondisi seperti ini cukup umum dan biasanya bisa membaik dengan penyesuaian kebiasaan yang tepat.'
+        : 'Beberapa aspek tidurmu cukup terganggu dan kemungkinan sudah terasa pada energi atau suasana hati sehari-hari. Ini layak diperhatikan dengan serius, dan bila perlu dibicarakan juga dengan tenaga kesehatan.';
+    const AREA = { c1: 'Kualitas tidur yang dirasakan', c2: 'Waktu untuk bisa terlelap', c3: 'Lama tidur', c4: 'Waktu di kasur yang benar-benar dipakai tidur', c5: 'Gangguan saat tidur', c6: 'Pemakaian obat tidur', c7: 'Energi & fokus di siang hari' };
+    const area = Object.keys(AREA).filter(k => scores[k] >= 2).sort((a, b) => scores[b] - scores[a]).slice(0, 3).map(k => AREA[k]);
+    targetInterpretation.innerHTML = `<div style="background:#fff;border-radius:12px;overflow:hidden;font-family:Montserrat,sans-serif">
+      ${SCL.briefHtml(singkat, arti, null, SCL.briefTags('Area yang paling berpengaruh', area))}
+      <div style="padding:14px 24px;font-size:12px;line-height:1.7;color:#33433f">${SCL.closingText()} Ringkasan jawabanmu ada di bawah dan bisa disimpan lewat tombol Cetak / PDF.${SCL.consultButtonHtml() ? '<br>' + SCL.consultButtonHtml() : ''}</div>
+    </div>`;
     document.getElementById('summaryPrintBlock').classList.add('show');
   }
 }

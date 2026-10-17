@@ -404,7 +404,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
       <div class="skor-box">
         <div class="skor-label">Stress</div>
         <div class="skor-val" id="rStressVal">—</div>
-        <div class="skor-max">dari 50</div>
+        <div class="skor-max">dari 40</div>
         <div class="skor-cat" id="rStressCat">—</div>
       </div>
       <div class="skor-box">
@@ -471,7 +471,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
     </div>
 
     <div class="ref">
-      <p><strong>Referensi:</strong> Cohen S, Kamarck T, Mermelstein R. (1983). A Global Measure of Perceived Stress. <em>Journal of Health and Social Behavior</em>, 24(4):385–396 &nbsp;·&nbsp; Buysse DJ, et al. (1989). Pittsburgh Sleep Quality Index. <em>Psychiatry Research</em>, 28(2):193–213 &nbsp;·&nbsp; Materi Pelatihan AIFO</p>
+      <p><strong>Referensi:</strong> Cohen S, Kamarck T, Mermelstein R. (1983). A Global Measure of Perceived Stress. <em>Journal of Health and Social Behavior</em>, 24(4):385–396 (skala asli, tanpa cutoff resmi; kategori stres memakai pembagian 0–13 / 14–26 / 27–40 yang lazim dipakai di penelitian, mis. Rajpoot NN, et al. (2025). <em>Cureus</em> 17(5):e83358, doi:10.7759/cureus.83358) &nbsp;·&nbsp; Buysse DJ, et al. (1989). Pittsburgh Sleep Quality Index. <em>Psychiatry Research</em>, 28(2):193–213 &nbsp;·&nbsp; Materi Pelatihan AIFO</p>
     </div>
 
   </div>
@@ -522,7 +522,7 @@ const categoryConfig = {
     labels: ['Rendah','Sedang','Tinggi'],
     colors: ['var(--green)','var(--yellow)','var(--red)'],
     backgrounds: ['#eafaf1','#fef9e7','#fdedec'],
-    compute: s => s <= 23 ? 0 : s <= 36 ? 1 : 2
+    compute: s => s <= 13 ? 0 : s <= 26 ? 1 : 2 // pembagian PSS-10 yang lazim dipakai: 0–13 / 14–26 / 27–40
   },
   tidur: {
     labels: ['Perlu Perhatian','Bisa Lebih Optimal','Restoratif'],
@@ -807,8 +807,11 @@ function hitung() {
       const lbl = inp && inp.parentElement.querySelector('.scale-lbl, .dur-jam');
       items.push({ q: txt(it.querySelector('.q-text')), v: lbl ? txt(lbl) : '' });
     });
-    const kalimat1 = (data.narasi.match(/^[^.!?]+[.!?]/) || [data.narasi])[0];
-    SCL.showClientThanks('resultCard', items, SCL.briefHtml(data.title, kalimat1));
+    // Nama area kendala saja (tanpa penjelasan & istilah teknis dalam kurung)
+    const area = kendalaStress.concat(kendalaTidur).map(k => ((k.match(/<strong>(.*?)<\/strong>/) || [])[1] || '').replace(/:$/, '').replace(/\s*\(.*?\)/, '').trim()).filter(Boolean);
+    SCL.showClientThanks('resultCard', items, SCL.briefHtml(data.title, data.narasi, null,
+      SCL.briefBlock('Kondisimu saat ini', `Stres: ${categoryConfig.stress.labels[sc]} · Kualitas tidur: ${categoryConfig.tidur.labels[tc]}`) +
+      SCL.briefTags('Area yang paling terasa', area)));
   }
 
   tampilkanHasilUI();
