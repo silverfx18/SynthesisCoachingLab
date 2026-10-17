@@ -800,10 +800,12 @@ function hitung() {
   // Hasil singkat untuk semua pengisi; peta kondisi, narasi lengkap & kendala hanya dengan ?hasil=1 (coach)
   if (!SCL.showFullResult()) {
     const items = [{ q: 'Nama', v: nama }];
+    // <br> di label & nomor soal tidak menghasilkan spasi di textContent, jadi ganti dulu dengan spasi
+    const txt = el => { const c = el.cloneNode(true); c.querySelectorAll('br').forEach(b => b.replaceWith(' ')); c.querySelectorAll('.q-num').forEach(n => n.append(' ')); return c.textContent.replace(/\s+/g, ' ').trim(); };
     document.querySelectorAll('#stressQ .q-item, #tidurQ .q-item').forEach(it => {
       const inp = it.querySelector('input:checked');
       const lbl = inp && inp.parentElement.querySelector('.scale-lbl, .dur-jam');
-      items.push({ q: it.querySelector('.q-text').textContent.trim(), v: lbl ? lbl.textContent.replace(/\s+/g, ' ').trim() : '' });
+      items.push({ q: txt(it.querySelector('.q-text')), v: lbl ? txt(lbl) : '' });
     });
     const kalimat1 = (data.narasi.match(/^[^.!?]+[.!?]/) || [data.narasi])[0];
     SCL.showClientThanks('resultCard', items, SCL.briefHtml(data.title, kalimat1));
