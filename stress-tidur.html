@@ -334,6 +334,10 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
         <label>Nama</label>
         <input type="text" id="nama" placeholder="Nama lengkap & Gelar" oninput="validasiNama(this)">
       </div>
+      <div class="field">
+        <label>No. WhatsApp</label>
+        <input type="tel" id="wa" placeholder="08xxxxxxxxxx" inputmode="tel">
+      </div>
       <!-- Diubah dari Usia menjadi Tanggal Lahir -->
       <div class="field">
         <label>Tanggal Lahir</label>
@@ -474,18 +478,18 @@ body{font-family:'Montserrat',sans-serif;background:var(--cream);color:var(--dar
 
   <div class="actions no-print">
     <button class="btn btn-primary" onclick="window.print()">🖨️ Export PDF</button>
+    <a class="btn btn-secondary" href="index.html" style="text-decoration:none;display:inline-block">✓ Selesai, kembali ke Hub</a>
     <button class="btn btn-secondary" onclick="resetForm()">← Isi Ulang</button>
   </div>
 </div>
 
 </div>
 
+<script src="shared.js"></script>
 <script>
 let isSubmitting = false;
-let lastPayloadHash = "";
 
-// PENTING: Ganti string di bawah ini dengan URL Web App Google Apps Script Anda
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzoRuXUnf7WQ0_tvilg5wQSVlN1iexQ9Iy4OcZ4IC7JAZfrlqRudSTbZsqVWyT0PZWm/exec";
+// Data dikirim lewat SCL.send (shared.js) ke Synthesis Data Hub
 
 const stressItems = [
   "Seberapa sering kamu merasa kesal karena sesuatu yang terjadi tiba-tiba?",
@@ -678,6 +682,12 @@ function hitung() {
     return;
   }
 
+  if (!SCL.normalizeWA(document.getElementById('wa').value)) {
+    kembalikanTombol(btnHitung, originalText);
+    showError("No. WhatsApp wajib diisi dengan benar (contoh: 081234567890) supaya hasil tersambung ke data kamu.");
+    return;
+  }
+
   if (!tglLahirVal) { 
     kembalikanTombol(btnHitung, originalText);
     showError("Tanggal Lahir wajib diisi untuk menghitung kategori usia."); 
@@ -769,47 +779,34 @@ function hitung() {
   document.getElementById('hasilTitle').style.color  = data.warna;
   document.getElementById('hasilNarasi').textContent = data.narasi;
 
-  // ─── PENGIRIMAN GOOGLE SHEETS ───
-  if (WEB_APP_URL) {
-    const payload = {
-      tanggal: tglFmt,
-      nama: nama,
-      tanggalLahir: tglLahirFmt, 
-      usia: usia + " Tahun",     
-      coach: coach || "-",
-      skorStress: sStress,
-      kategoriStress: categoryConfig.stress.labels[sc],
-      kendalaStress: kendalaStress.length > 0 ? kendalaStress.map(stripHtml).join(" | ") : "Aman",
-      skorTidur: sTidur,
-      kategoriTidur: categoryConfig.tidur.labels[tc],
-      kendalaTidur: kendalaTidur.length > 0 ? kendalaTidur.map(stripHtml).join(" | ") : "Aman",
-      kesimpulan: data.title + " - " + data.narasi
-    };
+  // ─── SIMPAN KE SYNTHESIS DATA HUB (shared.js) ───
+  const payload = {
+    tanggal: tglFmt,
+    nama: nama,
+    tanggalLahir: tglLahirFmt,
+    usia: usia + " Tahun",
+    coach: coach || "-",
+    skorStress: sStress,
+    kategoriStress: categoryConfig.stress.labels[sc],
+    kendalaStress: kendalaStress.length > 0 ? kendalaStress.map(stripHtml).join(" | ") : "Aman",
+    skorTidur: sTidur,
+    kategoriTidur: categoryConfig.tidur.labels[tc],
+    kendalaTidur: kendalaTidur.length > 0 ? kendalaTidur.map(stripHtml).join(" | ") : "Aman",
+    kesimpulan: data.title + " - " + data.narasi
+  };
+  SCL.send('StressTidur', payload, { wa: document.getElementById('wa').value, nama: nama })
+    .finally(() => kembalikanTombol(btnHitung, originalText));
 
-    // Cek hash payload untuk mencegah spam data identik
-    const currentHash = JSON.stringify(payload);
-    if (currentHash === lastPayloadHash) {
-      console.log("Data identik terdeteksi, melewati pengiriman ke Sheets.");
-      tampilkanHasilUI();
-      kembalikanTombol(btnHitung, originalText);
-      return;
-    }
-    lastPayloadHash = currentHash;
-
-    fetch(WEB_APP_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload)
-    })
-    .then(res => {
-      console.log("Data berhasil dikirim ke Google Sheets!");
-    })
-    .catch(err => {
-      console.error("Gagal mengirim data:", err);
-    })
-    .finally(() => {
-      kembalikanTombol(btnHitung, originalText);
+  // Hasil singkat untuk semua pengisi; peta kondisi, narasi lengkap & kendala hanya dengan ?hasil=1 (coach)
+  if (!SCL.showFullResult()) {
+    const items = [{ q: 'Nama', v: nama }];
+    document.querySelectorAll('#stressQ .q-item, #tidurQ .q-item').forEach(it => {
+      const inp = it.querySelector('input:checked');
+      const lbl = inp && inp.parentElement.querySelector('.scale-lbl, .dur-jam');
+      items.push({ q: it.querySelector('.q-text').textContent.trim(), v: lbl ? lbl.textContent.replace(/\s+/g, ' ').trim() : '' });
     });
+    const kalimat1 = (data.narasi.match(/^[^.!?]+[.!?]/) || [data.narasi])[0];
+    SCL.showClientThanks('resultCard', items, SCL.briefHtml(data.title, kalimat1));
   }
 
   tampilkanHasilUI();
@@ -857,6 +854,8 @@ try {
   buildStress();
   buildTidur();
   initDates();
+  SCL.bindIdentity({ nama: 'nama', wa: 'wa', tglLahir: 'tglLahir' });
+  if (SCL.isClientMode()) document.querySelector('button[onclick="hitung()"]').textContent = 'Kirim Jawaban';
 } catch (e) {
   console.error("Gagal inisialisasi form:", e);
 }

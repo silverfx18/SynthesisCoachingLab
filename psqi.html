@@ -6,7 +6,7 @@
 <title>PSQI — Pittsburgh Sleep Quality Index</title>
 <link rel="icon" type="image/png" href="Logo.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script type="text/javascript" src="http://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=ByUc8wOoXkObzTbCN_TS9T2lMMFw8rdCkXPYO467HBUU0kerM9hl5z5DlrSGqNCczcSCUl3Hl65RBbY0_4vvXw" charset="UTF-8"></script><style>
+<style>
   :root {
     --teal: #2F9794;
     --teal-light: #3db8b4;
@@ -27,6 +27,10 @@
     min-height: 100vh;
     padding: 0 0 60px 0;
   }
+
+  /* MODE KLIEN: skor & interpretasi dibahas coach saat sesi */
+  body.klien .score-grid, body.klien .total-score-row, body.klien .guide { display: none !important; }
+  body.klien .print-summary-card.show { display: block; }
 
   /* KONTROL EDIT PRINT OUT KHUSUS */
   @media print {
@@ -587,6 +591,10 @@
       <input type="text" id="nama" placeholder="Nama lengkap" required>
     </div>
     <div class="field-group">
+      <label>No. WhatsApp</label>
+      <input type="tel" id="wa" placeholder="08xxxxxxxxxx" inputmode="tel">
+    </div>
+    <div class="field-group">
       <label>Usia</label>
       <input type="number" id="usia" placeholder="Tahun" required>
     </div>
@@ -752,6 +760,7 @@
   <button class="btn btn-primary" onclick="hitungSkor()">Hitung Skor</button>
   <button class="btn btn-secondary" onclick="resetForm()">Reset Form</button>
   <button class="btn btn-secondary" onclick="window.print()">Cetak / PDF</button>
+  <a class="btn btn-secondary" href="index.html" style="text-decoration:none;display:inline-block">✓ Selesai, kembali ke Hub</a>
 </div>
 
 <!-- RINGKASAN JAWABAN HARFIAH (KHUSUS UNTUK CETAK/PDF — TERSEMBUNYI DI SCREEN) -->
@@ -818,6 +827,7 @@
   <p style="margin-top:4px">Synthesis Coaching Lab · Instrumen ini bukan pengganti diagnosis klinis</p>
 </div>
 
+<script src="shared.js"></script>
 <script>
 // 1. Interaktivitas UI Radio Button (Tetap dipertahankan)
 document.querySelectorAll('.radio-group').forEach(group => {
@@ -908,8 +918,8 @@ function hitungSkor() {
   const targetScorePanel = document.getElementById('scorePanel');
 
   // Validasi Soft Alert Data Klien
-  if (!nama || !usia) {
-    targetInterpretation.innerHTML = `⚠️ <span style="color: #e74c3c; font-weight: 600;">Data Klien Belum Lengkap.</span> Pastikan kolom Nama dan Usia sudah terisi sebelum melihat analisis kalkulasi skor.`;
+  if (!nama || !usia || !SCL.normalizeWA(document.getElementById('wa').value)) {
+    targetInterpretation.innerHTML = `⚠️ <span style="color: #e74c3c; font-weight: 600;">Data Klien Belum Lengkap.</span> Pastikan kolom Nama, No. WhatsApp (contoh: 081234567890), dan Usia sudah terisi sebelum melihat analisis kalkulasi skor.`;
     targetScorePanel.scrollIntoView({behavior: 'smooth'});
     return;
   }
@@ -1033,6 +1043,28 @@ function hitungSkor() {
     <div class="summary-item-print">8. Gangguan antusiasme kerja: <strong>${getRadioText('c7b')}</strong></div>
   `;
   document.getElementById('summaryTargetGrid').innerHTML = summaryHtml;
+
+  // ─── SIMPAN KE SYNTHESIS DATA HUB (shared.js) ───
+  const kategori = total <= 5 ? 'Kualitas Tidur Baik' : total <= 10 ? 'Kualitas Tidur Buruk' : 'Gangguan Tidur Serius';
+  SCL.send('PSQI', {
+    tanggal: tglFmt,
+    nama: nama,
+    usia: usia + ' Tahun',
+    coach: namaCoach,
+    skorTotal: total,
+    kategori: kategori,
+    c1Kualitas: scores.c1, c2Latensi: scores.c2, c3Durasi: scores.c3, c4Efisiensi: scores.c4,
+    c5Gangguan: scores.c5, c6Obat: scores.c6, c7Disfungsi: scores.c7,
+    jamTidur: document.getElementById('q4a').value, jamBangun: document.getElementById('q4b').value,
+    latensiMenit: menit, durasiJam: durasi, efisiensiPersen: efisiensiPersen
+  }, { wa: document.getElementById('wa').value, nama: nama });
+
+  if (document.body.classList.contains('klien')) {
+    // Label lembut tanpa angka & rekomendasi klinis
+    const singkat = total <= 5 ? 'Kualitas tidurmu tergolong baik.' : total <= 10 ? 'Kualitas tidurmu perlu perhatian.' : 'Kualitas tidurmu perlu perhatian lebih.';
+    targetInterpretation.innerHTML = `<strong>${singkat}</strong><br>${SCL.closingText()} Ringkasan jawabanmu ada di bawah dan bisa disimpan lewat tombol Cetak / PDF.${SCL.consultButtonHtml() ? '<br>' + SCL.consultButtonHtml() : ''}`;
+    document.getElementById('summaryPrintBlock').classList.add('show');
+  }
 }
 
 // 4. Reset form & event handler initialisasi
@@ -1058,6 +1090,19 @@ document.getElementById('tanggal').valueAsDate = new Date();
   document.getElementById(id).addEventListener('input', updateEfficiencyAlert);
   document.getElementById(id).addEventListener('change', updateEfficiencyAlert);
 });
+SCL.bindIdentity({ nama: 'nama', wa: 'wa', usia: 'usia' });
+// Hasil singkat untuk semua pengisi; skor komponen, total & panduan hanya dengan ?hasil=1 (coach)
+if (!SCL.showFullResult()) {
+  const klien = SCL.isClientMode();
+  document.body.classList.add('klien');
+  document.querySelector('#scorePanel h3').textContent = 'Hasil Singkat';
+  const btn = document.querySelector('button[onclick="hitungSkor()"]');
+  if (klien) btn.textContent = 'Kirim Jawaban';
+  document.getElementById('interpretation').innerHTML = `Isi seluruh pertanyaan lalu klik <strong>${btn.textContent}</strong> untuk ${klien ? 'mengirim jawabanmu ke coach' : 'melihat hasil singkat'}.`;
+  // Jawaban klien tampil di bawah panel ini setelah dikirim
+  const sp = document.getElementById('scorePanel'), sm = document.getElementById('summaryPrintBlock');
+  sp.parentNode.insertBefore(sm, sp.nextSibling);
+}
 </script>
 </body>
 </html>
