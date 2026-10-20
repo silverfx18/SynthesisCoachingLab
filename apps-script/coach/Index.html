@@ -69,8 +69,8 @@ summary{padding:10px 14px;font-weight:700;font-size:12px;cursor:pointer;color:va
 .ans-row span:last-child{font-weight:600;white-space:pre-wrap;}
 /* FORM SESI */
 .secnav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
-.secnav a{font-size:10.5px;font-weight:600;text-decoration:none;color:var(--dark);background:#fff;border:1px solid var(--cream2);border-radius:14px;padding:5px 10px;}
-.secnav a:hover{border-color:var(--teal);}
+.secnav button{font-family:inherit;font-size:10.5px;font-weight:600;color:var(--dark);background:#fff;border:1px solid var(--cream2);border-radius:14px;padding:5px 10px;cursor:pointer;}
+.secnav button:hover{border-color:var(--teal);}
 .sec{background:#fff;border:1px solid var(--cream2);border-radius:10px;margin-bottom:14px;overflow:hidden;scroll-margin-top:12px;}
 .sec-h{display:flex;gap:10px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--cream2);background:#fffbf5;}
 .sec-n{width:28px;height:28px;border-radius:50%;background:var(--teal);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
@@ -242,6 +242,11 @@ const bfRefsHtml = () => `<div class="stat-s" style="margin-top:8px;line-height:
    UTIL
    ════════════════════════════════════════════════════════════════════════ */
 const $ = id => document.getElementById(id);
+// Menu bagian Form Sesi: gulir dengan JS. Link "#anchor" di iframe Apps Script membuka halaman kosong.
+document.addEventListener('click', e => {
+  const b = e.target.closest('.secnav [data-sec]'); if (!b) return;
+  const t = document.getElementById(b.dataset.sec); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const num = v => { const n = parseFloat(String(v == null ? '' : v).replace(',', '.')); return isFinite(n) ? n : null; };
 const fmt = (n, d = 1) => n == null || n === '' ? '–' : Number(n).toLocaleString('id-ID', { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -724,7 +729,7 @@ function renderSesi() {
       <div class="stat-s">${s ? `Melanjutkan sesi tersimpan terakhir (${fmtDate(s.submittedAt)}). Setiap simpan membuat versi baru, riwayat lama tetap ada.` : 'Belum ada sesi tersimpan untuk klien ini.'}
       ${s ? ' <button class="btn btn-o" id="btnNewSesi" style="margin-left:8px;padding:6px 10px">Mulai sesi baru (kosong)</button>' : ''}</div>
     </div>
-    <div class="secnav no-print">${secs.map((x, i) => `<a href="#sec_${x.id}">${i + 1}. ${esc(x.title)}</a>`).join('')}</div>
+    <div class="secnav no-print">${secs.map((x, i) => `<button type="button" data-sec="sec_${x.id}">${i + 1}. ${esc(x.title)}</button>`).join('')}</div>
     <p class="stat-s no-print" style="margin-bottom:12px">Semua bagian opsional. Isi yang relevan untuk sesi ini. Pengukuran tubuh ada di tab <b>Antropometri</b>.</p>
     ${secs.map((x, i) => `<section class="sec" id="sec_${x.id}"><div class="sec-h"><div class="sec-n">${i + 1}</div><div><div class="sec-t">${esc(x.title)}</div>${x.sub ? `<div class="sec-s">${esc(x.sub)}</div>` : ''}</div></div>
       <div class="${x.layout === 'meas' ? 'meas' : ''}">${x.qs.filter(q => !q.note).map(qHtml).join('')}</div>${x.qs.filter(q => q.note).map(qHtml).join('')}</section>`).join('')}
