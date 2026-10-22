@@ -692,6 +692,11 @@ function hitung() {
     showError("Nama Klien wajib diisi sebelum melihat hasil."); 
     return;
   }
+  if (!SCL.validName(nama)) {
+    kembalikanTombol(btnHitung, originalText);
+    showError("Format nama tidak valid. Gunakan huruf, spasi, dan tanda yang lazim di nama/gelar (titik, koma, strip, petik), tanpa angka.");
+    return;
+  }
 
   if (!SCL.normalizeWA(document.getElementById('wa').value)) {
     kembalikanTombol(btnHitung, originalText);
@@ -889,7 +894,7 @@ try {
 
 // Fungsi filter nama jalankan real-time saat klien mengetik
 function validasiNama(input) {
-  input.value = input.value.replace(/[^a-zA-Z\s\.\,\'\/ \(\)]/g, '');
+  input.value = SCL.cleanName(input.value);
 }
 </script>
 </body>

@@ -382,15 +382,17 @@ const BASE_STEPS = [
 
   { title: 'Kesehatan & Keamanan', intro: 'Bagian ini penting supaya program yang dirancang <strong>aman</strong> untuk kondisimu.', qs: [
     { id: 'keluhan', t: 'check', q: 'Keluhan yang sering kamu alami', req: true, none: 'Tidak ada', other: true,
-      opts: ['Sakit leher', 'Sakit punggung/pinggang', 'Nyeri sendi/lutut', 'Cepat capek', 'Kesemutan/kebas', 'Sering sakit kepala', 'Sesak napas', 'Jantung berdebar', 'Tidak ada'] },
-    { id: 'cedera', t: 'check', q: 'Pernah cedera atau sering nyeri di bagian tubuh ini?', req: true, none: 'Tidak ada',
-      opts: ['Pergelangan kaki', 'Lutut', 'Pinggul', 'Punggung bawah', 'Punggung atas', 'Bahu', 'Siku', 'Pergelangan tangan', 'Leher', 'Tidak ada'] },
+      opts: ['Sakit leher', 'Sakit punggung/pinggang', 'Nyeri sendi/lutut', 'Cepat capek', 'Kesemutan/kebas', 'Kram otot', 'Sering sakit kepala', 'Pusing saat berdiri', 'Sulit konsentrasi', 'Sering haus / sering buang air kecil', 'Sesak napas', 'Jantung berdebar', 'Tidak ada'] },
+    { id: 'cedera', t: 'check', q: 'Pernah cedera atau sering nyeri di bagian tubuh ini?', req: true, none: 'Tidak ada', other: true,
+      opts: ['Leher', 'Bahu', 'Punggung atas', 'Siku', 'Pergelangan tangan', 'Tangan / jari',
+        'Punggung bawah', 'Pinggul', 'Selangkangan / paha dalam',
+        'Paha depan', 'Paha belakang (hamstring)', 'Lutut', 'Betis / tulang kering', 'Tendon Achilles', 'Pergelangan kaki', 'Telapak kaki / tumit', 'Tidak ada'] },
     { id: 'cederaDetail', t: 'text', q: 'Ceritakan singkat cederanya (kapan, masih terasa atau tidak)', show: A => any(A, 'cedera', 'Tidak ada') },
     { id: 'operasi', t: 'radio', q: 'Pernah menjalani operasi?', req: true, opts: ['Tidak', 'Ya'] },
     { id: 'operasiDetail', t: 'text', q: 'Operasi apa dan kapan?', show: A => A.operasi === 'Ya' },
     { id: 'obat', t: 'area', q: 'Obat & suplemen yang rutin diminum', ph: 'Nama + dosis kalau tahu. Kosongkan kalau tidak ada.' },
     { id: 'kronis', t: 'check', q: 'Penyakit yang pernah didiagnosis dokter', req: true, none: 'Tidak ada', other: true,
-      opts: ['Hipertensi', 'Diabetes / prediabetes', 'Kolesterol tinggi', 'Penyakit jantung', 'Asam urat', 'Asma', 'Gangguan tiroid', 'Penyakit ginjal', 'Fatty liver / penyakit hati', 'PCOS', 'Autoimun', 'Depresi / kecemasan', 'Tidak ada'] },
+      opts: ['Hipertensi', 'Diabetes / prediabetes', 'Kolesterol tinggi', 'Penyakit jantung', 'Asam urat', 'Asma', 'Gangguan tiroid', 'Penyakit ginjal', 'Fatty liver / penyakit hati', 'PCOS', 'Autoimun', 'Anemia', 'Osteoporosis / osteopenia', 'Stroke', 'Kanker', 'Depresi / kecemasan', 'Tidak ada'] },
     { id: 'hamil', t: 'radio', q: 'Apakah kamu sedang…', req: true, show: isF, opts: ['Tidak hamil / menyusui', 'Hamil', 'Menyusui', 'Program hamil'] },
     { id: 'lab', t: 'radio', q: 'Punya hasil tes laboratorium (cek darah, dll.)?', req: true, opts: ['Ya, kurang dari 6 bulan', 'Ya, lebih dari 6 bulan', 'Tidak punya'],
       help: 'Kalau punya, tolong dibawa / dikirim saat sesi pertama ya.' },
@@ -787,6 +789,13 @@ function validateStep(si, quiet) {
       const n = num(A[q.id]);
       if (n == null || n < q.min || n > q.max) msg = `${strip(q.q)}: isi angka antara ${q.min}–${q.max} ${q.unit}.`;
     } else if (q.id === 'wa' && A.wa && !SCL.normalizeWA(A.wa)) msg = 'Nomor WhatsApp belum valid (contoh: 081234567890).';
+    // Riwayat BB harus masuk akal: terendah ≤ sekarang ≤ tertinggi (toleransi 0,5 kg)
+    if (!msg && (q.id === 'bbMin' || q.id === 'bbMax') && String(A[q.id] || '').trim()) {
+      const bb = num(A.bb), lo = num(A.bbMin), hi = num(A.bbMax);
+      if (q.id === 'bbMin' && lo != null && hi != null && lo > hi) msg = 'Berat badan terendah tidak boleh lebih besar dari yang tertinggi.';
+      else if (q.id === 'bbMin' && lo != null && bb != null && lo > bb + 0.5) msg = 'Berat badan terendah lebih besar dari berat sekarang, cek lagi ya.';
+      else if (q.id === 'bbMax' && hi != null && bb != null && hi < bb - 0.5) msg = 'Berat badan tertinggi lebih kecil dari berat sekarang, cek lagi ya.';
+    }
     else if (q.id === 'tglLahir' && A.tglLahir) {
       const u = SCL.hitungUsia(A.tglLahir);
       if (!(u >= 12 && u <= 100)) msg = 'Tanggal lahir belum benar.';

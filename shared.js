@@ -26,10 +26,17 @@
   // ── Nomor WA → format 62xxxxxxxxxx ────────────────────────────────────────
   function normalizeWA(raw) {
     let d = String(raw || "").replace(/\D/g, "");
+    if (d.startsWith("620")) d = "62" + d.slice(3); // "+62 0812…": 0 setelah kode negara
     if (d.startsWith("0")) d = "62" + d.slice(1);
     else if (d.startsWith("8")) d = "62" + d;
     return /^628\d{7,12}$/.test(d) ? d : "";
   }
+
+  /* Nama: huruf apa pun (termasuk beraksen), spasi, dan tanda yang lazim di nama/gelar
+     (mis. "dr. Ani Wijaya, Sp.PD", "Siti-Aisyah", "André"). Dipakai bersama semua halaman. */
+  const NAME_CHARS = "\\p{L}\\p{M}\\s.,'’()/-";
+  function cleanName(s) { return String(s || "").replace(new RegExp("[^" + NAME_CHARS + "]", "gu"), ""); }
+  function validName(s) { return new RegExp("^[" + NAME_CHARS + "]{2,80}$", "u").test(String(s || "").trim()); }
 
   function getIdentity() { return readLS(ID_KEY) || {}; }
 
@@ -271,5 +278,5 @@
 
   prefillFromURL();
 
-  window.SCL = { normalizeWA, getIdentity, saveIdentity, bindIdentity, hitungUsia, send, toast, readLS, writeLS, isClientMode, showFullResult, briefHtml, briefBlock, briefTags, briefSpectrum, closingText, consultButtonHtml, clientThanksHtml, showClientThanks };
+  window.SCL = { normalizeWA, validName, cleanName, getIdentity, saveIdentity, bindIdentity, hitungUsia, send, toast, readLS, writeLS, isClientMode, showFullResult, briefHtml, briefBlock, briefTags, briefSpectrum, closingText, consultButtonHtml, clientThanksHtml, showClientThanks };
 })();
