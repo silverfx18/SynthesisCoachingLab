@@ -120,6 +120,20 @@ textarea.inp{min-height:58px;resize:vertical;line-height:1.5;}
 .modal{position:fixed;inset:0;background:rgba(14,24,29,.55);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px;}
 .modal-box{background:#fff;border-radius:12px;max-width:720px;width:100%;padding:18px;}
 .modal-box textarea{width:100%;height:320px;font-size:11px;font-family:monospace;border:1.5px solid var(--cream2);border-radius:8px;padding:10px;}
+.ai-modal{max-height:92vh;display:flex;flex-direction:column;}
+.ai-modal #aiStep{display:flex;flex-direction:column;min-height:0;}
+.ai-list{overflow:auto;max-height:60vh;border:1px solid var(--cream2);border-radius:8px;padding:10px;}
+.ai-sum{font-size:12px;font-weight:700;margin-bottom:8px;}
+.ai-row{font-size:11.5px;line-height:1.5;padding:6px 0;border-bottom:1px dashed var(--cream2);}
+.ai-row div{white-space:pre-wrap;color:var(--dark);}
+.ai-opt{display:block;margin-top:4px;font-size:11px;}
+.tg td:first-child{width:28%;}
+.tg-ok{color:var(--green);font-weight:700;}
+.tg-mid{color:#b9770e;font-weight:700;}
+.tg-bad{color:var(--red);font-weight:700;}
+.calc{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:6px;}
+.calc-box{border:1px solid var(--cream2);border-radius:8px;padding:12px;}
+.calc-out{margin-top:10px;font-size:13px;background:var(--cream);border-radius:6px;padding:8px 10px;}
 .ba td.up{color:var(--green);font-weight:700;}
 .ba td.down{color:var(--red);font-weight:700;}
 /* ANTROPOMETRI */
@@ -728,6 +742,11 @@ function renderSesi() {
     <div class="card no-print" style="padding:12px 16px">
       <div class="stat-s">${s ? `Melanjutkan sesi tersimpan terakhir (${fmtDate(s.submittedAt)}). Setiap simpan membuat versi baru, riwayat lama tetap ada.` : 'Belum ada sesi tersimpan untuk klien ini.'}
       ${s ? ' <button class="btn btn-o" id="btnNewSesi" style="margin-left:8px;padding:6px 10px">Mulai sesi baru (kosong)</button>' : ''}</div>
+      <div class="rk-bar" style="margin-top:10px">
+        <button class="btn btn-o" id="btnSesiTpl">📋 Salin template untuk AI</button>
+        <button class="btn btn-o" id="btnSesiAi">📥 Tempel hasil AI</button>
+        <span class="stat-s">Rekaman → transkrip → tempel template + transkrip ke Claude → tempel jawabannya di sini.</span>
+      </div>
     </div>
     <div class="secnav no-print">${secs.map((x, i) => `<button type="button" data-sec="sec_${x.id}">${i + 1}. ${esc(x.title)}</button>`).join('')}</div>
     <p class="stat-s no-print" style="margin-bottom:12px">Semua bagian opsional. Isi yang relevan untuk sesi ini. Pengukuran tubuh ada di tab <b>Antropometri</b>.</p>
@@ -741,6 +760,8 @@ function renderSesi() {
   body.addEventListener('input', onSesiInput);
   body.addEventListener('change', onSesiInput);
   $('btnSave').addEventListener('click', saveSesi);
+  $('btnSesiTpl').addEventListener('click', () => copyText(buildSesiTemplate(), 'Template sesi untuk AI'));
+  $('btnSesiAi').addEventListener('click', sesiAiImport);
   if ($('btnNewSesi')) $('btnNewSesi').addEventListener('click', () => {
     if (!confirm('Kosongkan form untuk sesi baru? (sesi lama tetap tersimpan)')) return;
     SA = {};
@@ -833,12 +854,12 @@ function dataText(d, keys) {
   return keys.filter(k => d[k] !== undefined && d[k] !== '').map(k => `${k}: ${d[k]}`).join(' · ');
 }
 
-function buildClaudePrompt() {
+// Data klien anonim (tanpa nama/WA/email/tgl lahir/domisili) untuk prompt AI
+function clientContextLines() {
   const d = intakeData();
   const H = CD.history;
   const lines = [];
-  lines.push('Kamu adalah asisten analisis untuk coach kesehatan & gaya hidup di Synthesis Coaching Lab (Indonesia). Coach bersertifikasi sport nutrition advisor dan ahli ilmu faal olahraga. Tugasmu membantu coach menganalisis data klien, BUKAN mendiagnosis. Tandai dengan jelas hal yang perlu dirujuk ke dokter / psikolog.');
-  lines.push('', '=== PROFIL KLIEN (anonim) ===', `Inisial: ${initials(clientName())} · Usia: ${d.usia || '-'} · JK: ${d.jk || '-'} · Pekerjaan: ${d.pekerjaan || '-'}`);
+  lines.push('=== PROFIL KLIEN (anonim) ===', `Inisial: ${initials(clientName())} · Usia: ${d.usia || '-'} · JK: ${d.jk || '-'} · Pekerjaan: ${d.pekerjaan || '-'}`);
   if (CD.profile && CD.profile.catatanKlien) lines.push(`Catatan coach tentang klien: ${CD.profile.catatanKlien}`);
   lines.push('', '=== FLAG OTOMATIS ===', allFlags().filter(x => x.src !== 'Sistem').map(x => `- ${x.t} (${x.src})`).join('\n') || '- tidak ada');
   if (CD.forms.Intake) lines.push('', `=== INTAKE (${fmtDate(CD.forms.Intake.submittedAt)}) ===`, rawText(CD.forms.Intake.raw, ['Sebelum Mulai', 'Flag untuk Coach']));
@@ -849,13 +870,227 @@ function buildClaudePrompt() {
   (H.Reassessment || []).forEach(r => lines.push('', `=== RE-ASSESSMENT ${String(r.data.fase || '').toUpperCase()} (${fmtDate(r.submittedAt)}) ===`, rawText(r.raw, ['Sebelum Mulai', 'Kondisi Sekarang'])));
   const s = lastSession();
   if (s) lines.push('', `=== CATATAN SESI COACH TERAKHIR (${fmtDate(s.submittedAt)}) ===`, rawText(s.raw));
+  const tg = targetSummaryText(bodyTargets(), false);
+  if (tg) lines.push('', '=== TARGET & ACUAN (dihitung otomatis) ===', tg);
   if (CD.ai.length) lines.push('', `=== ANALISIS AI SEBELUMNYA (${fmtDate(CD.ai[0].submittedAt)}) ===`, String(CD.ai[0].data.analisis || '').slice(0, 3000));
+  return lines;
+}
+
+function buildClaudePrompt() {
+  const lines = ['Kamu adalah asisten analisis untuk coach kesehatan & gaya hidup di Synthesis Coaching Lab (Indonesia). Coach bersertifikasi sport nutrition advisor dan ahli ilmu faal olahraga. Tugasmu membantu coach menganalisis data klien, BUKAN mendiagnosis. Tandai dengan jelas hal yang perlu dirujuk ke dokter / psikolog.', ''];
+  lines.push(...clientContextLines());
   lines.push('', '=== TUGAS ===',
     'Analisis data di atas. Fokus pada hal yang paling berdampak & aman. Jika ada data before-after, evaluasi progresnya. Jika ada analisis sebelumnya, fokus pada apa yang berubah.',
     'Jawab dalam Bahasa Indonesia, ringkas, pakai poin-poin, dan gunakan PERSIS heading berikut:',
     '## Ringkasan Kondisi', '## Flag & Rujukan', '## Hipotesis Akar Masalah', '## 3 Prioritas Intervensi (2 Minggu)', '## Pertanyaan untuk Sesi Berikutnya', '## Evaluasi Progres',
     'Pisahkan fakta dari data vs dugaanmu (tandai dugaan dengan "(dugaan)").');
   return lines.join('\n');
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   AI ASISTEN: TEMPLATE → (transkrip di Claude) → TEMPEL HASIL JSON
+   Tanpa API: coach menyalin template, menempelkannya ke Claude bersama
+   transkrip sesi, lalu menempel jawaban JSON kembali ke sini.
+   ════════════════════════════════════════════════════════════════════════ */
+// Gaya bahasa draf report (ubah sesuai kebiasaan coach)
+const RK_STYLE = 'Bahasa Indonesia yang hangat, jelas, dan tidak menggurui. Sapa klien dengan "kamu". Poin diawali "-". Tanpa istilah medis berat; bila perlu, jelaskan singkat.';
+const RK_AI_SKIP = ['penutup'];
+
+function aiTypeRule(f) {
+  if (f.t === 'radio' || f.t === 'yesno') return 'pilih satu: ' + f.opts.map(o => `"${o}"`).join(' | ');
+  if (f.t === 'check') return 'pilih beberapa (array): ' + f.opts.map(o => `"${o}"`).join(' | ');
+  if (f.t === 'scale') return `angka ${f.min}–${f.max}`;
+  return 'teks';
+}
+function aiFieldList(fields) {
+  const out = [];
+  let sec = null;
+  fields.forEach(f => {
+    if (f.sec !== sec) { sec = f.sec; out.push('', `[${sec}]`); }
+    out.push(`- ${f.id} (${aiTypeRule(f)}): ${f.label}${f.hint ? ` (${f.hint})` : ''}`);
+  });
+  return out.join('\n');
+}
+
+function sesiAiFields() {
+  const c = ctx();
+  return SESI.filter(s => !s.show || s.show(c)).flatMap(s => {
+    const noteId = s.qs.some(q => q.id === s.id + '_catatan') ? s.id + '_catatan' : 'catatanUmum';
+    return s.qs.filter(q => !['out', 'guide'].includes(q.t)).map(q => ({
+      id: q.id, label: q.note ? 'Poin penting lain dari bagian ini yang tidak masuk pertanyaan di atas' : strip(q.q), sec: s.title, t: q.t,
+      opts: q.t === 'yesno' ? ['Tidak', 'Ya'] : q.opts, min: q.min, max: q.max, noteId }));
+  });
+}
+function buildSesiTemplate() {
+  return [
+    'Kamu asisten pencatat sesi coaching kesehatan & gaya hidup (Synthesis Coaching Lab). Setelah pesan ini saya akan menempelkan TRANSKRIP rekaman sesi. Kalau transkrip belum ada, balas saja: "Siap, silakan tempel transkrip."',
+    '',
+    'TUGAS: isi daftar field di bawah HANYA berdasarkan apa yang benar-benar dikatakan di transkrip.',
+    '- Jangan mengarang atau menebak. Field yang tidak dibahas: JANGAN dimasukkan.',
+    '- teks: ringkas tapi lengkap, pakai kata-kata klien bila penting; boleh beberapa baris berawalan "-".',
+    '- pilih satu / pilih beberapa: tulis opsi PERSIS seperti di daftar. Jawaban yang tidak cocok dengan opsi mana pun: tulis di field catatan bagiannya.',
+    '- angka: bilangan bulat dalam rentang.',
+    '- Jangan tulis nama lengkap, nomor HP, alamat, atau nama orang lain.',
+    '- Bedakan ucapan coach dan klien; yang dicatat adalah kondisi/jawaban klien.',
+    '',
+    'FORMAT JAWABAN: HANYA satu objek JSON, tanpa teks lain. Contoh: {"jadwal": "- Kerja 08–17...", "makanLuar": "3–5x", "aksesAlat": ["Gym"], "miSkor": 7}',
+    '',
+    'DAFTAR FIELD:' + aiFieldList(sesiAiFields())
+  ].join('\n');
+}
+
+function rkAiFields() {
+  return RK_FIELDS.flatMap(([grp, fs]) => fs.filter(([k]) => !RK_AI_SKIP.includes(k)).map(([k, l, ph]) => ({ id: k, label: l, hint: ph, sec: grp, t: 'area' })));
+}
+function buildReportPrompt() {
+  const d = intakeData();
+  return [
+    'Kamu membantu coach kesehatan & gaya hidup di Synthesis Coaching Lab (Indonesia; coach bersertifikasi sport nutrition advisor dan ahli ilmu faal olahraga) menyusun DRAF laporan untuk klien setelah sesi. Coach akan memeriksa & mengedit draf ini sebelum dikirim.',
+    'Setelah pesan ini saya akan menempelkan TRANSKRIP sesi. Kalau transkrip belum ada, balas saja: "Siap, silakan tempel transkrip."',
+    '',
+    ...clientContextLines(),
+    '',
+    '=== TUGAS ===',
+    'Gabungkan data di atas dengan transkrip untuk mengisi bagian laporan di bawah.',
+    `Gaya: ${RK_STYLE}`,
+    '- Dasarkan isi pada data & transkrip. Jangan mengarang fakta. Bagian yang tidak ada bahannya: jangan dimasukkan.',
+    '- BUKAN diagnosis medis. Hal yang perlu ditangani dokter/psikolog: sarankan konsultasi, tanpa menyebut diagnosis.',
+    '- Jangan menyebut skor skrining (SCOFF, PHQ-2), flag internal, atau catatan analisis coach secara langsung; pakai hanya sebagai pertimbangan.',
+    '- Suplementasi: hanya yang dibahas di sesi; jangan menulis dosis obat.',
+    `- Sebut klien dengan "kamu", jangan pakai nama. Inisial klien: ${initials(clientName())}, usia ${d.usia || '-'}, ${d.jk || '-'}.`,
+    '',
+    'FORMAT JAWABAN: HANYA satu objek JSON {id: teks}, tanpa teks lain. Baris baru ditulis "\\n".',
+    '',
+    'BAGIAN LAPORAN:' + aiFieldList(rkAiFields())
+  ].join('\n');
+}
+
+// ── Parse & cocokkan jawaban AI ─────────────────────────────────────────
+function aiParseJson(text) {
+  let s = String(text || '').replace(/```(?:json)?/gi, '').trim();
+  const a = s.indexOf('{'), b = s.lastIndexOf('}');
+  if (a < 0 || b <= a) throw new Error('Tidak menemukan objek JSON { … } di teks yang ditempel.');
+  try { return JSON.parse(s.slice(a, b + 1)); }
+  catch (e) { throw new Error('JSON tidak valid: ' + e.message); }
+}
+// Samakan huruf besar-kecil, jenis tanda strip (- – —) dan spasi sebelum membandingkan
+const aiCanon = x => String(x == null ? '' : x).toLowerCase().replace(/[‐-―−]/g, '-').replace(/\s+/g, ' ').replace(/\s*-\s*/g, '-').trim();
+function aiMatchOpt(opts, v) {
+  const s = aiCanon(v);
+  if (!s) return null;
+  const ex = opts.find(o => aiCanon(o) === s); if (ex) return ex;
+  if (/^\d+$/.test(s)) { const n = opts.filter(o => aiCanon(o).startsWith(s + ' ')); if (n.length === 1) return n[0]; }
+  if (['ya', 'yes', 'true'].includes(s) && opts.includes('Ya')) return 'Ya';
+  if (['tidak', 'no', 'false', 'tdk'].includes(s) && opts.includes('Tidak')) return 'Tidak';
+  if (s.length >= 3) { const p = opts.filter(o => aiCanon(o).startsWith(s)); if (p.length === 1) return p[0]; }
+  return null;
+}
+// → { val } (sah), { val, extra } (sebagian sah), { bad } (tidak cocok), atau null (kosong)
+function aiNormalize(f, v) {
+  if (v == null || (typeof v === 'string' && !v.trim()) || (Array.isArray(v) && !v.length)) return null;
+  if (f.t === 'radio' || f.t === 'yesno') { const m = aiMatchOpt(f.opts, Array.isArray(v) ? v[0] : v); return m ? { val: m } : { bad: String(v) }; }
+  if (f.t === 'check') {
+    const arr = (Array.isArray(v) ? v : String(v).split(/[,;\n]/)).map(x => String(x).trim()).filter(Boolean);
+    const ok = [], extra = [];
+    arr.forEach(x => { const m = aiMatchOpt(f.opts, x); if (m) { if (!ok.includes(m)) ok.push(m); } else extra.push(x); });
+    return ok.length ? { val: ok, extra: extra.join(', ') } : { bad: arr.join(', ') };
+  }
+  if (f.t === 'scale') { const n = Math.round(num(v)); return isFinite(n) ? { val: String(Math.min(Math.max(n, f.min), f.max)) } : { bad: String(v) }; }
+  const t = Array.isArray(v) ? v.map(x => String(x).trim()).join('\n') : typeof v === 'object' ? JSON.stringify(v) : String(v).trim();
+  return t ? { val: t } : null;
+}
+const aiEmpty = v => v == null || (Array.isArray(v) ? !v.length : !String(v).trim());
+const aiSame = (a, b) => Array.isArray(a) || Array.isArray(b) ? [].concat(a || []).slice().sort().join('|') === [].concat(b || []).slice().sort().join('|') : String(a).trim() === String(b).trim();
+const aiShow = v => Array.isArray(v) ? v.join(', ') : String(v);
+
+// Modal tempel → pratinjau → terapkan. Kolom terisi tidak ditimpa kecuali dipilih "pakai AI".
+function aiImportModal({ title, help, fields, getCur, onApply }) {
+  const byId = {}; fields.forEach(f => { byId[f.id] = f; });
+  const m = document.createElement('div');
+  m.className = 'modal';
+  m.innerHTML = `<div class="modal-box ai-modal"><div class="card-title">${esc(title)}</div><div id="aiStep"></div></div>`;
+  document.body.appendChild(m);
+  const step = m.querySelector('#aiStep');
+  let pasted = '';
+  const stage1 = err => {
+    step.innerHTML = `<p class="stat-s" style="margin-bottom:8px">${help}</p>
+      <textarea id="aiIn" placeholder="Tempel jawaban AI (JSON) di sini…"></textarea>
+      ${err ? `<div class="err" style="margin-top:8px">${esc(err)}</div>` : ''}
+      <div style="text-align:right;margin-top:10px"><button class="btn btn-o" data-a="close">Batal</button> <button class="btn btn-p" data-a="parse">Lanjut: lihat pratinjau</button></div>`;
+    step.querySelector('#aiIn').value = pasted;
+  };
+  const stage2 = obj => {
+    const fill = [], conflict = [], bad = [], unknown = [];
+    Object.keys(obj).forEach(id => {
+      const f = byId[id];
+      if (!f) { if (!aiEmpty(obj[id])) unknown.push({ id, raw: aiShow(obj[id]) }); return; }
+      const n = aiNormalize(f, obj[id]); if (!n) return;
+      if (n.bad != null) { bad.push({ f, raw: n.bad }); return; }
+      if (n.extra) bad.push({ f, raw: n.extra });
+      const cur = getCur(id);
+      if (aiEmpty(cur)) fill.push({ f, val: n.val });
+      else if (!aiSame(cur, n.val)) conflict.push({ f, val: n.val, cur });
+    });
+    const row = (f, v) => `<div class="ai-row"><b>${esc(f.label)}</b><span class="stat-s"> · ${esc(f.sec)}</span><div>${esc(aiShow(v)).slice(0, 400)}</div></div>`;
+    step.innerHTML = `
+      <div class="ai-sum"><span class="tg-ok">✅ ${fill.length} akan diisi</span> · <span class="tg-mid">⚠️ ${conflict.length} bentrok</span> · <span class="tg-bad">❌ ${bad.length + unknown.length} tidak cocok</span></div>
+      <div class="ai-list">
+      ${fill.length ? `<div class="q-l">✅ Kolom kosong yang akan diisi</div>${fill.map(x => row(x.f, x.val)).join('')}` : ''}
+      ${conflict.length ? `<div class="q-l" style="margin-top:10px">⚠️ Sudah ada isinya & berbeda: pilih per kolom</div>${conflict.map((x, i) => `<div class="ai-row"><b>${esc(x.f.label)}</b><span class="stat-s"> · ${esc(x.f.sec)}</span>
+          <label class="ai-opt"><input type="radio" name="cf${i}" value="keep" checked> Pertahankan: ${esc(aiShow(x.cur)).slice(0, 300)}</label>
+          <label class="ai-opt"><input type="radio" name="cf${i}" value="ai"> Pakai AI: ${esc(aiShow(x.val)).slice(0, 300)}</label></div>`).join('')}` : ''}
+      ${bad.length ? `<div class="q-l" style="margin-top:10px">❌ Tidak cocok dengan pilihan${fields.some(f => f.noteId) ? ' (ditambahkan ke catatan bagiannya)' : ''}</div>${bad.map(x => row(x.f, x.raw)).join('')}` : ''}
+      ${unknown.length ? `<div class="q-l" style="margin-top:10px">❌ Field tidak dikenal (diabaikan)</div>${unknown.map(x => `<div class="ai-row"><b>${esc(x.id)}</b><div>${esc(x.raw).slice(0, 300)}</div></div>`).join('')}` : ''}
+      ${!fill.length && !conflict.length && !bad.length && !unknown.length ? '<div class="none-text">Tidak ada isian baru (semua kosong atau sama dengan yang sudah ada).</div>' : ''}
+      </div>
+      <div style="text-align:right;margin-top:10px"><button class="btn btn-o" data-a="back">Kembali</button> <button class="btn btn-p" data-a="apply">Terapkan</button></div>`;
+    step._res = { fill, conflict, bad };
+  };
+  stage1();
+  m.addEventListener('click', e => {
+    const a = e.target.dataset && e.target.dataset.a; if (!a) return;
+    if (a === 'close') m.remove();
+    else if (a === 'back') stage1();
+    else if (a === 'parse') {
+      pasted = step.querySelector('#aiIn').value;
+      try { stage2(aiParseJson(pasted)); } catch (err) { stage1(err.message); }
+    } else if (a === 'apply') {
+      const { fill, conflict, bad } = step._res, vals = {}, notes = {};
+      fill.forEach(x => { vals[x.f.id] = x.val; });
+      conflict.forEach((x, i) => { const r = step.querySelector(`input[name="cf${i}"]:checked`); if (r && r.value === 'ai') vals[x.f.id] = x.val; });
+      bad.forEach(x => { if (x.f.noteId) (notes[x.f.noteId] = notes[x.f.noteId] || []).push(`[AI] ${x.f.label}: ${x.raw}`); });
+      onApply(vals, notes);
+      m.remove();
+    }
+  });
+}
+
+function sesiAiImport() {
+  aiImportModal({
+    title: '📥 Tempel hasil AI ke Form Sesi',
+    help: 'Tempel jawaban Claude (JSON) dari template sesi. Kolom yang <b>sudah terisi tidak ditimpa</b>; kalau berbeda, kamu pilih sendiri. Setelah diterapkan, cek lalu klik <b>Simpan Sesi</b>.',
+    fields: sesiAiFields(),
+    getCur: id => SA[id],
+    onApply: (vals, notes) => {
+      Object.assign(SA, vals);
+      Object.keys(notes).forEach(k => { SA[k] = (SA[k] ? String(SA[k]).replace(/\s+$/, '') + '\n' : '') + notes[k].join('\n'); });
+      DIRTY = true; renderMain();
+      if ($('saveMsg')) $('saveMsg').textContent = `Hasil AI diterapkan (${Object.keys(vals).length} kolom). Cek dulu, lalu Simpan Sesi.`;
+    }
+  });
+}
+function rkAiImport() {
+  aiImportModal({
+    title: '📥 Tempel draf report dari AI',
+    help: 'Tempel jawaban Claude (JSON) dari prompt draf report. Kolom yang <b>sudah terisi tidak ditimpa</b>; kalau berbeda, kamu pilih sendiri. Setelah diterapkan, edit lalu klik <b>Simpan versi</b>.',
+    fields: rkAiFields(),
+    getCur: id => RK[id],
+    onApply: vals => {
+      Object.keys(vals).forEach(k => { RK[k] = String(vals[k]).replace(/\\n/g, '\n'); });
+      RK_DIRTY = true; renderRK();
+      if ($('rkMsg')) $('rkMsg').textContent = `Draf AI diterapkan (${Object.keys(vals).length} bagian). Edit dulu, lalu Simpan versi.`;
+    }
+  });
 }
 
 function copyText(text, title) {
@@ -993,6 +1228,179 @@ function measVal(rec, k) {
   return v === '' || v == null ? null : v;
 }
 
+/* ════════════════════════════════════════════════════════════════════════
+   TARGET & REKOMENDASI (tab Antropometri)
+   ════════════════════════════════════════════════════════════════════════ */
+// Persentil hand grip (kg) pan-Asia per jenis kelamin & usia 5 tahunan (20–24 … 100+).
+// Grgic dkk. 2026, J Cachexia Sarcopenia Muscle, Tabel 1, doi:10.1002/jcsm.70216
+const GRIP_P = [5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95];
+const GRIP_REF = {
+  P: [[14, 17, 20, 22, 24, 25, 26, 28, 30, 33, 36], [13, 17, 20, 22, 24, 25, 27, 28, 30, 34, 36], [14.7, 18, 20, 22, 24, 25, 27, 28, 30, 33, 36],
+    [14.9, 17.5, 20, 22, 23.5, 25, 26, 28, 30, 32.5, 35], [14, 16, 19, 21, 22.5, 24, 25, 27, 29, 32, 34.5], [13.5, 15.5, 18.5, 20, 22, 23.5, 25, 26.5, 28.5, 32, 34.5],
+    [12, 14.5, 17, 19, 20.5, 22, 23.5, 25, 27, 30, 33], [12, 14, 16.5, 18.5, 20, 21.5, 23, 25, 27, 30, 32], [11, 13, 15.5, 17.5, 19, 20, 21.5, 23, 25, 28, 30],
+    [10, 12, 14.5, 16, 17.5, 19, 20, 22, 24, 26, 29], [9, 11, 13.5, 15, 16.5, 18, 19.5, 20.5, 22.1, 25, 27], [8, 10, 12, 14, 15, 16.8, 18, 20, 21, 23.5, 25.5],
+    [7, 9, 11, 12.5, 14, 15, 16, 18, 19.5, 21.3, 24], [5.1, 7.5, 10, 11, 12.5, 14, 15, 16, 18, 20, 22], [5, 6.5, 9, 10, 11, 12, 13.5, 15, 16, 18.5, 20.5],
+    [4, 5.5, 7.5, 9, 9.9, 11, 12, 13, 14.5, 16.5, 17.8], [4.1, 6.4, 7.2, 8.1, 10, 10, 10.5, 12.3, 14, 15.3, 17.3]],
+  L: [[27, 30, 34, 37, 39, 40, 42, 44, 47, 51, 54], [27, 30, 35, 38, 40, 41, 43, 46, 48, 52, 55], [26, 31, 35, 38, 40, 42, 44, 46, 49, 53, 56],
+    [28, 31, 35, 38, 40, 42, 44, 46, 48.9, 52, 55], [24, 29, 33, 36, 39, 41, 43, 45, 48, 51, 54], [22.5, 25.5, 29.5, 32, 34, 36, 38.5, 41, 43.5, 48, 51],
+    [20.5, 23.5, 27.5, 30, 32.5, 34.5, 36.8, 39, 42, 46, 50], [19, 22.5, 26, 29, 31.5, 33.5, 36, 38.5, 41, 45, 49], [17.5, 20.5, 24.5, 27, 29, 31, 33.5, 36, 39, 43, 46],
+    [15.8, 19, 22.5, 25, 27, 29, 31, 34, 36, 40, 43.5], [14, 17, 20.5, 23, 25, 27.5, 29.5, 31.8, 34, 38, 40.5], [13.2, 16, 20, 22, 24, 26, 28, 30, 32.5, 36, 39],
+    [11.5, 14, 17.9, 20, 22, 24, 25.7, 28, 30, 33, 36], [10, 12, 15, 17.5, 19.5, 21, 22, 24.5, 27, 30, 32.5], [9, 10.5, 13.5, 15, 16.5, 18.5, 20, 21.8, 24, 28, 30],
+    [7, 9, 13, 15, 16, 18, 19, 20, 22, 26.5, 30], [7.3, 11.6, 12.5, 13.5, 14, 15.8, 18.3, 19.5, 20, 20.5, 21.5]]
+};
+function gripPercentile(jk, usia, v) {
+  const key = jk === 'Laki-laki' ? 'L' : jk === 'Perempuan' ? 'P' : null;
+  if (!key || usia == null || v == null) return null;
+  const gi = Math.min(Math.max(Math.floor((usia - 20) / 5), 0), 16);
+  const p = GRIP_REF[key][gi], lo = 20 + gi * 5;
+  let band;
+  if (v < p[0]) band = '< P5';
+  else if (v >= p[10]) band = '> P95';
+  else { const i = p.findIndex((x, j) => v >= x && v < p[j + 1]); band = `P${GRIP_P[i]}–P${GRIP_P[i + 1]}`; }
+  const tone = v < p[2] ? 'bad' : v > p[8] ? 'ok' : 'mid';
+  return { band, p50: p[5], p20: p[2], tone, label: tone === 'bad' ? 'di bawah rata-rata seusianya (perlu dilatih)' : tone === 'ok' ? 'di atas rata-rata seusianya' : 'rata-rata seusianya',
+    grup: gi === 16 ? '100+' : `${lo}–${lo + 4}`, muda: usia < 20 };
+}
+
+// Ukuran terbaru (pengukuran coach), dilengkapi data mandiri intake bila belum diukur
+function latestBody() {
+  const list = CD.measurements || [], last = list[list.length - 1], d = intakeData(), m = {};
+  MEAS.forEach(([k]) => { const v = last ? measVal(last, k) : null; if (v != null) m[k] = v; });
+  ['bb', 'tb', 'pinggang', 'perut', 'panggul'].forEach(k => { if (m[k] == null && num(d[k]) != null) m[k] = num(d[k]); });
+  if (m.bfBia == null && num(d.bf) != null) m.bfBia = num(d.bf);
+  return { m, tgl: last ? measVal(last, 'tanggalUkur') : '', sumber: last ? 'pengukuran coach' : 'data mandiri intake' };
+}
+
+function bodyTargets() {
+  const d = intakeData(), L = d.jk === 'Laki-laki', P = d.jk === 'Perempuan', usia = num(d.usia);
+  const { m, tgl, sumber } = latestBody(), r = calcMeasure(m);
+  const bb = num(m.bb), tb = num(m.tb), pg = num(m.pinggang), pr = num(m.perut), bf = num(m.bfBia);
+  const t = { tgl, sumber, rows: [], vital: [], bb, w: {} };
+  const tm = tb ? tb / 100 : null;
+  if (tm) { t.w.ideal = 22.9 * tm * tm; t.w.idealLo = 18.5 * tm * tm; }
+  if (r.bbMaxFat) t.w.bf = r.bbMaxFat;
+  const diff = (v, target, unit, dd) => v == null || target == null ? '' : v > target ? `${fmt(v - target, dd)} ${unit} di atas` : 'sudah di bawah batas';
+  if (tm) t.rows.push({ k: 'BB ideal (BMI Asia 18,5–22,9)', now: bb != null ? `${fmt(bb, 1)} kg` : '–', target: `${fmt(t.w.idealLo, 1)}–${fmt(t.w.ideal, 1)} kg`,
+    gap: bb == null ? '' : bb > t.w.ideal ? `turun ${fmt(bb - t.w.ideal, 1)} kg ke batas atas` : bb < t.w.idealLo ? `naik ${fmt(t.w.idealLo - bb, 1)} kg` : 'dalam rentang', tone: bb == null ? '' : bb > t.w.ideal || bb < t.w.idealLo ? 'bad' : 'ok' });
+  if (r.bbMaxFat) t.rows.push({ k: `BB dengan BF target coach (${L ? BF_TARGET.L : BF_TARGET.P}%)`, now: `${fmt(bb, 1)} kg`, target: `≤ ${fmt(r.bbMaxFat, 1)} kg`,
+    gap: bb > r.bbMaxFat ? `turun ${fmt(bb - r.bbMaxFat, 1)} kg (lemak)` : 'tercapai', tone: bb > r.bbMaxFat ? 'bad' : 'ok', note: `batas obesitas BF: ${fmt(r.bbObesFat, 1)} kg` });
+  const w = pg != null ? pg : pr, wLbl = pg != null ? 'pinggang' : 'perut';
+  if (L || P) {
+    const asia = L ? 90 : 80, whtr = tb ? 0.5 * tb : null, ketat = whtr != null ? Math.min(asia, whtr) : asia;
+    t.rows.push({ k: `Lingkar ${wLbl} maks.`, now: w != null ? `${fmt(w, 1)} cm` : '–', target: `< ${asia} cm (Asia)${whtr != null ? ` · ≤ ${fmt(whtr, 1)} cm (½ tinggi)` : ''}`,
+      gap: w == null ? '' : w >= ketat ? `turun ${fmt(w - ketat, 1)} cm` : 'di bawah batas', tone: w == null ? '' : w >= ketat ? 'bad' : 'ok' });
+    if (r.whr != null) t.rows.push({ k: 'Rasio pinggang–panggul', now: fmt(r.whr, 2), target: `< ${L ? '0,90' : '0,85'}`, gap: diff(r.whr, L ? 0.9 : 0.85, '', 2), tone: r.whr >= (L ? 0.9 : 0.85) ? 'bad' : 'ok' });
+    if (bf != null) { const tg = L ? BF_TARGET.L : BF_TARGET.P, ob = L ? BF_OBESITAS.L : BF_OBESITAS.P;
+      t.rows.push({ k: 'Body fat (BIA)', now: `${fmt(bf, 1)}%`, target: `≤ ${tg}% (target coach) · obesitas ≥ ${ob}%`, gap: bf > tg ? `turun ${fmt(bf - tg, 1)} poin` : 'tercapai', tone: bf >= ob ? 'bad' : bf > tg ? 'mid' : 'ok' }); }
+  }
+  if (r.whtr != null) t.rows.push({ k: 'Rasio pinggang–tinggi', now: fmt(r.whtr, 2), target: '< 0,50', gap: diff(r.whtr, 0.5, '', 2), tone: r.whtr >= 0.5 ? 'bad' : 'ok' });
+  const vis = num(m.visceral);
+  if (vis != null) t.rows.push({ k: 'Visceral fat (alat)', now: fmt(vis, 0), target: '1–9 normal · 10–14 tinggi · ≥ 15 sangat tinggi', gap: vis >= 15 ? 'sangat tinggi' : vis >= 10 ? 'tinggi' : 'normal', tone: vis >= 15 ? 'bad' : vis >= 10 ? 'mid' : 'ok', note: 'skala Omron/Tanita; tergantung merek alat' });
+  // Vital
+  const tn = String(m.tensi || '').match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
+  if (tn) { const s = +tn[1], di = +tn[2], st = s >= 140 || di >= 90 ? ['hipertensi (ulang ukur & sarankan cek dokter)', 'bad'] : s >= 120 || di >= 80 ? ['normal-tinggi', 'mid'] : ['optimal', 'ok'];
+    t.vital.push({ k: 'Tensi', now: `${s}/${di} mmHg`, target: '< 120/80 optimal · 120–139/80–89 normal-tinggi · ≥ 140/90 hipertensi', gap: st[0], tone: st[1] }); }
+  const rhr = num(m.rhr);
+  if (rhr != null) t.vital.push({ k: 'Detak jantung istirahat', now: `${rhr} bpm`, target: '60–100 bpm normal; lebih rendah umumnya lebih bugar', gap: rhr > 100 ? 'tinggi' : rhr < 60 ? 'rendah (wajar bila terlatih)' : 'normal', tone: rhr > 100 ? 'bad' : 'ok' });
+  const gk = num(m.gripKa), gki = num(m.gripKi), g = [gk, gki].filter(x => x != null);
+  if (g.length) {
+    const best = Math.max(...g), gp = gripPercentile(d.jk, usia, best);
+    t.vital.push(gp ? { k: `Hand grip (terbaik ${gk != null && best === gk ? 'kanan' : 'kiri'})`, now: `${fmt(best, 1)} kg`,
+      target: `median usia ${gp.grup}: ${fmt(gp.p50, 1)} kg · batas bawah (P20): ${fmt(gp.p20, 1)} kg${usia >= 60 ? ` · sarkopenia AWGS: < ${L ? 28 : 18} kg` : ''}`,
+      gap: `${gp.band} · ${gp.label}${gp.muda ? ' (usia < 20, dibandingkan dengan kelompok 20–24)' : ''}`, tone: gp.tone }
+      : { k: 'Hand grip', now: `${fmt(best, 1)} kg`, target: 'Butuh usia & jenis kelamin', gap: 'lengkapi di Data Klien', tone: '' });
+  }
+  return t;
+}
+
+const TONE_CLS = { ok: 'tg-ok', mid: 'tg-mid', bad: 'tg-bad' };
+function targetRowsHtml(rows, head) {
+  return `<table class="tbl tg"><tr><th>Ukuran</th><th>Sekarang</th><th>${head}</th><th>Status / selisih</th></tr>${rows.map(x => `<tr><td>${esc(x.k)}${x.note ? `<div class="stat-s">${esc(x.note)}</div>` : ''}</td><td><b>${esc(x.now)}</b></td><td>${esc(x.target)}</td><td><span class="${TONE_CLS[x.tone] || ''}">${esc(x.gap)}</span></td></tr>`).join('')}</table>`;
+}
+
+// Kalkulator protein & air minum: parameter bebas, tidak disimpan
+let CALC = { pBasis: 'now', pLo: 1.2, pHi: 1.6, meals: 3, pManual: '', aBasis: 'now', mlkg: 30, menit: 0, panas: false };
+const PROT_PRESET = [['Sedenter', 0.8, 1.0], ['Aktif', 1.2, 1.6], ['Latihan beban / defisit', 1.6, 2.2]];
+function calcBasisW(t, basis, manual) {
+  return basis === 'ideal' ? t.w.ideal : basis === 'bf' ? t.w.bf : basis === 'manual' ? num(manual) : t.bb;
+}
+function calcResult(t) {
+  const W = calcBasisW(t, CALC.pBasis, CALC.pManual), A = calcBasisW(t, CALC.aBasis, CALC.pManual), meals = Math.max(1, num(CALC.meals) || 3);
+  const out = {};
+  if (W) { out.pLo = W * num(CALC.pLo); out.pHi = W * num(CALC.pHi); out.pMealLo = out.pLo / meals; out.pMealHi = out.pHi / meals; out.W = W; }
+  if (A) { out.air = A * (num(CALC.mlkg) || 30) / 1000 + (num(CALC.menit) || 0) / 60 * 0.5 + (CALC.panas ? 0.5 : 0); out.A = A; }
+  return out;
+}
+function basisOpts(t, sel) {
+  return [['now', `BB sekarang${t.bb ? ` (${fmt(t.bb, 1)} kg)` : ''}`], ['ideal', `Batas atas BB ideal${t.w.ideal ? ` (${fmt(t.w.ideal, 1)} kg)` : ''}`], ['bf', `BB target BF${t.w.bf ? ` (${fmt(t.w.bf, 1)} kg)` : ' (butuh BF)'}`], ['manual', 'Isi manual']]
+    .map(([v, l]) => `<option value="${v}" ${sel === v ? 'selected' : ''}>${esc(l)}</option>`).join('');
+}
+function calcHtml(t) {
+  return `<div class="calc">
+    <div class="calc-box"><div class="q-l">🥩 Protein harian</div>
+      <div class="stat-l">Basis berat badan</div><select class="inp" data-calc="pBasis">${basisOpts(t, CALC.pBasis)}</select>
+      <input class="inp" data-calc="pManual" inputmode="decimal" placeholder="kg (untuk isi manual)" style="margin-top:6px;${CALC.pBasis === 'manual' || CALC.aBasis === 'manual' ? '' : 'display:none'}">
+      <div class="stat-l" style="margin-top:8px">g/kg per hari</div>
+      <div class="rk-chips">${PROT_PRESET.map(([l, a, b]) => `<button type="button" class="rk-chip" data-preset="${a}|${b}">${esc(l)} ${fmt(a, 1)}–${fmt(b, 1)}</button>`).join('')}</div>
+      <div style="display:flex;gap:6px;align-items:center"><input class="inp" data-calc="pLo" inputmode="decimal" style="max-width:80px"> – <input class="inp" data-calc="pHi" inputmode="decimal" style="max-width:80px"><span class="stat-s">g/kg · makan</span><input class="inp" data-calc="meals" inputmode="numeric" style="max-width:60px"><span class="stat-s">x/hari</span></div>
+      <div class="calc-out" id="calcProt"></div></div>
+    <div class="calc-box"><div class="q-l">💧 Air minum harian</div>
+      <div class="stat-l">Basis berat badan</div><select class="inp" data-calc="aBasis">${basisOpts(t, CALC.aBasis)}</select>
+      <div class="stat-l" style="margin-top:8px">ml per kg</div>
+      <div class="rk-chips">${[30, 35].map(v => `<button type="button" class="rk-chip" data-ml="${v}">${v} ml/kg</button>`).join('')}</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><input class="inp" data-calc="mlkg" inputmode="numeric" style="max-width:80px"><span class="stat-s">ml/kg · olahraga</span><input class="inp" data-calc="menit" inputmode="numeric" style="max-width:70px"><span class="stat-s">menit/hari</span>
+        <label class="stat-s" style="display:flex;gap:4px;align-items:center"><input type="checkbox" data-calc="panas" ${CALC.panas ? 'checked' : ''}> cuaca panas / banyak berkeringat (+0,5 L)</label></div>
+      <div class="calc-out" id="calcAir"></div></div>
+  </div>
+  <p class="stat-s" style="margin-top:6px">Kalkulator ini alat bantu diskusi, bukan resep. Olahraga dihitung ~0,5 L per jam. Sesuaikan untuk kondisi ginjal, jantung, kehamilan, dll.</p>`;
+}
+function updCalc(t) {
+  const c = calcResult(t);
+  if ($('calcProt')) $('calcProt').innerHTML = c.W ? `<b>${fmt(c.pLo, 0)}–${fmt(c.pHi, 0)} g/hari</b> · ±${fmt(c.pMealLo, 0)}–${fmt(c.pMealHi, 0)} g per makan <span class="stat-s">(basis ${fmt(c.W, 1)} kg)</span>` : '<span class="stat-s">Basis berat belum ada.</span>';
+  if ($('calcAir')) $('calcAir').innerHTML = c.A ? `<b>± ${fmt(c.air, 1)} liter/hari</b> <span class="stat-s">(basis ${fmt(c.A, 1)} kg)</span>` : '<span class="stat-s">Basis berat belum ada.</span>';
+  const man = document.querySelector('[data-calc="pManual"]');
+  if (man) man.style.display = CALC.pBasis === 'manual' || CALC.aBasis === 'manual' ? '' : 'none';
+}
+// Ringkasan teks: untuk tombol salin & konteks prompt AI
+function targetSummaryText(t, withCalc) {
+  const ln = r => `- ${r.k}: sekarang ${r.now}; acuan ${r.target}; ${r.gap}`;
+  const out = [];
+  if (t.rows.length) out.push(`Target tubuh (${t.sumber}${t.tgl ? ', ' + t.tgl : ''}):`, ...t.rows.map(ln));
+  if (t.vital.length) out.push('Vital:', ...t.vital.map(ln));
+  if (withCalc) {
+    const c = calcResult(t);
+    if (c.W) out.push(`Protein: ${fmt(c.pLo, 0)}–${fmt(c.pHi, 0)} g/hari (${fmt(num(CALC.pLo), 1)}–${fmt(num(CALC.pHi), 1)} g/kg × ${fmt(c.W, 1)} kg), ±${fmt(c.pMealLo, 0)}–${fmt(c.pMealHi, 0)} g per makan`);
+    if (c.A) out.push(`Air minum: ± ${fmt(c.air, 1)} liter/hari`);
+  }
+  return out.join('\n');
+}
+function targetCardHtml() {
+  const t = bodyTargets();
+  if (!t.rows.length && !t.vital.length) return `<div class="card"><div class="card-title">Target & Rekomendasi</div><div class="none-text">Belum ada data tinggi/berat. Isi pengukuran di bawah.</div></div>`;
+  return `<div class="card"><div class="card-title">Target & Rekomendasi <span class="stat-s" style="text-transform:none;letter-spacing:0;font-weight:400">· dari ${esc(t.sumber)}${t.tgl ? ' ' + fmtDate(t.tgl) : ''}</span></div>
+    ${t.rows.length ? targetRowsHtml(t.rows, 'Target / acuan') : ''}
+    ${t.vital.length ? `<div class="q-l" style="margin-top:12px">Vital & kekuatan</div>${targetRowsHtml(t.vital, 'Acuan')}` : ''}
+    <div class="q-l" style="margin-top:14px">Kalkulator</div>${calcHtml(t)}
+    <div style="margin-top:8px"><button class="btn btn-o" id="btnTgCopy">📋 Salin ringkasan target</button></div>
+    <div class="stat-s" style="margin-top:8px;line-height:1.6"><b>Acuan:</b> BMI & lingkar pinggang Asia (WHO/IDF); rasio pinggang–tinggi 0,5; hand grip: persentil pan-Asia per usia & JK, Grgic dkk. 2026, <a href="https://doi.org/10.1002/jcsm.70216" target="_blank" rel="noopener">doi:10.1002/jcsm.70216</a> (P20 sebagai batas bawah, seperti Chen dkk. 2025, <a href="https://doi.org/10.1002/jcsm.13731" target="_blank" rel="noopener">doi:10.1002/jcsm.13731</a>); sarkopenia AWGS 2019, <a href="https://doi.org/10.1016/j.jamda.2019.12.012" target="_blank" rel="noopener">doi:10.1016/j.jamda.2019.12.012</a>. Data Asia Tenggara cenderung sedikit di bawah rata-rata pan-Asia.</div>
+  </div>`;
+}
+function bindTargetCard() {
+  const t = bodyTargets();
+  document.querySelectorAll('[data-calc]').forEach(el => { if (el.type !== 'checkbox' && el.tagName !== 'SELECT') el.value = CALC[el.dataset.calc] == null ? '' : CALC[el.dataset.calc]; });
+  updCalc(t);
+  const box = $('tabBody');
+  box.addEventListener('input', e => { const k = e.target.dataset && e.target.dataset.calc; if (!k) return; CALC[k] = e.target.type === 'checkbox' ? e.target.checked : e.target.value; updCalc(t); });
+  box.addEventListener('change', e => { const k = e.target.dataset && e.target.dataset.calc; if (!k) return; CALC[k] = e.target.type === 'checkbox' ? e.target.checked : e.target.value; updCalc(t); });
+  box.addEventListener('click', e => {
+    const b = e.target.closest('[data-preset],[data-ml]'); if (!b) return;
+    if (b.dataset.preset) { const [a, c] = b.dataset.preset.split('|'); CALC.pLo = a; CALC.pHi = c; document.querySelector('[data-calc="pLo"]').value = a; document.querySelector('[data-calc="pHi"]').value = c; }
+    else { CALC.mlkg = b.dataset.ml; document.querySelector('[data-calc="mlkg"]').value = b.dataset.ml; }
+    updCalc(t);
+  });
+  if ($('btnTgCopy')) $('btnTgCopy').addEventListener('click', () => copyText(targetSummaryText(t, true), 'Ringkasan target'));
+}
+
 let MF = {};
 function renderAntro() {
   const list = CD.measurements || [];
@@ -1002,6 +1410,7 @@ function renderAntro() {
   const d = intakeData();
   $('tabBody').innerHTML = `
     ${!d.jk || !d.usia ? '<div class="err">Jenis kelamin / usia klien belum ada. BF Navy, RFM & BMR tidak bisa dihitung. Lengkapi di kartu <b>Data Klien</b> (tab Ringkasan).</div>' : ''}
+    ${targetCardHtml()}
     <div class="card no-print"><div class="card-title">Tambah Pengukuran</div>
       <p class="stat-s" style="margin-bottom:10px">Isi yang diukur saja. Untuk data lama, ubah tanggalnya. Lengan/paha/grip: isi kanan & kiri terpisah.</p>
       <div class="mgrid">
@@ -1016,6 +1425,7 @@ function renderAntro() {
     <div class="card"><div class="card-title">Riwayat Pengukuran</div>${list.length ? historyHtml(list) : '<div class="none-text">Belum ada pengukuran.</div>'}</div>`;
   document.querySelectorAll('[data-m]').forEach(el => { el.value = MF[el.dataset.m] || ''; });
   updMeasCalc();
+  bindTargetCard();
   $('tabBody').addEventListener('input', e => { const k = e.target.dataset && e.target.dataset.m; if (!k) return; MF[k] = e.target.value; updMeasCalc(); });
   $('btnMeas').addEventListener('click', saveMeas);
   document.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => {
@@ -1178,6 +1588,8 @@ function renderRK() {
         <button class="btn btn-o" id="rkPrint">🖨️ Cetak / PDF</button>
         ${reps.length ? `<select class="inp" id="rkVer" style="max-width:240px"><option value="">Buka versi tersimpan…</option>${reps.map((r, i) => `<option value="${i}">${fmtDate(r.submittedAt)} · ${esc(String(r.data.coreProblem || '').slice(0, 30))}</option>`).join('')}</select>` : ''}
         <button class="btn btn-o" id="rkNew" style="padding:8px 10px">Report baru (kosong)</button>
+        <button class="btn btn-o" id="rkAiTpl">📋 Salin prompt draf (AI)</button>
+        <button class="btn btn-o" id="rkAiIn">📥 Tempel draf AI</button>
         <span class="stat-s" id="rkMsg">${reps.length ? 'Versi terakhir: ' + fmtDate(reps[0].submittedAt) : 'Belum ada report tersimpan.'}</span>
       </div>
       <p class="stat-s">Tulis dengan bahasa untuk klien. Baris yang diawali "-" jadi poin, <b>**teks**</b> jadi tebal. Flag internal, SCOFF/PHQ-2, dan catatan MI <b>tidak</b> ikut ke report ini.</p>
@@ -1206,6 +1618,8 @@ function renderRK() {
   });
   $('rkSave').addEventListener('click', rkSave);
   $('rkPrint').addEventListener('click', () => window.print());
+  $('rkAiTpl').addEventListener('click', () => copyText(buildReportPrompt(), 'Prompt draf report'));
+  $('rkAiIn').addEventListener('click', rkAiImport);
   $('rkNew').addEventListener('click', () => {
     if (!confirm('Mulai report baru yang kosong? Versi tersimpan tetap ada.')) return;
     const keep = { ukurTanggal: RK.ukurTanggal, coach: RK.coach || COACH_SIGN };

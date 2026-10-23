@@ -84,6 +84,24 @@ Kode Apps Script **tidak** ikut ter-update otomatis dari GitHub. Setiap kali `Co
 
 **Antropometri (tiap sesi)**: tab **Antropometri** di Console. Isi pengukuran tiap sesi (BB, lingkar, leher, kanan/kiri, BIA, massa otot, visceral, BMR alat, tensi, grip). Otomatis dihitung BMI, rasio pinggang–panggul/tinggi, BF Navy, BF RFM, BMR, dan BB maksimal. Riwayat tampil per tanggal (seperti sheet lama) + Δ + grafik tren. Data lama bisa diisi manual dengan mengubah tanggal ukur; salah input bisa dihapus. Tersimpan di tab `Antropometri`.
 
+**Target & Rekomendasi (tab Antropometri, paling atas)**: dihitung dari pengukuran terakhir (atau data intake kalau belum diukur).
+- **Target tubuh**: BB ideal (BMI Asia 18,5–22,9), BB dengan BF target coach, lingkar pinggang maks. (Asia & ½ tinggi badan), rasio pinggang–panggul/tinggi, body fat, visceral fat. Lengkap dengan selisih ke target.
+- **Vital**: tensi, detak jantung istirahat, dan **hand grip per usia & jenis kelamin**. Hand grip memakai persentil pan-Asia dari Grgic dkk. 2026 (doi:10.1002/jcsm.70216). Di bawah P20 dianggap di bawah rata-rata.
+- **Kalkulator protein & air minum**: basis berat dan g/kg atau ml/kg bisa diatur, tidak disimpan. Tombol **Salin ringkasan target** untuk ditempel ke catatan/report.
+
+**Alur rekaman sesi → AI → Console**
+1. Rekam sesi (pakai urutan pertanyaan Form Sesi sebagai panduan), lalu buat transkripnya.
+2. Form Sesi → **📋 Salin template untuk AI** → tempel ke Claude → tempel transkrip di pesan berikutnya.
+3. Salin jawaban Claude (JSON) → **📥 Tempel hasil AI** → lihat pratinjau:
+   - ✅ kolom kosong diisi
+   - ⚠️ kolom yang sudah kamu isi **tidak ditimpa**; pilih sendiri per kolom
+   - ❌ jawaban di luar pilihan masuk ke catatan bagiannya dengan label [AI]
+4. Cek, lalu **Simpan Sesi**.
+5. Report Klien → **📋 Salin prompt draf (AI)** → tempel ke Claude + transkrip → **📥 Tempel draf AI** → edit → **Simpan versi** → Cetak.
+   - Gaya bahasa draf diatur di konstanta `RK_STYLE` (`coach/Index.html`).
+
+> Template & prompt tidak memuat nama, WA, email, tanggal lahir, atau domisili. Tapi **transkrip** yang kamu tempel sendiri bisa berisi nama dan cerita pribadi klien, jadi pakai akun Claude milikmu sendiri dan pastikan sesuai persetujuan klien.
+
 **Report Klien (laporan setelah sesi)**: tab **Report Klien**. Strukturnya mengikuti laporan coach: Antropometri (otomatis dari pengukuran yang dipilih + catatan) → Kendala Client (rutinitas, tidur, stres, aktivitas, nutrisi, gut) → Analisa Permasalahan (core problem, goals, saran, langkah praktis) → Suplementasi → opsional → penutup + tanda tangan. Tombol ＋ di kotak Tidur/Stres menyisipkan ringkasan skor MCTQ/PSQI/Stres. Setiap simpan = versi baru (tab `ReportKlien`). **Cetak / PDF**: header "[RAHASIA]" dan footer "BUKAN REKOMENDASI MEDIS" di tiap halaman; flag internal, SCOFF/PHQ-2, dan catatan MI tidak ikut. Tanda tangan default diatur di `COACH_SIGN` (`coach/Index.html`). Tab **Report Internal** tetap untuk catatan coach.
 
 **Batas body fat**: `BF_TARGET` (20% pria / 28% wanita, target coach) dan `BF_OBESITAS` (25% / 35%, definisi obesitas yang lazim di penelitian) di `coach/Index.html`. Referensi jurnal tampil di bawah tabel Antropometri.
