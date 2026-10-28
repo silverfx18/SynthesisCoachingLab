@@ -20,6 +20,11 @@ button,input,textarea,select{font-family:inherit;}
 .topbar span{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:var(--teal);padding:3px 8px;border-radius:2px;}
 .layout{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 52px);}
 .side{background:var(--white);border-right:1px solid var(--cream2);padding:14px;overflow:auto;max-height:calc(100vh - 52px);position:sticky;top:0;}
+/* Daftar klien disembunyikan saat bekerja di satu klien, supaya nama klien lain tidak terlihat di layar */
+.side-tog{background:transparent;border:1.5px solid rgba(255,255,255,.35);color:var(--cream);border-radius:6px;padding:5px 10px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.side-tog:hover{border-color:var(--teal-light);}
+body.side-hidden .layout{grid-template-columns:1fr;}
+body.side-hidden .side{display:none;}
 .side input{width:100%;border:1.5px solid var(--cream2);border-radius:6px;padding:9px 11px;font-size:12.5px;background:var(--cream);outline:none;margin-bottom:10px;}
 .side input:focus{border-color:var(--teal);background:#fff;}
 .cl{padding:10px 11px;border-radius:8px;cursor:pointer;border:1.5px solid transparent;margin-bottom:4px;}
@@ -218,7 +223,7 @@ textarea.inp{min-height:58px;resize:vertical;line-height:1.5;}
 </style>
 </head>
 <body>
-<div class="topbar"><span>Synthesis Coaching Lab</span><b>Coach Console</b></div>
+<div class="topbar"><button type="button" class="side-tog" id="sideTog" aria-expanded="true">✕ Tutup daftar</button><span>Synthesis Coaching Lab</span><b>Coach Console</b></div>
 <div class="loading" id="loading">Memuat…</div>
 <div class="layout">
   <aside class="side">
@@ -438,7 +443,19 @@ $('search').addEventListener('input', renderClients);
 $('clientList').addEventListener('click', e => {
   const el = e.target.closest('.cl'); if (!el) return;
   if (DIRTY && !confirm('Form sesi belum disimpan. Pindah klien?')) return;
+  setSide(false);
   openClient(el.dataset.id);
+});
+// Buka/tutup daftar klien. Otomatis tertutup setelah memilih klien; Esc menutup lagi.
+function setSide(open) {
+  document.body.classList.toggle('side-hidden', !open);
+  $('sideTog').setAttribute('aria-expanded', String(open));
+  $('sideTog').textContent = open ? '✕ Tutup daftar' : '👥 Klien';
+  if (open) $('search').focus();
+}
+$('sideTog').addEventListener('click', () => setSide(document.body.classList.contains('side-hidden')));
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && CUR && !document.body.classList.contains('side-hidden') && !document.querySelector('.modal')) setSide(false);
 });
 
 async function openClient(id) {
