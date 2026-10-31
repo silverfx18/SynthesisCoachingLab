@@ -604,10 +604,9 @@ function hitungMCTQ() {
     return;
   }
 
-  // PERBAIKAN 2: Validasi Nama Keras (Regex). Menolak angka / simbol aneh. Hanya alfabet, spasi, titik, atau petik tunggal. Minimum 2 karakter.
-  const namaRegex = /^[a-zA-Z\s\.\']{2,50}$/;
-  if (!namaRegex.test(namaInput)) {
-    document.getElementById('errorMsg').textContent = 'Format Nama tidak valid. Nama hanya boleh berisi huruf, spasi, titik, atau tanda petik tunggal (tanpa angka / simbol aneh) dengan panjang 2–50 karakter.';
+  // Validasi nama: aturan bersama di shared.js (huruf termasuk beraksen, spasi, . , ' - ( ) /, 2–80 karakter)
+  if (!SCL.validName(namaInput)) {
+    document.getElementById('errorMsg').textContent = 'Format Nama tidak valid. Gunakan huruf, spasi, dan tanda yang lazim di nama/gelar (titik, koma, strip, petik), 2–80 karakter, tanpa angka.';
     errBox.style.display = 'block';
     errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
@@ -668,7 +667,9 @@ function hitungMCTQ() {
   const debt = noAlarmWork ? 0 : Math.max(0, sdWeek - sdW);
 
   const msfRaw = soF + sdF / 2;
-  const msfSc = msfRaw - (debt / 2);
+  // Koreksi utang tidur (Roenneberg dkk. 2004, Curr Biol, doi:10.1016/j.cub.2004.11.039):
+  // MSFsc = MSF − (SDf − SDweek)/2, hanya bila tidur hari bebas lebih panjang dari hari kerja.
+  const msfSc = sdF > sdW ? msfRaw - (sdF - sdWeek) / 2 : msfRaw;
   const msw = soW + sdW / 2;
 
   const sjl = circularDiff(((msfSc % 24) + 24) % 24, ((msw % 24) + 24) % 24);
